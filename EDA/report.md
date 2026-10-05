@@ -106,15 +106,15 @@ Các quyết định tiền xử lý được tổng hợp ở Bảng 1.3.
 
 **Bảng 1.3. Các quyết định tiền xử lý dữ liệu**
 
-| Vấn đề phát hiện                      | Quyết định                                                                     | Lý do                                                                                                                                                                |
-| ------------------------------------- | ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Không có ô trống và bản ghi trùng lặp | Không xử lý                                                                    | Không có bằng chứng lỗi                                                                                                                                              |
-| `dteday` ở dạng chuỗi                 | Chuyển sang kiểu `datetime` tại chỗ, không tạo thêm cột | Phục vụ phân tích xu hướng và mùa vụ                                                                                                                                 |
-| Biến phân loại mã hóa bằng số         | Giữ nguyên mã                                                                  | Bảo toàn giá trị gốc; thêm nhãn khi cần trực quan hóa                                                                                                                |
-| Biến thời tiết đã chuẩn hóa           | Giữ thang 0–1                                                                  | Tránh biến đổi không cần thiết                                                                                                                                       |
-| `hum = 0` (22 dòng, ngày 2011-03-10)  | Thay bằng trung bình độ ẩm **cùng giờ** của ngày liền trước và ngày liền sau   | Độ ẩm 0% cả ngày là bất hợp lý; dùng cùng giờ để giữ chu kỳ ngày–đêm, dùng hai ngày lân cận để cân bằng thông tin hai phía (tương đương nội suy tuyến tính đơn giản) |
-| `windspeed = 0` (2.180 dòng)          | Giữ nguyên                                                                     | Gió bằng 0 có thể là giá trị thực; chưa đủ bằng chứng là lỗi                                                                                                         |
-| Thiếu 165 giờ                         | Không chèn dòng giả                                                            | Chưa xác định được nguyên nhân; chèn `cnt = 0` hoặc nội suy có thể làm lệch phân phối của `cnt`                                                                      |
+| Vấn đề phát hiện                      | Quyết định                                                                   | Lý do                                                                                                                                                                |
+| ------------------------------------- | ---------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Không có ô trống và bản ghi trùng lặp | Không xử lý                                                                  | Không có bằng chứng lỗi                                                                                                                                              |
+| `dteday` ở dạng chuỗi                 | Chuyển sang kiểu `datetime` tại chỗ, không tạo thêm cột                      | Phục vụ phân tích xu hướng và mùa vụ                                                                                                                                 |
+| Biến phân loại mã hóa bằng số         | Giữ nguyên mã                                                                | Bảo toàn giá trị gốc; thêm nhãn khi cần trực quan hóa                                                                                                                |
+| Biến thời tiết đã chuẩn hóa           | Giữ thang 0–1                                                                | Tránh biến đổi không cần thiết                                                                                                                                       |
+| `hum = 0` (22 dòng, ngày 2011-03-10)  | Thay bằng trung bình độ ẩm **cùng giờ** của ngày liền trước và ngày liền sau | Độ ẩm 0% cả ngày là bất hợp lý; dùng cùng giờ để giữ chu kỳ ngày–đêm, dùng hai ngày lân cận để cân bằng thông tin hai phía (tương đương nội suy tuyến tính đơn giản) |
+| `windspeed = 0` (2.180 dòng)          | Giữ nguyên                                                                   | Gió bằng 0 có thể là giá trị thực; chưa đủ bằng chứng là lỗi                                                                                                         |
+| Thiếu 165 giờ                         | Không chèn dòng giả                                                          | Chưa xác định được nguyên nhân; chèn `cnt = 0` hoặc nội suy có thể làm lệch phân phối của `cnt`                                                                      |
 
 Sau xử lý, cột `hum` không còn giá trị 0 hoặc giá trị thiếu. Dữ liệu sau tiền xử lý gồm 17.379 dòng và 17 cột.
 
@@ -232,6 +232,14 @@ Hình 1.7 xem xét chiều và dạng quan hệ (dương hay âm, đơn điệu 
 - **`temp`** có tương quan dương với `cnt` (Spearman ρ = 0,4233). Trung bình `cnt` tăng đều qua các khoảng của `temp`: 65,07 (0–0,2; 1.070 giờ), 123,07, 194,67, 260,70 và 326,28 (0,8–1,0; 709 giờ), tức gấp 5,01 lần giữa khoảng thấp nhất và cao nhất.
 - **`hum`** có tương quan âm (ρ = −0,3634). Từ mức 0,4 trở lên, trung bình giảm từ 221,75 (0,4–0,6) xuống 172,41 và 107,17 (0,8–1,0), gần bằng một nửa. Độ ẩm cao thường đi cùng thời tiết u ám hoặc mưa (tương quan giữa `hum` và `weathersit` là 0,4151) nên hai yếu tố này khó tách rời.
 - **`windspeed`** có tương quan yếu (ρ = 0,1266) và không đơn điệu.
+
+Ngoài ra các tương quan ở trên mô tả xu hướng trung bình; ở cấp độ từng ngày, một số ngày có nhu cầu thấp bất thường trong dữ liệu (mục 1.1.2 và 1.3) trùng thời điểm với các hiện tượng thời tiết cực đoan tại Washington D.C.:
+
+- **Bão tuyết 26–27/01/2011.** Tuyết rơi dày đúng giờ cao điểm chiều và tối, gây tắc nghẽn giao thông nhiều giờ; thành phố ghi nhận 5.0 inch (khoảng 12.7 cm) tuyết trong ngày 26/01. Hệ thống Capital Bikeshare khóa các trạm, không cho thuê mới trong đợt bão này. Trong dữ liệu, ngày 2011-01-27 thiếu 16 giờ, thuộc nhóm bốn ngày thiếu nhiều giờ nhất.
+- **Bão Irene, 27/08/2011.** Một nghiên cứu về ảnh hưởng của thời tiết lên Capital Bikeshare báo cáo ngày này chỉ có 1,106 chuyến khi lượng mưa là 3.3 inch (khoảng 83.8 mm). Số liệu này lấy từ nghiên cứu đó, **chưa đối chiếu** với `hour.csv`.
+- **Bão Sandy, 29–30/10/2012.** Capital Bikeshare thông báo ngừng cho thuê mới từ 1 giờ sáng ngày 29/10; cùng ngày Metro của thành phố cũng bị hủy do dự báo gió mạnh và nguy cơ mất điện. Trong dữ liệu, ngày 2012-10-29 chỉ có 22 lượt thuê và 1/24 giờ được ghi nhận, ngày 2012-10-30 thiếu 13 giờ; đây là ngày có tổng lượt thuê thấp nhất ở mục 1.3.
+
+Đây là sự trùng khớp về thời điểm, chưa phải bằng chứng nhân quả: dữ liệu không ghi nhận sự kiện và chưa dùng chuỗi thời tiết bên ngoài để kiểm chứng. Có hai hàm ý. Thứ nhất, một phần giờ thiếu ở các ngày này có thể phản ánh việc hệ thống ngừng vận hành, không chỉ là giờ không có lượt thuê như giả thuyết ở mục 1.1.2; hai cách hiểu cùng phù hợp với dữ liệu hiện có. Thứ hai, nhóm `weathersit = 4` chỉ có 3 dòng thuộc 3 ngày khác nhau nên không nhận diện được các đợt cực đoan kéo dài nhiều giờ như trên; khi đánh giá mô hình ở phần sau nên đánh dấu riêng các ngày này.
 
 ### 1.4.6. Tương quan giữa các biến
 
@@ -376,7 +384,7 @@ Hai nhóm cần bằng chứng bổ sung trước khi quyết định: `windspee
 
 ## Tài liệu tham khảo
 
-Fanaee-T, H., & Gama, J. (2013). Event labeling combining ensemble detectors and background knowledge. _Progress in Artificial Intelligence_, 2(2–3), 113–127. Bộ dữ liệu _Bike Sharing Dataset_, UCI Machine Learning Repository.
+Fanaee-T, H., & Gama, J. (2013). Event labeling combining ensemble detectors and background knowledge. _Progress in Artificial Intelligence_, 2(2–3), 113–127. Bộ dữ liệu _Bike Sharing Dataset_, UCI Machine Learning Repository. NWS Baltimore/Washington, "January 26, 2011 Snowfall" (weather.gov/lwx/20110126snow); O'Brien, O. (27/01/2011), "Washington DC Storm – Bike Share Shutdown" (oobrien.com); Sommer, W. (29/10/2012), "Not Even Bikeshare Can Stand Up to Sandy", Washington City Paper; Wikipedia, "Effects of Hurricane Sandy in Maryland and Washington, D.C."; Gebhart, K. & Noland, R. (2014), "The impact of weather conditions on bikeshare trips in Washington, DC", Transportation 41.
 
 ---
 
