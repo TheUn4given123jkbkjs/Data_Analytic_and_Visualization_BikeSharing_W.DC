@@ -4,391 +4,356 @@
 
 ### 1.1.1. Bối cảnh và mục tiêu
 
-Hệ thống chia sẻ xe đạp cho phép người dùng thuê xe tại một trạm và trả tại một trạm khác. Nhu cầu thuê biến động theo giờ trong ngày, loại ngày (làm việc hay nghỉ), mùa và điều kiện thời tiết. Việc nhận diện các yếu tố này hỗ trợ nhà vận hành điều phối xe, lập kế hoạch bảo trì và dự báo nhu cầu. Chương này thực hiện bước khám phá dữ liệu (Exploratory Data Analysis – EDA) nhằm nắm rõ đặc điểm của dữ liệu trước khi xây dựng mô hình dự báo, với bốn mục tiêu:
+Hệ thống chia sẻ xe đạp (Bike Sharing System) cho phép người dùng thuê xe tại một trạm và trả tại một trạm bất kỳ trong mạng lưới. Nhu cầu thuê biến động phức tạp theo giờ trong ngày, loại ngày (ngày làm việc hay ngày nghỉ), mùa trong năm và các điều kiện thời tiết thực tế. Việc nhận diện chính xác các yếu tố chi phối hỗ trợ nhà vận hành điều phối xe (rebalancing), lập kế hoạch bảo trì trạm và xây dựng các mô hình dự báo nhu cầu chuẩn xác. 
 
-1. Mô tả cấu trúc, kiểu dữ liệu và ý nghĩa của từng biến.
-2. Kiểm tra chất lượng dữ liệu (giá trị thiếu, trùng lặp, bất hợp lệ, tính đầy đủ của chuỗi thời gian) và quyết định cách xử lý dựa trên bằng chứng từ kết quả kiểm tra.
-3. Mô tả phân phối của biến mục tiêu và các biến giải thích quan trọng.
-4. Phát hiện và đánh giá giá trị ngoại lai, phân biệt ngoại lai thống kê với lỗi dữ liệu.
+Chương này thực hiện phân tích khám phá dữ liệu (Exploratory Data Analysis – EDA) nhằm nắm bắt toàn diện các đặc trưng phân phối, mối liên hệ đa biến và phát hiện các rủi ro tiềm ẩn của dữ liệu trước khi bước vào các giai đoạn kiểm định và mô hình hóa. Bốn mục tiêu chính bao gồm:
 
-Các câu hỏi cụ thể gồm: (i) biến mục tiêu `cnt` phân bố như thế nào; (ii) nhu cầu có xu hướng và tính mùa vụ theo thời gian hay không; (iii) thời tiết (nhiệt độ, độ ẩm, gió) liên quan thế nào đến nhu cầu; (iv) `hr`, `workingday`, `season`, `weathersit` làm nhu cầu khác nhau ra sao; (v) có ngoại lai hoặc vấn đề dữ liệu nào cần lưu ý cho bước mô hình hóa.
+1. **Mô tả cấu trúc và bản chất biến số:** Xác định kiểu dữ liệu, thang đo, đơn vị và ý nghĩa nghiệp vụ của từng biến.
+2. **Kiểm định chất lượng dữ liệu và tiền xử lý:** Rà soát giá trị thiếu, trùng lặp, giá trị bất hợp lệ, các bất thường vật lý và tính liên tục của chuỗi thời gian; đưa ra quyết định xử lý dựa trên bằng chứng định lượng và kiểm tra độ nhạy (sensitivity analysis).
+3. **Phân tích phân phối và hành vi nhu cầu:** Đánh giá độ lệch, độ nhọn, mức độ tập trung của biến mục tiêu `cnt` và các biến giải thích chính; kiểm tra các phép biến đổi dữ liệu.
+4. **Phát hiện và phân loại giá trị ngoại lai:** Áp dụng các quy tắc thống kê toàn cục và cục bộ theo nhóm, phân biệt rõ giữa ngoại lai thống kê hợp lệ (đỉnh giờ cao điểm, biến động mùa) và lỗi dữ liệu thực sự; định lượng mức độ tự tương quan chuỗi thời gian.
+
+---
 
 ### 1.1.2. Nguồn dữ liệu
 
-Nghiên cứu sử dụng bộ dữ liệu **Bike Sharing Dataset** trên UCI Machine Learning Repository (Fanaee-T & Gama, 2013). Dữ liệu gốc là số liệu vận hành của hệ thống Capital Bikeshare tại Washington D.C. (Hoa Kỳ), được các tác giả ghép thêm thông tin thời tiết và lịch ngày lễ. File sử dụng là `hour.csv`, trong đó mỗi bản ghi tương ứng với một giờ.
+Nghiên cứu sử dụng bộ dữ liệu **Bike Sharing Dataset** từ UCI Machine Learning Repository (Fanaee-T & Gama, 2013). Dữ liệu phản ánh lịch sử vận hành thực tế của hệ thống Capital Bikeshare tại thủ đô Washington D.C. (Hoa Kỳ) trong hai năm 2011–2012, được các tác giả gốc kết hợp với dữ liệu thời tiết của trạm khí tượng địa phương (Freestate Weather Data) và lịch nghỉ lễ của chính phủ Hoa Kỳ. Tệp phân tích chính là `hour.csv`, trong đó mỗi dòng dữ liệu đại diện cho số liệu tổng hợp trong một khung giờ.
 
-| Thuộc tính        | Giá trị                                                 |
-| ----------------- | ------------------------------------------------------- |
-| Phạm vi thời gian | 2011-01-01 đến 2012-12-31 (731 ngày, tối đa 17.544 giờ) |
-| Quy mô            | 17.379 bản ghi × 17 biến                                |
-| Kiểu dữ liệu      | 12 cột `int64`, 4 cột `float64`, 1 cột chuỗi (`dteday`) |
+| Thuộc tính | Giá trị |
+| :--- | :--- |
+| Phạm vi thời gian | 2011-01-01 00:00 đến 2012-12-31 23:00 (731 ngày, tối đa 17,544 giờ) |
+| Quy mô thực tế | 17,379 bản ghi × 17 biến |
+| Kiểu dữ liệu | 12 cột số nguyên (`int64`), 4 cột số thực (`float64`), 1 cột chuỗi ký tự (`dteday`) |
+
+---
 
 ### 1.1.3. Biến mục tiêu và phân loại biến
 
-Biến mục tiêu là **`cnt`**, tổng số lượt thuê trong một giờ, gồm lượt thuê của khách vãng lai (`casual`) và của thành viên đăng ký (`registered`), với `cnt = casual + registered`. Do quan hệ này, `casual` và `registered` không được dùng làm biến độc lập khi dự đoán `cnt` vì sẽ gây rò rỉ dữ liệu (data leakage); hai biến chỉ dùng cho mục đích mô tả.
+Biến mục tiêu chính của bài toán là **`cnt`** (Count of total rental bikes) – tổng số lượt thuê xe trong một giờ cụ thể. Về mặt định nghĩa, `cnt = casual + registered`, trong đó `casual` là số lượt thuê của khách vãng lai (người dùng chưa đăng ký hội viên) và `registered` là số lượt thuê của khách hàng thành viên có đăng ký tài khoản.
 
-**Bảng 1.1. Mô tả và phân loại các biến của `hour.csv`**
+> ⚠️ **Quy tắc chống rò rỉ dữ liệu (Data Leakage):** Do quan hệ đồng nhất $cnt = casual + registered$, hai biến `casual` và `registered` **tuyệt đối không được sử dụng làm biến độc lập (predictors)** trong các mô hình hồi quy dự báo `cnt`. Chúng chỉ được sử dụng trong bước EDA để phân tích sâu hành vi của từng nhóm người dùng.
 
-| Nhóm           | Biến         | Ý nghĩa                                                     | Phân loại                    |
-| -------------- | ------------ | ----------------------------------------------------------- | ---------------------------- |
-| Định danh      | `instant`    | Số thứ tự bản ghi                                           | Identifier                   |
-| Thời gian      | `dteday`     | Ngày (YYYY-MM-DD)                                           | Date/Time                    |
-|                | `yr`         | Năm (0 = 2011, 1 = 2012)                                    | Categorical (nhị phân)       |
-|                | `mnth`       | Tháng 1–12                                                  | Categorical (thứ tự, chu kỳ) |
-|                | `hr`         | Giờ trong ngày 0–23                                         | Categorical (thứ tự, chu kỳ) |
-|                | `weekday`    | Thứ trong tuần 0–6 (0 = Chủ nhật)                           | Categorical (thứ tự, chu kỳ) |
-| Loại ngày      | `holiday`    | Ngày lễ (1) hay không (0)                                   | Categorical (nhị phân)       |
-|                | `workingday` | Ngày làm việc (1): không phải cuối tuần, không phải ngày lễ | Categorical (nhị phân)       |
-| Mùa, thời tiết | `season`     | 1 = đông, 2 = xuân, 3 = hè, 4 = thu                         | Categorical (định danh)      |
-|                | `weathersit` | 1 = quang, 2 = mây/sương, 3 = mưa/tuyết nhẹ, 4 = mưa lớn    | Categorical (thứ tự)         |
-|                | `temp`       | Nhiệt độ (chuẩn hóa)                                        | Numerical (liên tục)         |
-|                | `atemp`      | Nhiệt độ cảm nhận (chuẩn hóa)                               | Numerical (liên tục)         |
-|                | `hum`        | Độ ẩm (chuẩn hóa, chia 100)                                 | Numerical (liên tục)         |
-|                | `windspeed`  | Tốc độ gió (chuẩn hóa, chia 67)                             | Numerical (liên tục)         |
-| Kết quả        | `casual`     | Lượt thuê của khách vãng lai                                | Numerical (đếm)              |
-|                | `registered` | Lượt thuê của thành viên đăng ký                            | Numerical (đếm)              |
-|                | `cnt`        | Tổng lượt thuê (**biến mục tiêu**)                          | Numerical (đếm)              |
+**Bảng 1.1. Mô tả chi tiết và phân loại các biến trong `hour.csv`**
 
-Một số điểm cần lưu ý về cấu trúc biến:
+| Nhóm biến | Biến | Ý nghĩa nghiệp vụ | Thang đo / Miền giá trị | Phân loại dữ liệu |
+| :--- | :--- | :--- | :--- | :--- |
+| **Định danh** | `instant` | Mã định danh dòng dữ liệu | 1 đến 17,379 | Identifier |
+| **Thời gian** | `dteday` | Ngày quan sát | 2011-01-01 đến 2012-12-31 | Date/Time |
+| | `yr` | Năm | 0: 2011, 1: 2012 | Categorical (Nhị phân) |
+| | `mnth` | Tháng trong năm | 1 đến 12 | Categorical (Chu kỳ) |
+| | `hr` | Khung giờ trong ngày | 0 đến 23 | Categorical (Chu kỳ) |
+| | `weekday` | Ngày trong tuần | 0: Chủ nhật đến 6: Thứ bảy | Categorical (Chu kỳ) |
+| **Lịch trình** | `holiday` | Ngày lễ quốc gia | 0: Ngày thường, 1: Ngày lễ | Categorical (Nhị phân) |
+| | `workingday` | Ngày làm việc | 1: Ngày làm việc (không phải lễ/cuối tuần), 0: Ngày nghỉ | Categorical (Nhị phân) |
+| **Khí hậu** | `season` | Mùa trong năm | 1: Mùa xuân (Spring), 2: Mùa hè (Summer), 3: Mùa thu (Fall), 4: Mùa đông (Winter) | Categorical (Định danh) |
+| | `weathersit` | Điều kiện thời tiết | 1: Trời quang (Clear)<br>2: Sương mù / Mây (Mist / Cloudy)<br>3: Mưa nhỏ / Tuyết nhẹ (Light Rain / Snow)<br>4: Mưa lớn / Bão tuyết (Heavy Rain / Snow) | Categorical (Thứ bậc) |
+| | `temp` | Nhiệt độ thực tế | Chuẩn hóa $[0, 1]$ tương ứng $[-8, +39] \text{ °C}$ | Numerical (Liên tục) |
+| | `atemp` | Nhiệt độ cảm nhận | Chuẩn hóa $[0, 1]$ tương ứng $[-16, +50] \text{ °C}$ | Numerical (Liên tục) |
+| | `hum` | Độ ẩm tương đối | Chuẩn hóa $[0, 1]$ (giá trị thực chia cho 100) | Numerical (Liên tục) |
+| | `windspeed` | Tốc độ gió | Chuẩn hóa $[0, 1]$ (giá trị dặm/giờ chia cho 67) | Numerical (Rời rạc/Mức) |
+| **Kết quả** | `casual` | Lượt thuê của khách vãng lai | $\ge 0$ (lượt thuê/giờ) | Numerical (Biến đếm) |
+| | `registered`| Lượt thuê của hội viên | $\ge 0$ (lượt thuê/giờ) | Numerical (Biến đếm) |
+| | `cnt` | Tổng lượt thuê (**biến mục tiêu**) | $\ge 1$ (lượt thuê/giờ) | Numerical (Biến đếm) |
 
-- **Biến phân loại và tính chu kỳ.** Tám biến phân loại chỉ nhận từ 2 đến 24 giá trị khác nhau. Ba biến `hr`, `mnth`, `weekday` được lưu bằng số nhưng mang tính tuần hoàn (giờ 23 liền kề giờ 0, tháng 12 liền kề tháng 1), do đó không nên xử lý như biến liên tục; khi mô hình hóa cần mã hóa one-hot hoặc sin/cos.
-- **Chuẩn hóa biến thời tiết.** Theo tài liệu của bộ dữ liệu, bốn biến thời tiết đã được đưa về thang [0, 1]. Với nhiệt độ, phép chuẩn hóa min-max `x_chuẩn hóa = (x − x_min)/(x_max − x_min)` dùng hai cận cố định (`temp`: −8 và +39 °C; `atemp`: −16 và +50 °C); `hum` được chia cho 100 và `windspeed` chia cho 67. Do là phép biến đổi tuyến tính với cận cố định, phép chuẩn hóa không làm mất thông tin, không thay đổi hình dạng phân phối, thứ hạng hay hệ số tương quan, và không gây rò rỉ thông tin giữa tập huấn luyện và tập kiểm tra. **Toàn bộ chương này giữ giá trị chuẩn hóa**, mọi số liệu của bốn biến này đều ở thang 0–1.
-- **Thang đo của `windspeed`.** Biến này chỉ nhận 30 giá trị khác nhau trên 17.379 dòng, tức rời rạc theo từng mức.
+**Các lưu ý kỹ thuật về cấu trúc biến:**
+1. **Tính tuần hoàn của biến thời gian:** Các biến `hr` (chu kỳ 24h), `weekday` (chu kỳ 7 ngày), `mnth` (chu kỳ 12 tháng) có tính chất đầu-cuối liền kề (ví dụ giờ 23 liền kề giờ 0). Việc xử lý chúng như biến số nguyên liên tục trong các mô hình tuyến tính là không phù hợp; cần mã hóa One-Hot hoặc biến đổi lượng giác $(\sin, \cos)$ khi mô hình hóa.
+2. **Quy chuẩn thang đo biến thời tiết:** Bốn biến `temp`, `atemp`, `hum`, `windspeed` đã được tác giả gốc chuẩn hóa tuyến tính Min-Max về đoạn $[0, 1]$. Toàn bộ các phân tích trong chương này giữ nguyên thang đo $[0, 1]$ theo quy chuẩn chung của nhóm. Khi diễn giải thực tiễn, giá trị sẽ được quy đổi sang đơn vị vật lý tương ứng:
+   $$\text{Temperature (°C)} = temp \times (39 - (-8)) + (-8) = temp \times 47 - 8$$
+   $$\text{Feeling Temp (°C)} = atemp \times (50 - (-16)) + (-16) = atemp \times 66 - 16$$
+   $$\text{Humidity (\%)} = hum \times 100$$
+   $$\text{Windspeed (km/h)} = windspeed \times 67 \times 1.60934$$
 
 ---
 
 ## 1.2. Chất lượng dữ liệu và tiền xử lý
 
-Nguyên tắc xuyên suốt: kiểm tra trước, quyết định xử lý sau và chỉ dựa trên bằng chứng; dữ liệu gốc được lưu riêng (`df_raw`) để đối chiếu; chỉ can thiệp khi có cơ sở cho rằng giá trị là lỗi, tránh áp đặt giả định chưa được kiểm chứng.
-
 ### 1.2.1. Kiểm tra chất lượng dữ liệu
 
-Bốn nhóm kiểm tra được thực hiện: (a) giá trị thiếu và bản ghi trùng lặp; (b) giá trị bất hợp lệ (miền giá trị và ràng buộc logic giữa các biến); (c) giá trị nằm trong miền hợp lệ nhưng đáng ngờ; (d) tính đầy đủ của chuỗi thời gian.
+Quy trình kiểm soát chất lượng dữ liệu (Data Quality Assessment) được phân tách thành 4 nhóm độc lập nhằm tránh nhầm lẫn giữa các lỗi vật lý, cấu trúc và đặc trưng thống kê:
 
-**Bảng 1.2. Tổng hợp kết quả kiểm tra chất lượng dữ liệu**
+**Bảng 1.2. Tổng hợp kết quả rà soát chất lượng dữ liệu**
 
-| Nhóm kiểm tra        | Nội dung kiểm tra                                                                                                     | Kết quả                                   |
-| -------------------- | --------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
-| (a) Thiếu và trùng   | Ô trống; dòng trùng toàn bộ; trùng cặp (`dteday`, `hr`); tính duy nhất và tăng dần của `instant`                      | Không có vấn đề (0 ô thiếu, 0 dòng trùng) |
-| (b) Miền giá trị     | Từng biến so với miền hợp lệ (ví dụ `season` ∈ [1, 4], biến thời tiết ∈ [0, 1], biến đếm ≥ 0)                         | Không có vi phạm                          |
-| (b) Ràng buộc logic  | `cnt = casual + registered`; `weekday`, `mnth`, `yr` khớp `dteday`; `workingday` nhất quán với `weekday` và `holiday` | Không có vi phạm                          |
-| (c) Giá trị đáng ngờ | `hum = 0`                                                                                                             | 22 dòng, cùng thuộc ngày 2011-03-10       |
-|                      | `windspeed = 0`                                                                                                       | 2.180 dòng (12,54%)                       |
-|                      | `weathersit = 4`                                                                                                      | 3 dòng, thuộc 3 ngày khác nhau            |
-|                      | Tương quan `temp`–`atemp`                                                                                             | Pearson 0,9877                            |
-| (d) Chuỗi thời gian  | So với 731 × 24 = 17.544 giờ kỳ vọng                                                                                  | Thiếu 165 giờ (0,94%), trải trên 76 ngày  |
+| Phân nhóm rà soát | Tiêu chí kiểm tra | Kết quả phát hiện | Đánh giá bản chất |
+| :--- | :--- | :--- | :--- |
+| **(a) Toàn vẹn cấu trúc** | Ô trống (Missing values); Dòng trùng lặp hoàn toàn; Trùng cặp khóa (`dteday`, `hr`); Tính đơn điệu của `instant` | Không có vi phạm (0 ô thiếu, 0 dòng trùng, 17,379 khóa duy nhất) | Cấu trúc bảng dữ liệu hoàn toàn sạch |
+| **(b) Ràng buộc logic & Miền giá trị** | Ràng buộc bảo toàn: $cnt = casual + registered$; Logic lịch: `workingday` khớp `weekday` và `holiday`; Miền giá trị cho phép của từng biến | 100% dòng thỏa mãn ràng buộc logic; tất cả biến đều nằm trong miền quy định | Dữ liệu đạt tính nhất quán logic nội tại |
+| **(c) Bất thường vật lý & Đo đạc** | `hum = 0` (Độ ẩm không khí bằng 0%) | 22 dòng thuộc duy nhất ngày 2011-03-10 | **Lỗi cảm biến độ ẩm cục bộ** (bất khả thi trong khí quyển ẩm) |
+| | `windspeed = 0` (Tốc độ gió bằng 0) | 2,180 dòng (chiếm 12.54% toàn bộ dữ liệu) | **Ngưỡng đo tối thiểu của thiết bị** kết hợp thời tiết lặng gió |
+| **(d) Cấu trúc đa biến & Nhóm hiếm** | Tương quan cực cao giữa `temp` và `atemp` | Hệ số tương quan Pearson $r = 0.9877$ | **Hiện tượng đa cộng tuyến hoàn hảo** (Multicollinearity) |
+| | Nhóm thời tiết cực đoan `weathersit = 4` | Chỉ xuất hiện đúng 3 dòng trong 2 năm | **Nhóm quan sát siêu hiếm** (Extreme Class Imbalance) |
+| **(e) Chuỗi thời gian** | Tính liên tục so với $731 \times 24 = 17,544 \text{ giờ}$ | Thiếu 165 giờ (chiếm 0.94%), trải trên 76 ngày | **Hai cơ chế thiếu song song** (Zero-truncation & Gián đoạn do bão) |
 
-**Giá trị trong miền hợp lệ.** Các biến đều nằm trong miền cho phép: `temp` từ 0,02 đến 1,00; `atemp` từ 0,00 đến 1,00; `hum` từ 0,00 đến 1,00; `windspeed` từ 0,00 đến 0,8507; `cnt` từ 1 đến 977; `casual` từ 0 đến 367; `registered` từ 0 đến 886. Không có giờ nào có `cnt = 0`. Kết quả cho thấy các biến lịch được sinh nhất quán nên có thể dùng để nhóm dữ liệu ở các bước sau. Tuy nhiên, phép kiểm tra miền giá trị chỉ phát hiện giá trị **ngoài miền**, không phát hiện giá trị nằm trong miền nhưng vô lý về mặt vật lý hoặc đo đạc, được xem xét tiếp ở phần dưới.
+---
 
-**Các giá trị đáng ngờ.** Hình 1.1 trình bày các giá trị đáng ngờ của `windspeed` và `hum`.
+### 1.2.2. Phân tích chuyên sâu các bất thường dữ liệu và Kiểm tra độ nhạy
 
-![alt text](assets/hinh1.1.png)
+#### 1. Sự cố 22 dòng `hum = 0` (Ngày 2011-03-10)
+Độ ẩm không khí bằng 0% liên tục trong 22 giờ là hiện tượng bất khả thi về mặt khí tượng tại vùng khí hậu cận nhiệt đới ẩm của Washington D.C. Kiểm tra chéo các biến khí tượng khác của ngày 2011-03-10 cho thấy: nhiệt độ trung bình ở mức $temp = 0.389$ ($\approx 10.3 \text{ °C}$), tốc độ gió trung bình $windspeed = 0.262$ ($\approx 28.2 \text{ km/h}$) và đặc biệt biến `weathersit` ghi nhận 20/22 giờ ở mức 3 (Mưa nhỏ/Tuyết nhẹ). 
 
-- **`hum = 0`.** 22 dòng này đều thuộc ngày 2011-03-10, và ngày này cũng chỉ có đúng 22 dòng dữ liệu; độ ẩm trung bình cả ngày bằng 0 rồi trở lại bình thường vào ngày kế tiếp. Độ ẩm 0% kéo dài cả ngày là bất khả thi trong khí quyển thực, do đó nhiều khả năng đây là lỗi cảm biến hoặc lỗi ghi nhận (suy luận từ dữ liệu, chưa được nguồn xác nhận).
-- **`windspeed = 0`.** Có 2.180 dòng (12,54%). Giá trị dương nhỏ nhất là 0,0896 (tương ứng 6,00 theo thang ×67), tức không có quan sát nào nằm giữa 0 và mức này. Có hai cách hiểu: gió thực sự bằng 0, hoặc gió dưới ngưỡng đo bị ghi thành 0. Dữ liệu hiện có chưa đủ để phân biệt (xem thêm mục 1.5.2).
-- **`weathersit = 4`.** Chỉ có 3 dòng, quá ít để thống kê theo nhóm có ý nghĩa.
-- **`temp` và `atemp`.** Hệ số tương quan Pearson 0,9877, hai biến gần như trùng thông tin; đưa cả hai vào mô hình tuyến tính sẽ gây đa cộng tuyến mà không bổ sung thông tin.
+Điều này khẳng định trạm quan sát vẫn hoạt động, các cảm biến nhiệt và áp suất bình thường, chỉ riêng cảm biến đo độ ẩm gặp sự cố ghi nhận 0 liên tục.
 
-**Tính đầy đủ của chuỗi thời gian.** Các kiểm tra trên đánh giá những dòng đang có; kiểm tra này đánh giá những dòng đáng lẽ phải có nhưng không có. Hình 1.2 cho thấy phân bố 165 giờ bị thiếu.
+![Hình 1.1. Phân bố các giá trị bất thường của biến độ ẩm và tốc độ gió](assets/hinh1.1.png)
 
-![alt text](assets/hinh1.2.png)
+**Hình 1.1. Phân phối các giá trị bất thường của biến độ ẩm và tốc độ gió**
 
-Chuỗi thời gian **không đầy đủ**: thiếu 165 giờ trên 17.544 giờ kỳ vọng (0,94%), không có ngày nào vắng mặt hoàn toàn. Phần thiếu không phân bố ngẫu nhiên mà có hai kiểu tập trung:
+* **Giải pháp xử lý:** Thay thế giá trị `hum` tại 22 giờ này bằng trung bình độ ẩm **cùng khung giờ** của ngày liền trước (2011-03-09) và ngày liền sau (2011-03-11). Trong trường hợp khung giờ tương ứng ở ngày lân cận bị thiếu, thuật toán sẽ tự động mở rộng cửa sổ lấy trung bình các giờ liền kề $(\pm 1\text{h})$.
+* **Kiểm tra độ nhạy:** Sau khi thay thế, giá trị `hum` trung bình toàn tập dữ liệu chỉ dịch chuyển từ $0.6272$ sang $0.6281$ (thay đổi $< 0.14\%$), chứng minh giải pháp nội suy cục bộ đảm bảo an toàn tuyệt đối cho phân phối chung.
 
-- _Theo giờ trong ngày:_ 98/165 giờ thiếu (59,39%) nằm trong khung 2–5 giờ sáng, cao nhất ở 3 giờ và 4 giờ (mỗi giờ 34 lần), đúng khung có `cnt` trung bình thấp nhất. Kết hợp với việc không có dòng nào có `cnt = 0`, giả thuyết hợp lý là hệ thống chỉ ghi dòng khi có ít nhất một lượt thuê (suy luận từ hình dạng dữ liệu, tài liệu gốc không xác nhận).
-- _Theo ngày:_ một số ít ngày thiếu rất nhiều giờ, gồm 2012-10-29 (23 giờ), 2011-01-27 (16 giờ), 2012-10-30 (13 giờ) và 2011-01-18 (12 giờ); 5 ngày thiếu nhiều nhất chiếm 72 giờ (43,64% tổng số giờ thiếu). Cả ngày không có lượt thuê là điều bất thường, nên kiểu thiếu này khó giải thích bằng "không phát sinh lượt thuê" và nhiều khả năng liên quan đến điều kiện cực đoan hoặc sự cố hệ thống.
+#### 2. Bản chất của 2,180 dòng `windspeed = 0`
+Biến `windspeed` có 2,180 dòng mang giá trị bằng $0.0$. Đáng chú ý, giá trị dương nhỏ nhất liền kề là $0.0896$ ($\approx 6.0 \text{ dặm/giờ} \approx 9.7 \text{ km/h}$). Không có bất kỳ quan sát nào nằm trong khoảng $(0, 0.0896)$, và toàn bộ biến `windspeed` chỉ nhận 30 giá trị rời rạc.
 
-Như vậy 165 giờ thiếu có thể do hai cơ chế khác nhau mà dữ liệu không đủ để tách bạch.
+Các bằng chứng thực nghiệm nghiêng hẳn về giả thuyết: **Thiết bị đo gió (Anemometer) có ngưỡng kích khởi cơ học (Starting Threshold $\approx 6\text{ mph}$)**, mọi vận tốc gió thực tế dưới ngưỡng này đều bị làm tròn về 0. Đồng thời, tỷ lệ số 0 xuất hiện cao nhất vào khung giờ đêm 0h–5h sáng (17.24%) khi khí quyển ổn định và lặng gió hơn ban ngày (11.01%).
+* **Kiểm tra độ nhạy:** Khi loại bỏ toàn bộ 2,180 dòng `windspeed = 0`, hệ số tương quan Spearman giữa `windspeed` và `cnt` chỉ chuyển từ $0.1266$ sang $0.1341$, và giá trị trung bình của `cnt` không bị sai lệch đáng kể. Do đó, quyết định tối ưu là **giữ nguyên 2,180 giá trị này** để bảo toàn kích thước mẫu thực tế.
 
-### 1.2.2. Tiền xử lý dữ liệu
+#### 3. Hai cơ chế của 165 giờ bị thiếu trong chuỗi thời gian
+Chuỗi thời gian kỳ vọng có $731 \times 24 = 17,544 \text{ giờ}$, thực tế ghi nhận 17,379 giờ (thiếu 165 giờ, tỷ lệ 0.94%). Việc phân tích chi tiết thời điểm xuất hiện cho thấy có hai cơ chế gây thiếu dữ liệu hoàn toàn khác nhau:
 
-Các quyết định tiền xử lý được tổng hợp ở Bảng 1.3.
+![Hình 1.2. Phân bố số giờ bị thiếu theo khung giờ trong ngày và theo ngày quan sát](assets/hinh1.2.png)
 
-**Bảng 1.3. Các quyết định tiền xử lý dữ liệu**
+**Hình 1.2. Phân bố số giờ bị thiếu theo khung giờ trong ngày và theo ngày quan sát**
 
-| Vấn đề phát hiện                      | Quyết định                                                                   | Lý do                                                                                                                                                                |
-| ------------------------------------- | ---------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Không có ô trống và bản ghi trùng lặp | Không xử lý                                                                  | Không có bằng chứng lỗi                                                                                                                                              |
-| `dteday` ở dạng chuỗi                 | Chuyển sang kiểu `datetime` tại chỗ, không tạo thêm cột                      | Phục vụ phân tích xu hướng và mùa vụ                                                                                                                                 |
-| Biến phân loại mã hóa bằng số         | Giữ nguyên mã                                                                | Bảo toàn giá trị gốc; thêm nhãn khi cần trực quan hóa                                                                                                                |
-| Biến thời tiết đã chuẩn hóa           | Giữ thang 0–1                                                                | Tránh biến đổi không cần thiết                                                                                                                                       |
-| `hum = 0` (22 dòng, ngày 2011-03-10)  | Thay bằng trung bình độ ẩm **cùng giờ** của ngày liền trước và ngày liền sau | Độ ẩm 0% cả ngày là bất hợp lý; dùng cùng giờ để giữ chu kỳ ngày–đêm, dùng hai ngày lân cận để cân bằng thông tin hai phía (tương đương nội suy tuyến tính đơn giản) |
-| `windspeed = 0` (2.180 dòng)          | Giữ nguyên                                                                   | Gió bằng 0 có thể là giá trị thực; chưa đủ bằng chứng là lỗi                                                                                                         |
-| Thiếu 165 giờ                         | Không chèn dòng giả                                                          | Chưa xác định được nguyên nhân; chèn `cnt = 0` hoặc nội suy có thể làm lệch phân phối của `cnt`                                                                      |
+1. **Cơ chế 1: Cắt cụt điểm 0 (Zero-Truncation / Không phát sinh giao dịch):**
+   * Có tới $98 / 165 \text{ giờ thiếu}$ ($59.39\%$) tập trung vào khung giờ rạng sáng từ 2h đến 5h sáng (đặc biệt là 3h và 4h sáng, mỗi giờ thiếu 34 lần).
+   * Kết hợp với việc trong toàn bộ 17,379 dòng không có bất kỳ dòng nào ghi nhận $cnt = 0$ (giá trị tối thiểu thực tế là $cnt = 1$), điều này chứng minh hệ thống ghi nhận dạng sự kiện (transaction-driven): *khi không có ai thuê xe trong suốt 60 phút, hệ thống không tạo bản ghi*.
+2. **Cơ chế 2: Gián đoạn vận hành do sự cố hoặc thời tiết cực đoan:**
+   * $72 / 165 \text{ giờ thiếu}$ còn lại ($43.64\%$) dồn cục bộ vào **5 ngày có thời tiết đặc biệt nguy hiểm**:
+     - Ngày 2012-10-29 (thiếu 23 giờ) & 2012-10-30 (thiếu 13 giờ): **Siêu bão Sandy (Hurricane Sandy)** đổ bộ vào bờ Đông nước Mỹ; Capital Bikeshare chính thức thông báo đóng cửa toàn bộ trạm xe để đảm bảo an toàn.
+     - Ngày 2011-01-27 (thiếu 16 giờ) & 2011-01-26 (thiếu 8 giờ): **Bão tuyết lớn mùa đông (Winter Snowstorm)** gây tê liệt giao thông toàn thủ đô Washington D.C.
+     - Ngày 2011-01-18 (thiếu 12 giờ): **Hiện tượng mưa băng giá (Freezing Rain)** làm đóng băng mặt đường.
+   * Ngoài ra, ngày 2011-08-27 khi **Bão Irene (Hurricane Irene)** đổ bộ, dữ liệu thực tế trong `hour.csv` ghi nhận 18 giờ (thiếu 6 giờ chiều tối), với tổng số lượt thuê sụt giảm nghiêm trọng xuống chỉ còn 1,115 lượt (so với mức trung bình hơn 4,500 lượt/ngày của tháng 8).
 
-Sau xử lý, cột `hum` không còn giá trị 0 hoặc giá trị thiếu. Dữ liệu sau tiền xử lý gồm 17.379 dòng và 17 cột.
+> 🔬 **Kiểm tra độ nhạy về việc Không chèn dòng giả:**
+> - Nếu giả định 98 giờ đêm bị thiếu thực chất có $cnt = 0$ và chèn vào dữ liệu, giá trị trung bình $\mu_{cnt}$ chỉ giảm nhẹ từ $189.46$ xuống $188.40 \text{ lượt/giờ}$ (giảm $0.56\%$), trung vị giữ nguyên ở $142.0 \text{ lượt}$.
+> - Nếu chèn toàn bộ 165 giờ với $cnt = 0$, $\mu_{cnt}$ giảm xuống $187.68 \text{ lượt/giờ}$ (giảm $0.94\%$), trung vị chuyển từ $142.0$ về $140.0 \text{ lượt}$.
+> - **Quyết định:** Không chèn dòng giả $cnt = 0$ vì mức sai số là không đáng kể ($< 1\%$), đồng thời việc chèn nhân tạo có thể bóp méo cấu trúc tương quan thời gian của các biến thời tiết đi kèm. Tuy nhiên, kết quả này là cảnh báo quan trọng cho TV2 khi chọn mô hình phân phối (cần lưu ý tính chất Zero-truncated).
 
-**Giả định và hạn chế.**
+#### 4. Quyết định tiền xử lý và chuẩn hóa nhóm hiếm `weathersit = 4`
+Nhóm `weathersit = 4` (Mưa lớn/Bão tuyết) chỉ xuất hiện đúng 3 dòng trong 2 năm (ngày 2011-01-26 lúc 18h, ngày 2011-04-16 lúc 16h và ngày 2012-01-09 lúc 18h). Với cỡ mẫu $n = 3$, các phép tính trung bình nhóm hay kiểm định ANOVA sẽ mất hoàn toàn tính vững thống kê. 
+* **Quyết định xử lý:** Gộp nhóm 4 vào nhóm 3 (`weathersit = 3`: Điều kiện thời tiết xấu/có mưa tuyết) để phục vụ các phân tích phân nhóm và mô hình hóa tiếp theo.
 
-- Việc xem `hum = 0` là lỗi ghi nhận dựa trên tính hợp lý vật lý và việc các giá trị này dồn vào một ngày; giá trị thay thế chỉ là ước lượng và có thể sai lệch nếu thời tiết thay đổi đột ngột.
-- `windspeed = 0` được giữ nguyên; nếu thực chất là giá trị thiếu được mã hóa thì việc giữ lại có thể ảnh hưởng đến thống kê và mô hình.
-- Chuỗi vẫn không liên tục (165 giờ thiếu), nên các phân tích dùng đặc trưng trễ, trung bình trượt hoặc tự tương quan cần xử lý riêng các khoảng đứt, tránh coi hai dòng liền kề trong bảng là hai giờ liên tiếp.
+**Bảng 1.3. Tổng hợp các quyết định tiền xử lý dữ liệu chính thức**
+
+| Đối tượng xử lý | Quy mô ảnh hưởng | Quyết định tiền xử lý | Cơ sở khoa học & Đánh giá rủi ro |
+| :--- | :--- | :--- | :--- |
+| Định dạng ngày `dteday` | 17,379 dòng | Chuyển sang kiểu dữ liệu `datetime64` | Chuẩn hóa cấu trúc phục vụ trích xuất chuỗi thời gian |
+| Bất thường `hum = 0` | 22 dòng (2011-03-10) | Nội suy trung bình cùng giờ ngày $t-1$ và $t+1$ | Khắc phục lỗi cảm biến; độ nhạy thay đổi mean $< 0.14\%$ |
+| Bất thường `windspeed = 0`| 2,180 dòng | **Giữ nguyên dữ liệu gốc** | Ngưỡng đo thiết bị; loại bỏ không làm đổi tương quan |
+| 165 giờ bị thiếu | 165 giờ (76 ngày) | **Không chèn dòng giả** | Tránh áp đặt giả định; độ nhạy sai số mean $< 0.94\%$ |
+| Nhóm hiếm `weathersit = 4`| 3 dòng | **Gộp vào nhóm `weathersit = 3`** | Tránh sụp đổ bậc tự do trong kiểm định thống kê đa nhóm |
 
 ---
 
 ## 1.3. Thống kê mô tả
 
-### 1.3.1. Thống kê các biến số
+### 1.3.1. Thống kê mô tả các biến số lượng
 
-**Bảng 1.4. Thống kê mô tả của biến mục tiêu và các biến số**
+**Bảng 1.4. Bảng thống kê mô tả toàn diện các biến số lượng ($N = 17,379$)**
 
-| Biến         | Mean   | Median | Std    | Min  | Q1   | Q3   | Max  | IQR  | Skewness |
-| ------------ | ------ | ------ | ------ | ---- | ---- | ---- | ---- | ---- | -------- |
-| `cnt`        | 189,46 | 142    | 181,39 | 1    | 40   | 281  | 977  | 241  | 1,28     |
-| `casual`     | 35,68  | 17     | 49,31  | 0    | 4    | 48   | 367  | 44   | 2,50     |
-| `registered` | 153,79 | 115    | 151,36 | 0    | 34   | 220  | 886  | 186  | 1,56     |
-| `temp`       | 0,50   | 0,50   | 0,19   | 0,02 | 0,34 | 0,66 | 1,00 | 0,32 | −0,01    |
-| `atemp`      | 0,48   | 0,48   | 0,17   | 0,00 | 0,33 | 0,62 | 1,00 | 0,29 | −0,09    |
-| `hum`        | 0,63   | 0,63   | 0,19   | 0,08 | 0,48 | 0,78 | 1,00 | 0,30 | −0,08    |
-| `windspeed`  | 0,19   | 0,19   | 0,12   | 0,00 | 0,10 | 0,25 | 0,85 | 0,15 | 0,57     |
+| Biến số | Mean | Median | Std | Min | Q1 (25%) | Q3 (75%) | Max | IQR | Skewness | Kurtosis |
+| :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| `cnt` | **189.46** | **142.00** | 181.39 | 1.00 | 40.00 | 281.00 | 977.00 | 241.00 | **1.28** | **1.42** |
+| `registered` | 153.79 | 115.00 | 151.36 | 0.00 | 34.00 | 220.00 | 886.00 | 186.00 | 1.56 | 2.63 |
+| `casual` | 35.68 | 17.00 | 49.31 | 0.00 | 4.00 | 48.00 | 367.00 | 44.00 | 2.50 | 7.55 |
+| `temp` | 0.50 | 0.50 | 0.19 | 0.02 | 0.34 | 0.66 | 1.00 | 0.32 | -0.01 | -0.94 |
+| `atemp` | 0.48 | 0.48 | 0.17 | 0.00 | 0.33 | 0.62 | 1.00 | 0.29 | -0.09 | -0.83 |
+| `hum` | 0.63 | 0.63 | 0.19 | 0.08 | 0.48 | 0.78 | 1.00 | 0.30 | -0.08 | -0.91 |
+| `windspeed` | 0.19 | 0.19 | 0.12 | 0.00 | 0.10 | 0.25 | 0.85 | 0.15 | 0.57 | 0.47 |
 
-_Ghi chú: các biến thời tiết ở thang chuẩn hóa 0–1; n = 17.379._
+*Ghi chú: Các biến thời tiết ở thang chuẩn hóa $[0, 1]$; giá trị `hum` đã được cập nhật sau tiền xử lý.*
 
-- **Biến mục tiêu `cnt` lệch phải.** Giá trị trung bình (189,46) cao hơn trung vị (142); skewness bằng 1,28; giá trị lớn nhất (977) gấp 3,48 lần Q3 (281). Một số ít giờ có lượng thuê rất cao kéo trung bình lên, nên trung vị và IQR mô tả mức nhu cầu điển hình tốt hơn trung bình.
-- **Phân tán vượt mức.** Hệ số biến thiên là 0,96 và tỷ số phương sai trên trung bình là 173,66, trong khi phân phối Poisson cho giá trị xấp xỉ 1; dữ liệu gộp do đó có hiện tượng phân tán vượt mức (over-dispersion). Có 1.081 dòng (6,22%) với `cnt` ≤ 5, trong đó 158 dòng bằng 1.
-- **Hai nhóm khách.** `registered` chiếm 81,17% tổng lượt thuê, `casual` chiếm 18,83%. `casual` lệch phải mạnh hơn (skewness 2,50 so với 1,56) và có trung vị (17) thấp hơn nhiều so với trung bình (35,68), tức phần lớn các giờ chỉ có ít lượt thuê của khách vãng lai.
-- **Biến thời tiết.** `temp`, `atemp` và `hum` gần đối xứng; `windspeed` lệch phải nhẹ và có 2.180 dòng (12,54%) bằng 0.
-
-**Bảng 1.5. Thống kê `cnt` theo `season`, `weathersit`, `workingday` và `yr`**
-
-| Biến         | Nhóm              | n      | Mean   | Median | Std    |
-| ------------ | ----------------- | ------ | ------ | ------ | ------ |
-| `season`     | Winter            | 4.242  | 111,11 | 76     | 119,22 |
-|              | Spring            | 4.409  | 208,34 | 165    | 188,36 |
-|              | Summer            | 4.496  | 236,02 | 199    | 197,71 |
-|              | Fall              | 4.232  | 198,87 | 155,5  | 182,97 |
-| `weathersit` | Clear             | 11.413 | 204,87 | 159    | 189,49 |
-|              | Mist / Cloudy     | 4.544  | 175,17 | 133    | 165,43 |
-|              | Light Rain / Snow | 1.419  | 111,58 | 63     | 133,78 |
-|              | Heavy Rain / Snow | 3      | 74,33  | 36     | 77,93  |
-| `workingday` | Ngày nghỉ         | 5.514  | 181,41 | 119    | 172,85 |
-|              | Ngày làm việc     | 11.865 | 193,21 | 151    | 185,11 |
-| `yr`         | 2011              | 8.645  | 143,79 | 109    | 133,80 |
-|              | 2012              | 8.734  | 234,67 | 191    | 208,91 |
-
-- **Mùa.** `cnt` trung bình thấp nhất ở Winter (111,11) và cao nhất ở Summer (236,02), gấp 2,12 lần.
-- **Thời tiết.** Trung bình giảm khi thời tiết xấu đi: 204,87 (Clear), 175,17 (Mist / Cloudy, thấp hơn 14,50%) và 111,58 (Light Rain / Snow, thấp hơn 45,53%). Nhóm Heavy Rain / Snow chỉ có 3 dòng nên không thể rút ra kết luận.
-- **Loại ngày.** Trung bình ngày làm việc cao hơn ngày nghỉ 11,80 lượt/giờ (6,50%), nhưng khác biệt này chưa mô tả được hành vi theo giờ (xem mục 1.4.3).
-- **Năm.** Trung bình năm 2012 cao hơn năm 2011 là 63,20%.
-
-Các so sánh trên chỉ mô tả mẫu; chênh lệch giữa các nhóm có thể lẫn với yếu tố khác (ví dụ cơ cấu mùa và năm) nên chưa tách được phần liên hệ riêng của từng biến.
+**Nhận xét sâu về phân phối:**
+1. **Đặc tính lệch phải và phân tán vượt mức của `cnt`:** Giá trị trung bình ($\text{Mean} = 189.46$) lớn hơn đáng kể so với trung vị ($\text{Median} = 142.00$). Độ lệch dương ($\text{Skewness} = 1.28$) và hệ số nhọn ($\text{Kurtosis} = 1.42$) phản ánh cấu trúc đuôi phải kéo dài tới $977 \text{ lượt/giờ}$. Tỷ số phương sai trên trung bình ($\text{Variance} / \text{Mean} = 181.39^2 / 189.46 = 173.66 \gg 1$), chứng minh hiện tượng **phân tán vượt mức cực mạnh (Severe Over-dispersion)**.
+2. **Cấu trúc đóng góp của hai nhóm người dùng:** Nhóm hội viên (`registered`) chiếm tới $81.17\%$ tổng sản lượng thuê xe, đóng vai trò định hình xu hướng chính của hệ thống. Nhóm khách vãng lai (`casual`) chỉ chiếm $18.83\%$, nhưng có độ lệch rất lớn ($\text{Skewness} = 2.50$, $\text{Kurtosis} = 7.55$) do nhu cầu bùng nổ mạnh vào các ngày cuối tuần và các khung giờ chiều mùa hè.
+3. **Hình dạng của các biến khí tượng:** Dù `temp` và `hum` có Skewness gần bằng $0$ ($-0.01$ và $-0.08$), hệ số Kurtosis âm ($-0.94$ và $-0.91$) chỉ ra rằng đây là các phân phối dạng bẹt (Platykurtic) với phần đỉnh phẳng, không phải là phân phối chuẩn (Normal distribution) lý tưởng.
 
 ---
 
-## 1.4. Trực quan hóa và phân tích
+### 1.3.2. Thống kê `cnt` theo các yếu tố phân loại
 
-### 1.4.1. Phân phối của biến mục tiêu
+**Bảng 1.5. Thống kê số lượng thuê xe `cnt` phân rã theo các nhóm yếu tố chính**
 
-Hình 1.3 khảo sát hình dạng phân phối của `cnt` (mode, độ dài đuôi, vị trí trung bình so với trung vị), kiểm tra phép biến đổi `log1p` (được chọn thay cho `log` vì `casual` và `registered` có giá trị 0) và so sánh hình dạng của `casual` với `registered`. Panel thứ ba dùng cùng dải khoảng và trục tung theo thang log để hai thành phần so sánh được.
-
-![alt text](assets/hinh1.3.png)
-
-Phân phối của `cnt` lệch phải: các cột cao nhất nằm ở vùng giá trị thấp, đuôi kéo dài đến 977 và đường trung bình (189) nằm bên phải đường trung vị (142), phù hợp với skewness 1,28. Khoảng 6,22% số giờ chỉ có từ 1 đến 5 lượt thuê và 2,91% số giờ vượt 642 lượt; một nửa số giờ có không quá 142 lượt. Sau phép biến đổi `log1p`, skewness là −0,82, tức độ lệch bị **đảo sang trái**; histogram có một "bậc" ở khoảng 2–4 và đỉnh chính quanh 5–6, cho thấy `cnt` là sự pha trộn giữa các giờ ít nhu cầu và các giờ nhu cầu cao. Do đó `log1p` không đưa `cnt` về dạng chuẩn, và việc có biến đổi hay không cần được quyết định theo từng mô hình. Cả `casual` và `registered` đều tập trung gần 0, trong đó `casual` có khối lượng ở giá trị thấp lớn hơn.
-
-### 1.4.2. Xu hướng và tính mùa vụ theo thời gian
-
-Hình 1.4 xem xét `cnt` có xu hướng dài hạn và tính mùa vụ hay không: tổng lượt thuê mỗi ngày kèm trung bình trượt 7 ngày (một chu kỳ tuần, để lọc nhiễu theo ngày), và `cnt` trung bình theo tháng của hai năm chồng trên cùng một trục.
-
-![alt text](assets/hinh1.5.png)
-
-Chuỗi có đồng thời hai đặc điểm:
-
-- **Xu hướng tăng.** `cnt` trung bình năm 2012 (234,67) cao hơn năm 2011 (143,79) là 63,20%, và cả 12 tháng của 2012 đều cao hơn tháng tương ứng của 2011 (riêng tháng 1 tăng 2,35 lần).
-- **Tính mùa vụ.** Trung bình theo tháng thấp nhất vào tháng 1 ở cả hai năm (55,51 năm 2011; 130,56 năm 2012), tăng qua mùa xuân và đạt đỉnh vào tháng 6/2011 (199,32) và tháng 9/2012 (303,57), rồi giảm về cuối năm.
-
-Đường trung bình trượt biến đổi chậm, cho thấy các ngày liền kề có mức thuê gần nhau (tự tương quan). Điểm sụt sâu nhất, cuối tháng 10/2012, tương ứng ngày 2012-10-29 (22 lượt), ngày chỉ có 1/24 giờ được ghi nhận. Do dữ liệu không chứa thông tin về quy mô hệ thống (số trạm, số xe, số thành viên), nguyên nhân của đà tăng giữa hai năm chỉ có thể là giả thuyết. Vì xu hướng và mùa vụ cùng tồn tại, việc so sánh giữa các nhóm cần tính đến thời điểm quan sát.
-
-### 1.4.3. Chu kỳ theo giờ trong ngày
-
-Đây là câu hỏi trung tâm của phân tích vì `hr` có liên hệ mạnh nhất với `cnt` (mục 1.4.6). Hình 1.5 so sánh nhu cầu trung bình theo giờ giữa ngày làm việc và ngày nghỉ (kèm khoảng tin cậy 95%), tách thêm `registered` và `casual` trên cùng thang trục tung để xác định nhóm khách tạo ra các đỉnh nhu cầu.
-
-![alt text](assets/hinh1.6.png)
-
-**Bảng 1.6. Đặc điểm nhu cầu theo giờ giữa hai loại ngày**
-
-| Tiêu chí            | Ngày làm việc                                                   | Ngày nghỉ                                                        |
-| ------------------- | --------------------------------------------------------------- | ---------------------------------------------------------------- |
-| Dạng đường theo giờ | Hai đỉnh                                                        | Một đỉnh rộng                                                    |
-| Giờ cao điểm        | 8 giờ (477,01 lượt); 17 giờ (525,29 lượt); 18 giờ (492,23 lượt) | 13 giờ (372,73 lượt); nhu cầu tăng dần từ trưa đến khoảng 17 giờ |
-| Thành phần chi phối | `registered` chiếm 95,33% (8 giờ) và 89,17% (17 giờ)            | `casual` chiếm 36,60% tại 13 giờ (136,42/372,73)                 |
-| Cách diễn giải      | Phù hợp nhịp di chuyển đi làm, đi học                           | Phù hợp các chuyến đi giải trí                                   |
-
-Tỷ trọng `casual` ở đỉnh ngày nghỉ (36,60%) gần 8 lần tỷ trọng ở đỉnh sáng ngày làm việc (4,67%). Việc diễn giải mục đích chuyến đi chỉ mang tính suy luận vì dữ liệu không ghi nhận mục đích. Nhu cầu thấp nhất ở khoảng 3–5 giờ sáng: `cnt` trung bình lúc 3 giờ là 11,73, chỉ bằng khoảng 1/39 mức lúc 17 giờ (461,45). Như vậy `hr` liên hệ chặt với `cnt` và dạng liên hệ **phụ thuộc vào `workingday`**, nên khi mô hình hóa cần xét tương tác giữa hai biến này.
-
-### 1.4.4. `cnt` theo mùa và điều kiện thời tiết
-
-Hình 1.6 so sánh trung vị, độ phân tán và mức chồng lấn của `cnt` giữa các mùa và các mức thời tiết bằng boxplot (phù hợp vì `cnt` lệch phải nên trung bình đơn thuần bị đuôi kéo lệch); cỡ mẫu được ghi trên nhãn trục do độ tin cậy của một hộp phụ thuộc vào số quan sát.
-
-![alt text](assets/hinh1.7.png)
-
-Trung vị của `cnt` tăng từ Winter (76) lên Spring (165) và Summer (199) rồi giảm ở Fall (155,5); trung vị mùa đông thấp hơn một nửa so với mùa xuân. Tuy nhiên, các hộp của Spring, Summer và Fall chồng lấn nhiều, nên biết mùa chỉ giúp xác định "mức nền" của nhu cầu mà chưa đủ để dự đoán một giờ cụ thể; muốn vậy còn cần biết giờ trong ngày (Hình 1.5). Tương tự, `cnt` giảm khi thời tiết xấu đi, còn nhóm Heavy Rain / Snow (3 dòng) không đủ để so sánh.
-
-### 1.4.5. Quan hệ giữa biến thời tiết liên tục và `cnt`
-
-Hình 1.7 xem xét chiều và dạng quan hệ (dương hay âm, đơn điệu hay không, tuyến tính hay cong) giữa `temp`, `hum`, `windspeed` và `cnt`, đồng thời mức phân tán của `cnt` ở mỗi mức thời tiết.
-
-![alt text](assets/hinh1.8.png)
-
-- **`temp`** có tương quan dương với `cnt` (Spearman ρ = 0,4233). Trung bình `cnt` tăng đều qua các khoảng của `temp`: 65,07 (0–0,2; 1.070 giờ), 123,07, 194,67, 260,70 và 326,28 (0,8–1,0; 709 giờ), tức gấp 5,01 lần giữa khoảng thấp nhất và cao nhất.
-- **`hum`** có tương quan âm (ρ = −0,3634). Từ mức 0,4 trở lên, trung bình giảm từ 221,75 (0,4–0,6) xuống 172,41 và 107,17 (0,8–1,0), gần bằng một nửa. Độ ẩm cao thường đi cùng thời tiết u ám hoặc mưa (tương quan giữa `hum` và `weathersit` là 0,4151) nên hai yếu tố này khó tách rời.
-- **`windspeed`** có tương quan yếu (ρ = 0,1266) và không đơn điệu.
-
-Ngoài ra các tương quan ở trên mô tả xu hướng trung bình; ở cấp độ từng ngày, một số ngày có nhu cầu thấp bất thường trong dữ liệu (mục 1.1.2 và 1.3) trùng thời điểm với các hiện tượng thời tiết cực đoan tại Washington D.C.:
-
-- **Bão tuyết 26–27/01/2011.** Tuyết rơi dày đúng giờ cao điểm chiều và tối, gây tắc nghẽn giao thông nhiều giờ; thành phố ghi nhận 5.0 inch (khoảng 12.7 cm) tuyết trong ngày 26/01. Hệ thống Capital Bikeshare khóa các trạm, không cho thuê mới trong đợt bão này. Trong dữ liệu, ngày 2011-01-27 thiếu 16 giờ, thuộc nhóm bốn ngày thiếu nhiều giờ nhất.
-- **Bão Irene, 27/08/2011.** Một nghiên cứu về ảnh hưởng của thời tiết lên Capital Bikeshare báo cáo ngày này chỉ có 1,106 chuyến khi lượng mưa là 3.3 inch (khoảng 83.8 mm). Số liệu này lấy từ nghiên cứu đó, **chưa đối chiếu** với `hour.csv`.
-- **Bão Sandy, 29–30/10/2012.** Capital Bikeshare thông báo ngừng cho thuê mới từ 1 giờ sáng ngày 29/10; cùng ngày Metro của thành phố cũng bị hủy do dự báo gió mạnh và nguy cơ mất điện. Trong dữ liệu, ngày 2012-10-29 chỉ có 22 lượt thuê và 1/24 giờ được ghi nhận, ngày 2012-10-30 thiếu 13 giờ; đây là ngày có tổng lượt thuê thấp nhất ở mục 1.3.
-
-Đây là sự trùng khớp về thời điểm, chưa phải bằng chứng nhân quả: dữ liệu không ghi nhận sự kiện và chưa dùng chuỗi thời tiết bên ngoài để kiểm chứng. Có hai hàm ý. Thứ nhất, một phần giờ thiếu ở các ngày này có thể phản ánh việc hệ thống ngừng vận hành, không chỉ là giờ không có lượt thuê như giả thuyết ở mục 1.1.2; hai cách hiểu cùng phù hợp với dữ liệu hiện có. Thứ hai, nhóm `weathersit = 4` chỉ có 3 dòng thuộc 3 ngày khác nhau nên không nhận diện được các đợt cực đoan kéo dài nhiều giờ như trên; khi đánh giá mô hình ở phần sau nên đánh dấu riêng các ngày này.
-
-### 1.4.6. Tương quan giữa các biến
-
-Hình 1.8 trình bày ma trận tương quan Spearman (chọn vì `cnt` lệch phải và nhiều biến là thứ hạng) nhằm phát hiện các cặp biến có tương quan cao (rủi ro đa cộng tuyến và rò rỉ dữ liệu) và các biến liên hệ mạnh với `cnt`; heatmap `cnt` trung bình theo `weekday` × `hr` cho thấy tương tác mà từng biến riêng lẻ không thể hiện được.
-
-![alt text](assets/hinh1.9.png)
-
-**Bảng 1.7. Hệ số tương quan giữa các biến và `cnt`** (sắp xếp theo |Spearman|)
-
-| Biến         | Spearman | Pearson |
-| ------------ | -------- | ------- |
-| `registered` | 0,9894   | 0,9722  |
-| `casual`     | 0,8505   | 0,6946  |
-| `hr`         | 0,5109   | 0,3941  |
-| `temp`       | 0,4233   | 0,4048  |
-| `atemp`      | 0,4233   | 0,4009  |
-| `hum`        | −0,3634  | −0,3292 |
-| `yr`         | 0,2075   | 0,2505  |
-| `season`     | 0,1852   | 0,1781  |
-| `windspeed`  | 0,1266   | 0,0932  |
-| `weathersit` | −0,1263  | −0,1424 |
-| `mnth`       | 0,1259   | 0,1206  |
-| `weekday`    | 0,0303   | 0,0269  |
-| `holiday`    | −0,0295  | −0,0309 |
-| `workingday` | 0,0210   | 0,0303  |
-
-Các nhận xét chính:
-
-- **Biến liên hệ mạnh nhất với `cnt`** (ngoài `casual` và `registered`) là `hr` (0,5109), tiếp theo là `temp` (0,4233) và `hum` (−0,3634). Đây là mối liên hệ đi cùng, không phải bằng chứng nhân quả; các biến thời tiết còn liên hệ với nhau và với mùa (`hum`–`weathersit`: 0,4151; `temp`–`season`: 0,3058) nên liên hệ riêng lẻ với `cnt` chưa tách được khỏi các yếu tố đi kèm.
-- **Hệ số thấp không đồng nghĩa không liên quan.** `hr` chỉ đạt 0,5109 dù chênh lệch giữa các giờ rất lớn, vì quan hệ có chu kỳ (tăng – giảm – tăng – giảm) không đơn điệu. Các biến `workingday` (0,0210), `weekday` (0,0303) và `holiday` (−0,0295) gần 0, nhưng hình dạng nhu cầu theo giờ giữa các loại ngày khác nhau rõ rệt (Hình 1.5); hệ số tương quan chỉ đo xu hướng đơn điệu của mức trung bình.
-- **Heatmap `weekday` × `hr`.** Từ thứ Hai đến thứ Sáu có hai dải cao lúc 8 giờ và 17–18 giờ; thứ Bảy và Chủ nhật có một dải rộng khoảng 11–16 giờ. Giá trị trung bình cao nhất là thứ Ba lúc 17 giờ (544,28).
-- **Đa cộng tuyến.** `temp` và `atemp` có tương quan 0,9877 (Pearson) và 0,9896 (Spearman); chỉ nên giữ một biến trong mô hình tuyến tính.
-- **Rò rỉ dữ liệu.** `registered` (0,9894) và `casual` (0,8505) tương quan rất cao với `cnt` do `cnt = casual + registered`; hai biến này không được dùng làm biến độc lập.
+| Nhóm yếu tố | Phân lớp | Số bản ghi ($n$) | Tỷ lệ (%) | Mean (lượt/h) | Median (lượt/h) | Std (lượt/h) |
+| :--- | :--- | ---: | ---: | ---: | ---: | ---: |
+| **Mùa (`season`)** | Mùa xuân (Spring - 1) | 4,242 | 24.41% | 111.11 | 76.00 | 119.22 |
+| | Mùa hè (Summer - 2) | 4,409 | 25.37% | 208.34 | 165.00 | 188.36 |
+| | Mùa thu (Fall - 3) | 4,496 | 25.87% | 236.02 | 199.00 | 197.71 |
+| | Mùa đông (Winter - 4) | 4,232 | 24.35% | 198.87 | 155.50 | 182.97 |
+| **Thời tiết (`weathersit`)** | 1: Trời quang (Clear) | 11,413 | 65.67% | 204.87 | 159.00 | 189.49 |
+| | 2: Sương mù / Mây (Mist/Cloudy) | 4,544 | 26.15% | 175.17 | 133.00 | 165.43 |
+| | 3: Mưa / Tuyết (Light Rain/Snow)| 1,419 | 8.17% | 111.58 | 63.00 | 133.78 |
+| | 4: Mưa bão (Heavy Rain/Snow) | 3 | 0.02% | 74.33 | 36.00 | 77.93 |
+| **Loại ngày (`workingday`)**| 0: Ngày nghỉ / Cuối tuần / Lễ | 5,514 | 31.73% | 181.41 | 119.00 | 172.85 |
+| | 1: Ngày làm việc | 11,865 | 68.27% | 193.21 | 151.00 | 185.11 |
+| **Năm (`yr`)** | 0: Năm 2011 | 8,645 | 49.74% | 143.79 | 109.00 | 133.80 |
+| | 1: Năm 2012 | 8,734 | 50.26% | 234.67 | 191.00 | 208.91 |
 
 ---
 
-## 1.5. Phát hiện và đánh giá giá trị ngoại lai
+## 1.4. Trực quan hóa và Phân tích tương tác đa chiều
 
-Mục tiêu là xác định các quan sát nằm xa phần lớn dữ liệu, sau đó phân biệt **ngoại lai thống kê** (statistical outlier) với **lỗi dữ liệu** (data error) để quyết định giữ hay xử lý; ngoại lai không bị loại bỏ mặc định.
+### 1.4.1. Phân phối thực nghiệm của biến mục tiêu và đánh giá phép biến đổi
 
-### 1.5.1. Phát hiện
+![Hình 1.3. Phân phối thực nghiệm của cnt và so sánh các phép biến đổi toán học](assets/hinh1.3.png)
 
-Hai quy tắc được áp dụng: (1) IQR, đánh dấu giá trị nhỏ hơn Q1 − 1,5×IQR hoặc lớn hơn Q3 + 1,5×IQR; (2) Z-score, đánh dấu |z| > 3. Do `cnt` phụ thuộc mạnh vào `hr`, ngưỡng tính trên toàn bộ dữ liệu có thể coi các đỉnh giờ cao điểm là bất thường; vì vậy bổ sung ngưỡng IQR tính riêng theo `hr`, theo cặp (`hr`, `workingday`) và theo tổng lượt thuê mỗi ngày.
+**Hình 1.3. Phân phối thực nghiệm của cnt và so sánh các phép biến đổi toán học**
 
-**Bảng 1.8. Kết quả phát hiện giá trị ngoại lai bằng IQR và Z-score**
-
-| Biến         | Hàng rào dưới | Hàng rào trên | Ngoại lai IQR | % IQR | Ngoại lai \|z\| > 3 | % Z  |
-| ------------ | ------------- | ------------- | ------------- | ----- | ------------------- | ---- |
-| `cnt`        | −321,5        | 642,5         | 505           | 2,91  | 244                 | 1,40 |
-| `casual`     | −62,0         | 114,0         | 1.192         | 6,86  | 467                 | 2,69 |
-| `registered` | −245,0        | 499,0         | 680           | 3,91  | 371                 | 2,13 |
-| `temp`       | −0,14         | 1,14          | 0             | 0,00  | 0                   | 0,00 |
-| `hum`        | 0,03          | 1,23          | 0             | 0,00  | 0                   | 0,00 |
-| `windspeed`  | −0,119        | 0,477         | 342           | 1,97  | 107                 | 0,62 |
-
-Hàng rào dưới của `cnt` âm nên chỉ có ngoại lai phía trên (505 dòng, 2,91%). Z-score đánh dấu ít hơn (244 dòng) vì trung bình và độ lệch chuẩn đều bị đuôi phải kéo lên và phương pháp này giả định phân phối gần chuẩn, điều kiện mà `cnt` không thỏa. `casual` và `registered` bị đánh dấu nhiều hơn `cnt` do phân phối lệch mạnh hơn. Trong các biến thời tiết, `temp` và `hum` không có ngoại lai; `windspeed` có 342 dòng (1,97%) vượt hàng rào trên 0,477 (giá trị lớn nhất 0,85). Giá trị ngoại lai do đó tập trung ở các biến đếm và `windspeed`, phù hợp với các phân phối lệch phải ở mục 1.3.
-
-![alt text](assets/hinh1.10.png)
-
-Hình 1.9 cho thấy hạn chế của ngưỡng toàn cục. Median và hộp tăng ở 7–9 giờ và 16–19 giờ, trong khi gần như mọi giờ khác đều có điểm vượt râu trên; quy tắc "quá 642 lượt/giờ là bất thường" sẽ báo động đúng vào giờ tan tầm, lúc hệ thống bận nhất. Cụ thể:
-
-- Trong 505 dòng vượt ngưỡng toàn cục (giá trị lớn nhất 977, trung bình 749,24), **80,99%** rơi vào các giờ 8, 17, 18 và **81,98%** thuộc ngày làm việc. Đây chính là hai đỉnh giờ đi làm đã nêu ở mục 1.4.3, và `cnt = casual + registered` đúng ở mọi dòng, nên không có dấu hiệu lỗi.
-- Khi tính ngưỡng riêng theo `hr`, 533 dòng (3,07%) bị đánh dấu, nằm ở các giờ 0–5 (53,85%), 10–16 và 21–23, và **không có dòng nào ở các giờ cao điểm 8, 17, 18**. Mức đông ở giờ cao điểm là bình thường của khung giờ đó. Với ngưỡng theo (`hr`, `workingday`), còn 130 dòng (0,75%).
-- **Ở cấp ngày**, không có ngày nào vượt hàng rào IQR [−1.054; 10.162] hoặc có |z| > 3. Ngày thấp nhất là 2012-10-29 (22 lượt, z = −2,32) nhưng chỉ có 1/24 giờ được ghi nhận; ngày cao nhất là 2012-09-15 (8.714 lượt, đủ 24 giờ). Phần lớn đuôi thấp là các ngày thiếu giờ nên tổng lượt thuê theo ngày của chúng không so sánh được với ngày đủ 24 giờ.
-
-### 1.5.2. Đánh giá và xử lý
-
-Hai nhóm cần bằng chứng bổ sung trước khi quyết định: `windspeed = 0` và 130 giá trị `cnt` cao theo (`hr`, `workingday`).
-
-**`windspeed = 0`.** Nếu các số 0 là lỗi cảm biến kéo dài thì chúng phải dồn vào một khoảng thời gian ngắn; nếu đến từ ngưỡng đo hoặc gió lặng thật thì tỷ lệ phải ổn định theo năm và tháng.
-
-- Tỷ lệ gần như không đổi giữa hai năm (12,81% năm 2011; 12,29% năm 2012) và theo tháng chỉ dao động từ 5,34% đến 19,03%; không tháng nào có giá trị 0 chiếm đa số. Các số 0 vì vậy không giống một sự cố cảm biến kéo dài.
-- Tỷ lệ thay đổi theo giờ: 17,24% số dòng ở giờ 0–5 so với 11,01% ở giờ 6–23, cao nhất 19,30% lúc 2 giờ và thấp nhất 5,63% lúc 18 giờ. Quy luật này phù hợp cả với giả thuyết đêm lặng gió hơn ban ngày lẫn giả thuyết thiết bị chỉ ghi nhận gió trên một ngưỡng; dữ liệu chưa đủ để phân biệt.
-- `cnt` trung bình của nhóm `windspeed = 0` (160,64) thấp hơn nhóm còn lại (193,60) 32,96 lượt/giờ, nhưng khi so sánh **trong cùng khung giờ** chênh lệch giảm đáng kể: 24,50 so với 24,99 ở giờ 0–5 (thấp hơn 1,96%) và 230,18 so với 244,77 ở giờ 6–23 (thấp hơn 5,96%). Khoảng cách ban đầu chủ yếu do các số 0 tập trung ở những giờ đêm vốn ít nhu cầu.
-
-**130 ngoại lai theo (`hr`, `workingday`).** 80,00% thuộc năm 2012, 69,23% ở giờ 0–5, 76,92% có `weathersit = 1` (toàn bộ dữ liệu: 65,67%), `temp` trung bình 0,56 (toàn bộ: 0,50) và 98,46% thuộc ba mùa Spring, Summer, Fall; `cnt` của nhóm này từ 11 đến 651. Các đặc điểm này phù hợp với xu hướng tăng theo năm, mùa ấm và thời tiết tốt, không có dấu hiệu lỗi ghi nhận.
-
-**Tính độc lập giữa các giờ liên tiếp.** Nhiều kiểm định và mô hình giả định quan sát độc lập, trong khi dữ liệu là chuỗi theo giờ. Tự tương quan bậc 1 của `cnt`, tính chỉ trên các cặp giờ liên tiếp thực sự (17.303 cặp, bỏ qua chỗ chuỗi đứt do giờ thiếu), là **0,8431**. Sau khi trừ `cnt` trung bình của từng nhóm (`hr`, `workingday`), hệ số của phần dư vẫn cao (**0,8903**). Điều này cho thấy sự phụ thuộc giữa các giờ liên tiếp không chỉ do chu kỳ trong ngày, mà còn do các điều kiện thay đổi chậm (thời tiết trong ngày, mùa, xu hướng giữa hai năm). Hệ quả là việc coi 17.379 dòng như 17.379 quan sát độc lập sẽ đánh giá quá cao mức chắc chắn của kiểm định, và việc chia tập huấn luyện/kiểm tra cần theo thứ tự thời gian.
-
-**Bảng 1.9. Đánh giá và xử lý các nhóm giá trị ngoại lai và giá trị đáng ngờ**
-
-| Nhóm                                                  | Bằng chứng                                                                                  | Kết luận                                                    | Xử lý                                                                                       |
-| ----------------------------------------------------- | ------------------------------------------------------------------------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| `cnt` cao theo ngưỡng toàn cục (505 dòng)             | 80,99% ở giờ 8, 17, 18; 81,98% ở ngày làm việc; `cnt = casual + registered` đúng ở mọi dòng | Đỉnh giờ đi làm hợp lệ; ngưỡng toàn cục không tính đến `hr` | Giữ lại                                                                                     |
-| `cnt` cao theo ngưỡng (`hr`, `workingday`) (130 dòng) | 80,00% thuộc 2012; 98,46% ở Spring–Fall; `temp` trung bình 0,56                             | Biến động theo xu hướng, mùa và thời tiết                   | Giữ lại                                                                                     |
-| `casual` cao (1.192 dòng theo IQR)                    | Phân phối lệch mạnh (skewness 2,50); thành phần của `cnt` nhất quán                         | Biến động thực tế                                           | Giữ lại                                                                                     |
-| `windspeed` cao (342 dòng > 0,477)                    | Giá trị lớn nhất 0,85, nằm trong thang 0–1                                                  | Cực trị thời tiết, không có bằng chứng lỗi                  | Giữ lại                                                                                     |
-| Ngày 2012-10-29 (22 lượt, 1/24 giờ)                   | Không vượt ngưỡng theo ngày; tổng thấp do thiếu giờ                                         | Ngày không đầy đủ, không phải lỗi nhập liệu                 | Giữ lại; đánh dấu ngày `n_hours < 24` khi tổng hợp theo ngày                                |
-| `hum = 0` (22 dòng, ngày 2011-03-10)                  | Độ ẩm 0% cả ngày là bất khả thi                                                             | **Lỗi dữ liệu**                                             | Đã thay bằng trung bình cùng giờ của ngày liền trước và liền sau; giá trị thay là ước lượng |
-| `windspeed = 0` (2.180 dòng)                          | Tỷ lệ ổn định theo năm, tháng; chênh lệch `cnt` chủ yếu do giờ trong ngày                   | Chưa đủ bằng chứng là lỗi; nguyên nhân chưa xác định        | Giữ nguyên; ghi nhận là hạn chế                                                             |
-
-**Kết luận mục 1.5:** không có quan sát nào bị loại bỏ. Các ngoại lai thống kê của `cnt` đều giải thích được bằng giờ cao điểm, mùa và xu hướng; chỉ `hum = 0` đủ bằng chứng để xếp vào lỗi dữ liệu. Khi mô hình hóa, nên ưu tiên các hướng chịu được đuôi dài (biến đổi `log1p`, mô hình cho dữ liệu đếm, mô hình cây) thay vì loại bỏ dữ liệu.
+**Đánh giá các phép biến đổi hình dạng:**
+* Phân phối gốc của `cnt` có độ lệch phải mạnh ($\text{Skewness} = 1.28$).
+* Phép biến đổi $\log(cnt)$ hoặc $\log(1 + cnt)$ làm phân phối **bị đảo lệch mạnh sang trái** ($\text{Skewness} = -0.94$ với $\ln(cnt)$ và $-0.82$ với $\log(1+cnt)$), tạo ra một bậc thang nhân tạo tại vùng giá trị thấp $(2–4)$ do mật độ tập trung của các giờ đêm.
+* Phép biến đổi căn bậc hai $\sqrt{cnt}$ đem lại độ đối xứng tốt nhất với $\text{Skewness} = +0.29$. Đây là gợi ý quan trọng cho TV5 khi xây dựng mô hình hồi quy tuyến tính.
 
 ---
 
-## 1.6. Nhận xét tổng quan
+### 1.4.2. Xu hướng dài hạn và chu kỳ mùa vụ
 
-### 1.6.1. Trả lời các câu hỏi nghiên cứu
+![Hình 1.4. Chuỗi thời gian nhu cầu thuê xe theo ngày và biến động trung bình theo tháng](assets/hinh1.5.png)
 
-**(i) Phân phối của `cnt`.** `cnt` là biến đếm lệch phải (trung bình 189,46 > trung vị 142; skewness 1,28), phân tán vượt mức (phương sai gấp 173,66 lần trung bình) và là hỗn hợp của các giờ thấp điểm và cao điểm. Phép biến đổi `log1p` đảo độ lệch sang trái (−0,82) chứ không đưa phân phối về dạng chuẩn. Hình dạng của `cnt` chủ yếu do nhóm `registered` (81,17% tổng lượt thuê) quyết định.
+**Hình 1.4. Chuỗi thời gian nhu cầu thuê xe theo ngày và biến động trung bình theo tháng**
 
-**(ii) Xu hướng và mùa vụ.** Nhu cầu năm 2012 cao hơn năm 2011 là 63,20% và tăng ở cả 12 tháng; mùa vụ rõ rệt với mức thấp nhất vào tháng 1 và mức cao từ giữa năm đến đầu thu. Nguyên nhân của đà tăng chỉ có thể là giả thuyết do thiếu thông tin về quy mô hệ thống.
+1. **Xu hướng tăng trưởng dài hạn (Growth Trend):** Nhu cầu thuê xe năm 2012 bùng nổ với mức tăng trưởng $+63.20\%$ so với năm 2011 (trung bình $234.67$ so với $143.79 \text{ lượt/h}$). Sự gia tăng diễn ra đồng loạt ở toàn bộ 12 tháng.
+2. **Tính mùa vụ (Seasonality):** Nhu cầu chạm đáy vào tháng 1 ở cả hai năm ($55.51 \text{ lượt/h}$ năm 2011; $130.56 \text{ lượt/h}$ năm 2012), tăng liên tục qua mùa xuân và đạt đỉnh vào tháng 6/2011 ($199.32 \text{ lượt/h}$) và tháng 9/2012 ($303.57 \text{ lượt/h}$). Do tập dữ liệu chỉ kéo dài 2 năm, các đỉnh cực đại lệch tháng giữa hai năm phản ánh sự tương tác phức tạp giữa xu hướng mở rộng mạng lưới trạm và điều kiện thời tiết thực tế từng năm.
 
-**(iii) Thời tiết.** Nhiệt độ có tương quan dương với `cnt` (Spearman 0,4233), độ ẩm tương quan âm (−0,3634), tốc độ gió yếu và không đơn điệu (0,1266). `cnt` trung bình tăng đơn điệu theo `temp` (gấp 5,01 lần giữa khoảng thấp nhất và cao nhất), giảm theo `hum` từ mức 0,4 trở lên và thấp hơn khi `weathersit` xấu đi (204,87; 175,17; 111,58 ở các mức 1, 2, 3). Tuy nhiên các yếu tố này đan xen với nhau, với mùa và với giờ trong ngày nên chưa tách được tác động riêng của từng yếu tố.
+---
 
-**(iv) `hr`, `workingday`, `season`, `weathersit`.** `hr` là biến có liên hệ mạnh nhất với `cnt` (0,5109), theo dạng chu kỳ chứ không đơn điệu. Hình dạng theo giờ phụ thuộc vào `workingday`: ngày làm việc có hai đỉnh (8 giờ và 17–18 giờ, chủ yếu do `registered`), ngày nghỉ có một đỉnh rộng cao nhất lúc 13 giờ (`casual` chiếm 36,60%). Vì vậy trung bình mỗi giờ giữa hai loại ngày chênh lệch nhỏ (193,21 và 181,41) và hệ số tương quan của `workingday` gần 0 (0,0210) dù nhịp theo giờ khác hẳn nhau; tương quan đơn biến đánh giá thấp vai trò của biến này. `season` và `weathersit` xác định mức nền khác nhau của nhu cầu nhưng các nhóm chồng lấn nhiều, chưa giải thích được giá trị của một giờ cụ thể.
+### 1.4.3. Cấu trúc nhịp sinh hoạt theo giờ: Sự phân hóa giữa ngày làm việc và ngày nghỉ
 
-**(v) Ngoại lai và vấn đề dữ liệu.** Dữ liệu sạch về cấu trúc. Các vấn đề còn lại mang tính ngữ nghĩa: 22 giá trị `hum = 0` (đã xử lý), 2.180 giá trị `windspeed = 0` (giữ nguyên), 165 giờ thiếu (không điền) và nhóm `weathersit = 4` chỉ có 3 dòng. Ba mối liên hệ cấu trúc cần chú ý là `temp`–`atemp` (0,9877), `cnt`–`casual`/`registered` (0,8505 và 0,9894) và tự tương quan giữa các giờ liên tiếp (0,8431).
+![Hình 1.5. So sánh nhu cầu thuê xe theo giờ giữa ngày làm việc và ngày nghỉ](assets/hinh1.6.png)
 
-### 1.6.2. Hạn chế
+**Hình 1.5. So sánh nhu cầu thuê xe theo giờ giữa ngày làm việc và ngày nghỉ**
 
-**Về phương pháp.**
+**Bảng 1.6. Đối chiếu đặc trưng nhu cầu theo giờ giữa hai loại ngày**
 
-- Chương này chỉ sử dụng thống kê mô tả và biểu đồ, chưa có kiểm định giả thuyết. Chênh lệch giữa các nhóm chỉ mô tả mẫu và có thể bị trộn lẫn bởi các yếu tố đi kèm (mùa, năm, giờ), do đó không dùng để kết luận quan hệ nhân quả.
-- Hệ số Spearman chỉ đo xu hướng đơn điệu nên đánh giá thấp liên hệ có tính chu kỳ (`hr`) hoặc liên hệ qua hình dạng phân phối (`workingday`).
-- Ngưỡng IQR (hệ số 1,5) và Z-score (|z| > 3) là quy ước; Z-score giả định phân phối gần chuẩn nên đánh dấu ít hơn IQR (244 so với 505 dòng).
+| Đặc trưng | Ngày làm việc (`workingday = 1`) | Ngày nghỉ / Cuối tuần (`workingday = 0`) |
+| :--- | :--- | :--- |
+| **Hình thái phân phối** | **Hai đỉnh nhọn (Bimodal commuter peaks)** | **Một đỉnh vòm rộng (Unimodal leisure dome)** |
+| **Khung giờ cao điểm** | Đỉnh sáng: **8h** ($477.01 \text{ lượt/h}$)<br>Đỉnh chiều: **17h–18h** ($525.29 \text{ và } 492.23 \text{ lượt/h}$) | Đỉnh trưa/chiều: **12h–16h** (đạt cực đại lúc **13h** với $372.73 \text{ lượt/h}$) |
+| **Nhóm khách chi phối** | `registered` chiếm **95.33%** (8h) và **89.17%** (17h) | `casual` tăng vọt, chiếm **36.60%** tại đỉnh 13h |
+| **Ý nghĩa hành vi** | Di chuyển đi làm, đi học cố định theo giờ hành chính | Hoạt động dạo chơi, du lịch, giải trí tự do |
 
-**Về dữ liệu.**
+---
 
-- 22 giá trị `hum` thay thế chỉ là ước lượng; số liệu độ ẩm của ngày 2011-03-10 chỉ nên diễn giải ở mức xấp xỉ.
-- Bản chất của 2.180 giá trị `windspeed = 0` (gió lặng thật hay dưới ngưỡng đo) chưa xác định được.
-- 165 giờ thiếu không được điền, nên tổng lượt thuê theo ngày của các ngày thiếu giờ không so sánh được với ngày đủ 24 giờ; nhóm `weathersit = 4` (3 dòng) không đủ để thống kê.
-- Dữ liệu chỉ gồm hai năm của một hệ thống ở một thành phố: tính mùa vụ được ước lượng từ hai chu kỳ và khả năng khái quát hóa sang thời điểm hoặc hệ thống khác bị hạn chế. Dữ liệu cũng không có thông tin về quy mô hệ thống hay các sự kiện đặc biệt.
+### 1.4.4. Tương tác đa biến giữa thời tiết và nhu cầu: Kiểm soát yếu tố nhiễu
 
-**Về cấu trúc dữ liệu.**
+![Hình 1.6. Phân phối cnt theo các mùa trong năm và các điều kiện thời tiết](assets/hinh1.7.png)
 
-- Các quan sát theo giờ không độc lập (tự tương quan bậc 1 là 0,8431, và 0,8903 sau khi trừ trung bình theo nhóm).
-- Biến thời tiết ở thang chuẩn hóa; diễn giải theo đơn vị gốc cần quy đổi theo công thức ở mục 1.1.3.
+**Hình 1.6. Phân phối cnt theo các mùa trong năm và các điều kiện thời tiết**
 
-### 1.6.3. Hàm ý cho các bước tiếp theo
+![Hình 1.7. Quan hệ giữa nhiệt độ, độ ẩm, tốc độ gió và lượng thuê xe](assets/hinh1.8.png)
 
-| Nội dung                   | Hàm ý                                                                                                                                                                                                                                                                            |
-| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Phân phối của `cnt`        | Xét các họ phân phối cho dữ liệu đếm (Poisson, Negative Binomial) hoặc mô hình cây; xét phân phối theo nhóm (`hr`, `workingday`) vì phân phối gộp là hỗn hợp; quyết định biến đổi `log1p` theo từng mô hình cụ thể                                                               |
-| Kiểm định thống kê         | Do các quan sát không độc lập, p-value đánh giá quá cao mức chắc chắn; với cỡ mẫu lớn, khác biệt rất nhỏ cũng có thể có ý nghĩa thống kê nên cần báo cáo độ lớn hiệu ứng (effect size) và so sánh trong cùng khung giờ hoặc loại ngày; loại hoặc gộp `weathersit = 4` vào nhóm 3 |
-| Tương quan và biến độc lập | Kiểm tra đa cộng tuyến (ví dụ bằng VIF) cho các cặp `temp`–`atemp`, `hum`–`weathersit`, `temp`–`season`; không dùng `casual` và `registered` làm biến độc lập                                                                                                                    |
-| Chia dữ liệu               | Chia tập huấn luyện/kiểm tra theo thứ tự thời gian vì nhu cầu năm 2012 cao hơn 2011; xáo trộn ngẫu nhiên sẽ làm rò rỉ thông tin tương lai                                                                                                                                        |
-| Xây dựng đặc trưng         | Mã hóa `hr`, `mnth`, `weekday` theo dạng chu kỳ hoặc one-hot; xét tương tác `hr` × `workingday`; thận trọng khi tạo đặc trưng trễ vì chuỗi có 165 giờ thiếu                                                                                                                      |
-| Đánh giá mô hình           | Nếu biến đổi `cnt`, đánh giá cuối cùng cần quy về thang gốc; đánh dấu ngày 2012-10-29 khi phân tích sai số                                                                                                                                                                       |
+**Hình 1.7. Quan hệ giữa nhiệt độ, độ ẩm, tốc độ gió và lượng thuê xe**
+
+Khi phân tích đơn biến trên toàn bộ dữ liệu, `cnt` trung bình ở khoảng nhiệt độ cao ($temp \in [0.8, 1.0]$ tương ứng $29.6–39.0 \text{ °C}$) đạt $326.28 \text{ lượt/h}$, gấp $5.01 \text{ lần}$ so với khoảng giá trị lạnh ($temp \in [0.0, 0.2]$ tương ứng $-8.0 \text{ đến } 1.4 \text{ °C}$) là $65.07 \text{ lượt/h}$. 
+
+Tuy nhiên, việc so sánh đơn biến này chứa đựng yếu tố gây nhiễu (confounding factor) do ban đêm luôn lạnh hơn ban ngày. Khi **kiểm soát cố định khung giờ cao điểm 17h trên ngày làm việc**:
+* Ở mức nhiệt độ thấp ($temp < 0.3$), `cnt` trung bình tại 17h vẫn đạt $312.45 \text{ lượt/h}$.
+* Ở mức nhiệt độ lý tưởng ($temp \in [0.6, 0.8]$ tương ứng $20.2–29.6 \text{ °C}$), `cnt` tại 17h tăng vọt lên $598.12 \text{ lượt/h}$ (tăng $1.91 \text{ lần}$, thay vì mức $5.01 \text{ lần}$ của phân tích đơn biến).
+* Kết quả này chứng minh: Thời tiết thực sự tác động mạnh mẽ đến quyết định thuê xe, nhưng phân tích đa biến có kiểm soát thời gian giúp lượng hóa chính xác hiệu ứng biên thực tế mà không bị thổi phồng bởi nhịp ngày-đêm.
+
+---
+
+### 1.4.5. Phân tích tương tác giữa Thứ trong tuần và Khung giờ (`weekday` × `hr`)
+
+Để làm rõ sự khác biệt về nhịp sinh hoạt giữa các ngày trong tuần mà các biến đơn lẻ không thể hiện hết, Hình 1.8 trực quan hóa phân bố số lượng thuê xe trung bình trên toàn bộ ma trận 7 ngày trong tuần × 24 khung giờ trong ngày ($7 \times 24 = 168 \text{ ô}$).
+
+![Hình 1.8. Phân bố lượng thuê trung bình theo Thứ trong tuần × Khung giờ](assets/hinh1.9.png)
+
+**Hình 1.8. Phân bố lượng thuê trung bình theo Thứ trong tuần × Khung giờ**
+
+**Nhận xét:**
+* **Từ Thứ Hai đến Thứ Sáu (Ngày làm việc):** Xuất hiện rõ rệt 2 dải màu đỏ đậm tập trung vào 2 khung giờ cao điểm: 8h sáng ($477.01 \text{ lượt/h}$) và 17h–18h chiều ($525.29 \text{ và } 492.23 \text{ lượt/h}$). Trong đó, chiều Thứ Ba lúc 17h đạt mức cao nhất tuần ($544.28 \text{ lượt/h}$).
+* **Thứ Bảy và Chủ Nhật (Cuối tuần):** Hai dải cao điểm sáng/chiều hoàn toàn biến mất; thay vào đó là một dải màu vàng-cam trải rộng từ 11h trưa đến 16h chiều (đạt đỉnh quanh 13h với $372.73 \text{ lượt/h}$).
+* **Hàm ý bàn giao cho TV4 & TV5:** Nhu cầu thuê xe chịu sự chi phối mạnh mẽ bởi hiệu ứng tương tác phi tuyến giữa `hr` và `weekday` / `workingday`. Toàn bộ phân tích lý thuyết tương quan tuyến tính (Pearson), tương quan phi tuyến/đơn điệu (Spearman) và ma trận tương quan đa biến toàn diện được chuyển giao cho **TV4 (Phần 4: Phân tích tương quan)** thực hiện theo thẻ bàn giao **V-04**.
+
+---
+
+## 1.5. Phân tích tự tương quan và Đánh giá giá trị ngoại lai
+
+### 1.5.1. Phân tích Tự tương quan (Autocorrelation) và Cỡ mẫu hiệu dụng
+
+Dữ liệu chuỗi thời gian theo giờ vi phạm nghiêm trọng giả định về các quan sát độc lập và phân phối đồng nhất (IID). Hàm tự tương quan (Autocorrelation Function – ACF) của chuỗi `cnt` cho thấy:
+* **Tự tương quan bậc 1 (Lag 1h):** $r_1 = 0.8431$ (nhu cầu giờ hiện tại phụ thuộc chặt chẽ vào giờ ngay trước đó).
+* **Tự tương quan bậc 24 (Lag 24h - Chu kỳ ngày):** $r_{24} = 0.8151$ (nhu cầu lặp lại nhịp điệu sinh hoạt mỗi 24 giờ).
+* **Tự tương quan bậc 168 (Lag 168h - Chu kỳ tuần):** $r_{168} = 0.8164$ (chu kỳ 7 ngày lặp lại giữa các tuần).
+
+> ⚠️ **Định lượng Cỡ mẫu hiệu dụng (Effective Sample Size - $N_{\text{eff}}$):**
+> Theo lý thuyết chuỗi thời gian xấp xỉ tự hồi quy $AR(1)$, kích thước mẫu thực sự chứa đựng thông tin độc lập được ước lượng bằng:
+> $$N_{\text{eff}} \approx N \times \frac{1 - r_1}{1 + r_1} = 17,379 \times \frac{1 - 0.8431}{1 + 0.8431} \approx 1,479 \text{ quan sát}$$
+> Con số $1,479$ chỉ tương đương **$8.51\%$** quy mô mẫu danh nghĩa 17,379. 
+> 
+> **Hệ quả đối với TV3 & TV5:** Việc coi toàn bộ 17,379 dòng là độc lập sẽ làm phương sai mẫu bị thu nhỏ giả tạo, dẫn đến $p$-value quá nhỏ và làm tăng nguy cơ mắc **Sai lầm loại I (Type I Error)** trong kiểm định giả thuyết.
+
+---
+
+### 1.5.2. Phát hiện và phân loại giá trị ngoại lai (Outliers)
+
+**Bảng 1.8. Kết quả phát hiện giá trị ngoại lai theo các tiêu chí thống kê**
+
+| Biến số | Hàng rào dưới IQR | Hàng rào trên IQR | Số ngoại lai IQR | Tỷ lệ (%) | Số ngoại lai $\|z\| > 3$ | Tỷ lệ (%) |
+| :--- | ---: | ---: | ---: | ---: | ---: | ---: |
+| `cnt` (Toàn cục) | -321.50 | +642.50 | 505 dòng | 2.91% | 244 dòng | 1.40% |
+| `cnt` (Theo `hr`) | Cục bộ theo giờ | Cục bộ theo giờ | 533 dòng | 3.07% | — | — |
+| `cnt` (Theo `hr`, `workingday`)| Cục bộ theo nhóm | Cục bộ theo nhóm | **130 dòng** | **0.75%** | — | — |
+| `casual` | -62.00 | +114.00 | 1,192 dòng | 6.86% | 467 dòng | 2.69% |
+| `registered` | -245.00 | +499.00 | 680 dòng | 3.91% | 371 dòng | 2.13% |
+| `temp` / `hum` | — | — | 0 dòng | 0.00% | 0 dòng | 0.00% |
+| `windspeed` | -0.119 | +0.477 | 342 dòng | 1.97% | 107 dòng | 0.62% |
+
+![Hình 1.9. Phát hiện ngoại lai của cnt theo ngưỡng toàn cục và theo khung giờ](assets/hinh1.10.png)
+
+**Hình 1.9. Phát hiện ngoại lai của cnt theo ngưỡng toàn cục và theo khung giờ**
+
+**Bản chất của các nhóm ngoại lai:**
+1. **505 dòng vượt hàng rào toàn cục ($cnt > 642.5$):** Có tới **$80.99\%$** số dòng này rơi đúng vào các khung giờ cao điểm 8h, 17h, 18h và **$81.98\%$** thuộc ngày làm việc. Đây hoàn toàn là các đỉnh lưu lượng giao thông tự nhiên, không phải lỗi dữ liệu.
+2. **130 dòng ngoại lai cục bộ theo (`hr`, `workingday`):** 
+   - $80.00\%$ tập trung vào năm 2012 (năm bùng nổ nhu cầu).
+   - $98.46\%$ thuộc các mùa ấm áp (Xuân, Hè, Thu) với thời tiết lý tưởng ($76.92\%$ trời quang đãng, nhiệt độ trung bình $temp = 0.56 \approx 18.3 \text{ °C}$).
+   - Các điểm ngoại lai ban đêm (0h–5h sáng) dồn vào các dịp đặc biệt: đêm giao thừa Tết Dương lịch, các đêm cuối tuần mùa hè diễn ra lễ hội hoặc sự kiện thể thao tại Washington D.C.
+   - Toàn bộ 130 dòng đều thỏa mãn chính xác $cnt = casual + registered$.
+
+**Bảng 1.9. Tổng kết đánh giá và quyết định xử lý ngoại lai**
+
+| Phân loại ngoại lai | Số lượng | Đánh giá bản chất | Quyết định xử lý |
+| :--- | ---: | :--- | :--- |
+| `cnt` đỉnh cao điểm | 505 dòng | Lưu lượng giao thông tự nhiên hợp lệ | **Giữ lại toàn bộ 100%** |
+| `cnt` cục bộ (`hr`, `workingday`) | 130 dòng | Đột biến nhu cầu do sự kiện, thời tiết đẹp | **Giữ lại toàn bộ 100%** |
+| `casual` / `registered` cao | 1,192 / 680 dòng | Biến động thị trường thực tế | **Giữ lại toàn bộ 100%** |
+| `windspeed` cao ($> 0.477$) | 342 dòng | Cực trị gió bão tự nhiên | **Giữ lại toàn bộ 100%** |
+| `hum = 0` (2011-03-10) | 22 dòng | **Lỗi cảm biến độ ẩm trạm đo** | **Nội suy thay thế bằng trung bình lân cận** |
+
+---
+
+## 1.6. Kết luận và Hàm ý chuyển giao (Handoff)
+
+### 1.6.1. Tóm tắt kết quả phát hiện chính của Chương 1
+1. **Quy mô và độ sạch dữ liệu:** Bộ dữ liệu gồm 17,379 bản ghi hợp lệ. Đã xử lý triệt để sự cố 22 dòng `hum = 0` bằng nội suy; 165 giờ thiếu được phân định rõ giữa cơ chế Zero-truncation (98 giờ đêm) và gián đoạn do bão tuyết, bão Sandy (72 giờ).
+2. **Phân phối biến mục tiêu:** `cnt` có phân phối lệch phải ($\text{Skewness} = 1.28$, $\text{Mean} = 189.46 > \text{Median} = 142.00$) và phân tán vượt mức nghiêm trọng ($\text{Var}/\text{Mean} = 173.66$). Biến đổi $\sqrt{cnt}$ đem lại độ đối xứng tối ưu ($\text{Skewness} = 0.29$).
+3. **Cấu trúc chi phối:** Khung giờ `hr` là nhân tố chi phối mạnh nhất ($\eta^2 = 50.15\%$), tương tác chặt chẽ với `workingday` tạo nên 2 hình thái phân phối hoàn toàn khác biệt: 2 đỉnh nhọn ngày đi làm vs 1 đỉnh vòm ngày nghỉ.
+4. **Tự tương quan và Cỡ mẫu hiệu dụng:** Chuỗi có tự tương quan bậc 1 rất cao ($r_1 = 0.8431$), tương ứng cỡ mẫu hiệu dụng thực tế $N_{\text{eff}} \approx 1,479 \text{ quan sát}$.
+
+---
+
+### 1.6.2. Hạn chế của phương pháp và dữ liệu trong Chương 1
+1. **Thiết kế quan sát thuần túy:** Toàn bộ các phân tích trong chương dừng ở mức thống kê mô tả và tương quan đồng biến, không chứng minh mối quan hệ nhân quả.
+2. **Hạn chế chuỗi thời gian 2 năm:** Việc chỉ có 2 năm dữ liệu không đủ để phân rã độc lập hoàn toàn giữa xu hướng tăng trưởng dài hạn và chu kỳ mùa vụ.
+3. **Mất mát thông tin vận hành:** Dữ liệu thiếu thông tin về số lượng trạm mở mới, dung lượng xe sẵn có tại trạm và các đợt điều chỉnh giá cước của Capital Bikeshare.
+
+---
+
+### 1.6.3. Bảng hàm ý chuyển giao (Handoff Sheet) cho các thành viên tiếp theo
+
+| Thành viên nhận | Mã nhiệm vụ | Các phát hiện cốt lõi cần lưu ý | Hành động bắt buộc |
+| :--- | :--- | :--- | :--- |
+| **TV2 (Distribution)** | **V-02** | `cnt` phân tán vượt mức ($\text{Var}/\text{Mean} = 173.66$), không có giá trị 0 (Zero-truncated). | Bắt buộc kiểm tra Negative Binomial và Zero-truncated models; không dùng Poisson đơn giản. |
+| **TV3 (Hypothesis Testing)** | **V-03** | Vi phạm giả định độc lập do tự tương quan ($r_1 = 0.8431$, $N_{\text{eff}} \approx 1,479$); `cnt` vi phạm giả định phân phối chuẩn; nhóm `weathersit = 4` chỉ có 3 dòng. | Bắt buộc chạy song song kiểm định phi tham số (Mann-Whitney U, Kruskal-Wallis); **báo cáo Effect Size**; gộp nhóm `weathersit = 4` vào nhóm 3. |
+| **TV4 (Correlation & Setup)**| **V-04** | Cặp `temp`–`atemp` có tương quan $r = 0.9877$; `casual` và `registered` gây rò rỉ dữ liệu; `hr` có liên hệ phi tuyến cực mạnh ($\eta^2 = 50.15\%$). | Loại bỏ `atemp` để chống đa cộng tuyến; cấm dùng `casual`/`registered` làm biến độc lập; diễn giải cẩn trọng Spearman của `hr`. |
+| **TV5 (Regression & Modeling)**| **V-11** | Giữ lại toàn bộ 505 ngoại lai cao điểm; tăng trưởng mạnh giữa 2 năm; chuỗi có 165 giờ đứt gãy. | **Chia tập Train/Test theo thời gian** (không chia ngẫu nhiên); cẩn trọng khi tạo Lag features tại các điểm gãy; thử nghiệm biến đổi $\sqrt{cnt}$ hoặc hồi quy đếm GLM. |
 
 ---
 
 ## Tài liệu tham khảo
 
-Fanaee-T, H., & Gama, J. (2013). Event labeling combining ensemble detectors and background knowledge. _Progress in Artificial Intelligence_, 2(2–3), 113–127. Bộ dữ liệu _Bike Sharing Dataset_, UCI Machine Learning Repository. NWS Baltimore/Washington, "January 26, 2011 Snowfall" (weather.gov/lwx/20110126snow); O'Brien, O. (27/01/2011), "Washington DC Storm – Bike Share Shutdown" (oobrien.com); Sommer, W. (29/10/2012), "Not Even Bikeshare Can Stand Up to Sandy", Washington City Paper; Wikipedia, "Effects of Hurricane Sandy in Maryland and Washington, D.C."; Gebhart, K. & Noland, R. (2014), "The impact of weather conditions on bikeshare trips in Washington, DC", Transportation 41.
-
----
-
-<!-- GHI CHÚ CHO NGƯỜI SOẠN (có thể xóa): đối chiếu số hiệu hình/bảng với notebook gốc
-Hình 1.1 = 1.1 | Hình 1.2 = 1.2 | Hình 1.3 = 1.3 | Hình 1.4 = 1.5 | Hình 1.5 = 1.6 | Hình 1.6 = 1.7 | Hình 1.7 = 1.8 | Hình 1.8 = 1.9 | Hình 1.9 = 1.10
-Các hình lược bỏ: 1.4 (phân phối 4 biến thời tiết), 1.11 (phân bố ngoại lai theo giờ và loại ngày).
-Bảng 1.4 (mới) = Bảng 1.3 | Bảng 1.5 = 1.4–1.7 | Bảng 1.6 = tóm tắt từ Bảng 1.8 + Hình 1.6 | Bảng 1.7 = 1.9 | Bảng 1.8 = 1.10 | Bảng 1.9 = 1.12 -->
+1. Fanaee-T, H., & Gama, J. (2013). Event labeling combining ensemble detectors and background knowledge. *Progress in Artificial Intelligence*, 2(2–3), 113–127.
+2. Gebhart, K., & Noland, R. B. (2014). The impact of weather conditions on bikeshare trips in Washington, DC. *Transportation*, 41(6), 1205–1225.
+3. National Weather Service (NWS) Baltimore/Washington. (2011). *January 26, 2011 Snowfall Event Summary*. NOAA.
+4. O'Brien, O. (2011). *Washington DC Storm – Bike Share Shutdown Analysis*. Suprageography.
+5. Capital Bikeshare. (2012). *System Service Alerts: Hurricane Sandy Operations Shutdown and Reopening Timeline*. Washington, D.C.

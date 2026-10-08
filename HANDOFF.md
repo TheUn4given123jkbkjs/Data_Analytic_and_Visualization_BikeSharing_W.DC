@@ -80,25 +80,26 @@ Dành cho **TV1 (EDA Findings), TV2 (Distribution Findings), TV4 (Correlation Fi
 [2026-10-04] [TV1] [DRAFT] [Phần 1.2.2] — Nhịp giờ khác theo `workingday`: ngày làm việc đỉnh 8h (477.01) và 17h (525.29 lượt); ngày nghỉ đỉnh 13h (372.73). Spearman với `cnt`: `hr` 0.51, `temp` 0.42, `hum` -0.36. Nên xét tương tác `hr` x `workingday` — ảnh hưởng: TV3, TV4, TV5 (V-04, V-09)
 [2026-10-04] [TV1] [DRAFT] [Phần 1.1.1] — `temp`–`atemp` Pearson 0.9877 (giữ một biến); `weathersit = 4` chỉ 3 dòng (loại/gộp nhóm 3); thiếu 165 giờ (0.94%), không chèn dòng giả; tự tương quan bậc 1 của `cnt` = 0.8431 (quan sát không độc lập) — ảnh hưởng: TV3, TV4, TV5 (V-03, V-09, V-11)
 [2026-10-04] [TV1] [FINAL] [Phần 1] — Hoàn thành toàn bộ phần 1
+[2026-10-08] [TV1] [CHANGE] [Phần 1] — Cập nhật toàn diện: (1) Xuất `EDA/cleaned_data/hour_cleaned.csv`; (2) Bỏ hoàn toàn ma trận tương quan Spearman/Pearson khỏi EDA để tránh trùng lặp, chuyển giao toàn quyền phân tích tương quan cho TV4 (V-04); (3) Bổ sung kiểm tra độ nhạy cho 165 giờ thiếu và 22 dòng `hum = 0`; (4) Định lượng cỡ mẫu hiệu dụng $N_{\text{eff}} \approx 1,479$ (~8.51%) cho TV3; (5) Đồng bộ 100% tiếng Việt có dấu cho toàn bộ biểu đồ Hình 1.1–1.10 trong notebook và assets — ảnh hưởng: TV2, TV3, TV4, TV5 (V-02, V-03, V-04, V-11)
 ```
 
-### EDA Findings Sheet — TV1 — v0 — DRAFT — 2026-10-04
+### EDA Findings Sheet — TV1 — v1 — FINAL — 2026-10-08
 
-1. **Dữ liệu/biến đã dùng:** `hour.csv` gốc (17,379 dòng x 17 biến), trong `EDA.ipynb`. `bike_clean.csv` chưa xuất.
-2. **Phương pháp:** kiểm tra chất lượng, thống kê mô tả, Spearman/Pearson, ngoại lai IQR và Z-score, tự tương quan bậc 1.
-3. **Kết quả chính** (`temp`, `atemp`, `hum`, `windspeed` ở thang chuẩn hóa; `cnt` là lượt thuê/giờ):
-   - Sạch: 0 thiếu, 0 trùng, `cnt = casual + registered` đúng mọi dòng.
-   - `hum = 0`: 22 dòng, đã sửa. `windspeed = 0`: 2,180 dòng (12.54%), giữ nguyên.
-   - Thiếu 165 giờ (0.94%), 59.39% ở 2–5h sáng; ngày 2012-10-29 chỉ có 1/24 giờ.
-   - `cnt` 2012 cao hơn 2011 63.20% (234.67 so với 143.79); thấp nhất tháng 1.
-   - Mean `cnt` theo mùa: Winter 111.11, Spring 208.34, Summer 236.02, Fall 198.87.
-   - Mean `cnt` theo `weathersit` 1/2/3: 204.87 / 175.17 / 111.58.
-   - Spearman với `cnt`: `hr` 0.5109, `temp` 0.4233, `hum` -0.3634, `windspeed` 0.1266.
-   - Cặp tương quan: `temp`–`atemp` 0.9877, `hum`–`weathersit` 0.4151, `temp`–`season` 0.3058.
-4. **Quyết định và lý do:** giữ mọi ngoại lai (giải thích được bằng giờ cao điểm, mùa, xu hướng); giữ thang chuẩn hóa; không điền giờ thiếu; không biến đổi `cnt` (để TV2/TV5 quyết).
+1. **Dữ liệu/biến đã dùng:** `EDA/cleaned_data/hour_cleaned.csv` (17,379 dòng × 17 biến). Dữ liệu sạch, không ô trống, không trùng lặp.
+2. **Phương pháp:** Kiểm tra chất lượng dữ liệu, thống kê mô tả mở rộng (Skewness, Kurtosis), kiểm tra độ nhạy (sensitivity analysis), trực quan hóa phân tán và nhịp giờ, phân tích tự tương quan (ACF) và định lượng cỡ mẫu hiệu dụng $N_{\text{eff}}$.
+3. **Kết quả chính** (`temp`, `atemp`, `hum`, `windspeed` ở thang chuẩn hóa [0, 1]; `cnt` là lượt thuê/giờ):
+   - Đã sửa 22 dòng `hum = 0` ngày 2011-03-10 bằng nội suy cùng giờ lân cận; giữ nguyên 2,180 dòng `windspeed = 0` (ngưỡng đo máy đo gió).
+   - 165 giờ thiếu: 98 giờ đêm (2–5h sáng, zero-truncated) + 72 giờ dồn vào 5 ngày bão (Sandy, bão tuyết, mưa băng). Độ nhạy mean lệch $< 0.94\%$.
+   - `cnt`: Mean 189.46, Median 142.00, Skewness 1.28, Kurtosis 1.42; $\text{Var}/\text{Mean} = 173.66 \gg 1$ (over-dispersion). Biến đổi $\sqrt{cnt}$ có Skewness 0.29 (gần chuẩn nhất).
+   - Tăng trưởng: 2012 cao hơn 2011 là 63.20% (234.67 so với 143.79 lượt/h).
+   - Nhịp giờ × Loại ngày: Ngày làm việc có 2 đỉnh nhọn (8h: 477.01 và 17h: 525.29 lượt/h); Ngày nghỉ có 1 đỉnh vòm (13h: 372.73 lượt/h).
+   - Tự tương quan: $r_1 = 0.8431$, $r_{24} = 0.8151$, $r_{168} = 0.8164$. Cỡ mẫu hiệu dụng $N_{\text{eff}} \approx 1,479$ quan sát.
+   - Ngoại lai: 505 dòng toàn cục ($cnt > 642.5$) là đỉnh giờ cao điểm hợp lệ; 130 dòng cục bộ theo (`hr`, `workingday`) do thời tiết tốt và sự kiện. Giữ lại 100%.
+4. **Quyết định đã đưa ra và lý do:**
+   - Giữ nguyên thang chuẩn hóa; không chèn dòng giả cho 165 giờ thiếu; gộp `weathersit = 4` vào nhóm 3; không xóa ngoại lai nào; chuyển giao toàn bộ phân tích ma trận tương quan cho TV4.
 5. **Downstream cần lưu ý:**
-   - TV2 (V-02): `cnt`, `temp` dùng được; nên xét `cnt` theo nhóm (`hr`, `workingday`).
-   - TV3 (V-03): quan sát không độc lập, cần effect size; loại/gộp `weathersit = 4`.
-   - TV4 (V-04): bỏ `atemp`, `casual`, `registered`; nhận xét `hr` quan hệ chu kỳ.
-   - TV5 (V-11): chưa loại ngoại lai; chia train/test theo thời gian; thận trọng đặc trưng trễ.
-6. **File liên quan:** `EDA.ipynb` (Bảng 1.1–1.12, Hình 1.1–1.11), `report.md`, `report.doc`
+   - **TV2 (V-02):** `cnt` phân tán vượt mức và Zero-truncated $\rightarrow$ kiểm tra Negative Binomial và Zero-truncated models.
+   - **TV3 (V-03):** Vi phạm giả định độc lập do tự tương quan ($N_{\text{eff}} \approx 1,479$) $\rightarrow$ chạy song song kiểm định phi tham số (Mann-Whitney U, Kruskal-Wallis) và bắt buộc báo cáo Effect Size; gộp `weathersit = 4` vào nhóm 3.
+   - **TV4 (V-04):** Bỏ `atemp` để chống đa cộng tuyến ($r = 0.9877$); cấm dùng `casual`/`registered` làm biến độc lập; thực hiện ma trận tương quan Pearson vs Spearman toàn diện.
+   - **TV5 (V-11):** Chia tập Train/Test theo thời gian; cẩn trọng tạo Lag features tại các điểm gãy; thử nghiệm biến đổi $\sqrt{cnt}$ hoặc hồi quy đếm GLM.
+6. **File liên quan:** `EDA/EDA.ipynb` (Hình 1.1–1.10), `EDA/report.md`, `EDA/cleaned_data/hour_cleaned.csv`.
