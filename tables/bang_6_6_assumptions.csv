@@ -1,0 +1,6 @@
+﻿Giả định,Thống kê,Giá trị,Cách đọc
+Độc lập,Durbin–Watson,0.7614,gần 2: không tự tương quan bậc 1; gần 0: tự tương quan dương
+Độc lập,Tự tương quan phần dư độ trễ 1,0.6190,xem Hình 6.8
+Phương sai không đổi,Breusch–Pagan (LM),"919.65, p < 0.001",mẫu lớn nên dễ bác bỏ; xem thêm Hình 6.7
+Phần dư chuẩn,Độ lệch (skewness),-0.5882,0 nếu đối xứng
+Phần dư chuẩn,Độ nhọn dư (excess kurtosis),2.1460,0 nếu như phân phối chuẩn
