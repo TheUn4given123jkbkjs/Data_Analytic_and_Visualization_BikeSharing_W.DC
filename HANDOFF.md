@@ -103,3 +103,42 @@ Dành cho **TV1 (EDA Findings), TV2 (Distribution Findings), TV4 (Correlation Fi
    - **TV4 (V-04):** Bỏ `atemp` để chống đa cộng tuyến ($r = 0.9877$); cấm dùng `casual`/`registered` làm biến độc lập; thực hiện ma trận tương quan Pearson vs Spearman toàn diện.
    - **TV5 (V-11):** Chia tập Train/Test theo thời gian; cẩn trọng tạo Lag features tại các điểm gãy; thử nghiệm biến đổi $\sqrt{cnt}$ hoặc hồi quy đếm GLM.
 6. **File liên quan:** `EDA/EDA.ipynb` (Hình 1.1–1.10), `EDA/report.md`, `EDA/cleaned_data/hour_cleaned.csv`.
+
+### Correlation Findings Sheet — TV1 — v1 — DRAFT — 2026-10-09
+
+1. **Dữ liệu/biến đã dùng:**
+   - `EDA/cleaned_data/hour_cleaned.csv` (17,379 dòng × 17 biến). Dữ liệu sạch, không ô trống, không trùng lặp.
+   - Các biến đã dùng:
+      - `temp`
+      - `hum`
+      - `windspeed`
+      - `cnt`
+   - Biến `atemp` được loại khỏi ma trận tương quan chính do có tương quan rất cao với `temp` (r = 0,9877).
+   - Hai biến `casual` và `registered` không được sử dụng làm biến dự báo độc lập cho `cnt`, vì `cnt` được tính bằng tổng của hai biến này.
+   - Biến `hr` được xem xét riêng do mối quan hệ giữa giờ trong ngày và số lượt thuê xe có thể mang tính chu kỳ, không thể hiện đầy đủ qua một hệ số tương quan đơn lẻ.
+
+2. **Phương pháp:**
+   - **Pearson:** Đánh giá mức độ và chiều hướng của mối quan hệ tuyến tính giữa hai biến.
+   - **Spearman:** Đánh giá mức độ và chiều hướng của mối quan hệ đơn điệu dựa trên thứ hạng của dữ liệu.
+
+Việc kết hợp hai phương pháp giúp kiểm tra liệu mối quan hệ quan sát được có tương đối tuyến tính hay có thể tồn tại dạng đơn điệu không tuyến tính. Các kết quả được đối chiếu với biểu đồ trực quan để tránh chỉ dựa vào hệ số tương quan khi diễn giải dữ liệu.
+
+Lưu ý: Pearson và Spearman đều đo lường mối liên hệ thống kê, không chứng minh rằng một biến gây ra sự thay đổi của biến còn lại.
+
+3. **Kết quả tính:**
+- `temp – cnt`         0,40   Tương quan thuận mức vừa
+- `hum – cnt`         -0,33   Tương quan nghịch, mức yếu đến vừa
+- `windspeed – cnt`    0,10   Tương quan thuận rất yếu
+- `temp – hum`        -0.06   Tương quan nghịch rất yếu
+- `temp – windspeed`  -0.01   Tương quan nghịch rất yếu, gần như không có
+- `hum – windspeed`   -0.30   Tương quan nghịch, mức yếu đến vừa
+
+4. **Quyết định đã đưa ra và lý do:**
+- Loại `atemp` khỏi nhóm biến phân tích chính: `temp` và `atemp` có tương quan rất cao, cho thấy hai biến cung cấp thông tin rất tương đồng. Việc giữ cả hai có thể gây đa cộng tuyến trong một số mô hình hồi quy.
+- Không sử dụng `casual` và `registered` làm biến dự báo độc lập cho `cnt`: vì `cnt` = `casual` + `registered`, sử dụng hai biến này sẽ gây rò rỉ thông tin mục tiêu (target leakage) nếu mục tiêu là dự báo `cnt` từ các thông tin có sẵn trước thời điểm cần dự báo.
+- Giữ lại `temp`, `hum` và `windspeed` để xem xét trong mô hình: các biến này có thể phản ánh điều kiện thời tiết liên quan đến nhu cầu thuê xe. Tuy nhiên, việc giữ hay loại biến cuối cùng cần dựa trên mục tiêu mô hình, tính sẵn có của dữ liệu và kết quả đánh giá mô hình.
+- Phân tích `hr` riêng: số lượt thuê xe thay đổi theo giờ và có thể có nhiều đỉnh trong ngày. Hệ số tương quan đơn lẻ có thể không phản ánh đầy đủ cấu trúc này.
+
+5. **Downstream cần lưu ý:**
+....
+6. **File liên quan:** `04_Corelation_Analysis/04_correlation.ipynb` (Hình 4.1–4.5), `04_Corelation_Analysis/theories.md`, `EDA/cleaned_data/hour_cleaned.csv`.
