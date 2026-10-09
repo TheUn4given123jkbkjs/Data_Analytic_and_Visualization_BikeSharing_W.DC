@@ -171,11 +171,12 @@ Lưu ý: Pearson và Spearman đều đo lường mối liên hệ thống kê, 
 Việc kết hợp hai phương pháp giúp đánh giá chính xác hiệu quả thực tế của mô hình Multiple Linear Regression. Bằng cách so sánh chỉ số sai số (như MSE, RMSE, R²) của mô hình chính với Mean Baseline, chúng ta có thể xác định liệu các đặc trưng được đưa vào mô hình có thực sự đóng góp giá trị dự báo hay không.
 
 3. **Kết quả tính:**
-Model|Mean|Multiple Linear Regression
----|---|---
-MAE|147.6173800100044|85.523027
-RMSE|188.53660442113605|116.402997
-R²|-0.006549721673292375|0.616317
+
+Model   |Mean                    |Multiple Linear Regression   |
+--------|------------------------|-----------------------------|
+MAE     |147.6173800100044       |85.523027                    | 
+RMSE    |188.53660442113605      |116.402997                   |
+R²      |-0.006549721673292375   |0.616317                     |
 
 4. **Quyết định đã đưa ra và lý do:**
 - Loại `atemp` khỏi nhóm biến phân tích chính: `temp` và `atemp` có tương quan rất cao, cho thấy hai biến cung cấp thông tin rất tương đồng. Việc giữ cả hai có thể gây đa cộng tuyến trong một số mô hình hồi quy.
