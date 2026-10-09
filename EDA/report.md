@@ -169,7 +169,7 @@ Nhóm `weathersit = 4` (Mưa lớn/Bão tuyết) chỉ xuất hiện đúng 3 d�
 | Bất thường `hum = 0` | 22 dòng (2011-03-10) | Nội suy trung bình cùng giờ ngày $t-1$ và $t+1$ | Khắc phục lỗi cảm biến; độ nhạy thay đổi mean $< 0.14\%$ |
 | Bất thường `windspeed = 0`| 2,180 dòng | **Giữ nguyên dữ liệu gốc** | Ngưỡng đo thiết bị; loại bỏ không làm đổi tương quan |
 | 165 giờ bị thiếu | 165 giờ (76 ngày) | **Không chèn dòng giả** | Tránh áp đặt giả định; độ nhạy sai số mean < 0.94% |
-| Nhóm hiếm weathersit = 4| 3 dòng | **Gộp vào nhóm weathersit = 3** | Tránh sụp đổ bậc tự do trong kiểm định thống kê đa nhóm |
+| Nhóm hiếm `weathersit = 4`| 3 dòng (0.02%) | **Giữ nguyên trong dữ liệu sạch; Khuyến nghị TV3 gộp vào nhóm 3 khi kiểm định** | Giữ tính trung thực đo đạc khí tượng; tránh sụp đổ bậc tự do và vi phạm tần số kỳ vọng < 5 khi kiểm định thống kê |
 
 ---
 
@@ -387,29 +387,40 @@ Dữ liệu chuỗi thời gian theo giờ vi phạm nghiêm trọng giả đị
 
 ## 1.6. Kết luận và Hàm ý chuyển giao (Handoff)
 
-### 1.6.1. Tóm tắt kết quả phát hiện chính của Chương 1
-1. **Quy mô và độ sạch dữ liệu:** Bộ dữ liệu gồm 17,379 bản ghi hợp lệ. Đã xử lý triệt để sự cố 22 dòng `hum = 0` bằng nội suy; 165 giờ thiếu được phân định rõ giữa cơ chế Zero-truncation (98 giờ đêm) và gián đoạn do bão tuyết, bão Sandy (72 giờ).
-2. **Phân phối biến mục tiêu:** `cnt` có phân phối lệch phải ($\text{Skewness} = 1.28$, $\text{Mean} = 189.46 > \text{Median} = 142.00$) và phân tán vượt mức nghiêm trọng ($\text{Var}/\text{Mean} = 173.66$). Biến đổi $\sqrt{cnt}$ đem lại độ đối xứng tối ưu ($\text{Skewness} = 0.29$).
-3. **Cấu trúc chi phối:** Khung giờ `hr` là nhân tố chi phối mạnh nhất ($\eta^2 = 50.15\%$), tương tác chặt chẽ với `workingday` tạo nên 2 hình thái phân phối hoàn toàn khác biệt: 2 đỉnh nhọn ngày đi làm vs 1 đỉnh vòm ngày nghỉ.
-4. **Tự tương quan và Cỡ mẫu hiệu dụng:** Chuỗi có tự tương quan bậc 1 rất cao ($r_1 = 0.8431$), tương ứng cỡ mẫu hiệu dụng thực tế $N_{\text{eff}} \approx 1,479 \text{ quan sát}$.
+### 1.6.1. Tóm tắt các phát hiện và Thông điệp cốt lõi (Key Insights)
+
+Quá trình khám phá dữ liệu (EDA) đã làm sáng tỏ các đặc trưng vận hành và hành vi người dùng trọng yếu của hệ thống Capital Bikeshare:
+
+1. **Chất lượng dữ liệu và Tính toàn vẹn vận hành:**
+   - Dữ liệu đạt độ tin cậy cao sau khi khắc phục cục bộ sự cố lỗi cảm biến độ ẩm (ngày 2011-03-10) bằng phương pháp nội suy.
+   - Các điểm gián đoạn chuỗi thời gian không phải là mất mát ngẫu nhiên mà phản ánh chính xác hai cơ chế thực tế: tính chất *cắt cụt điểm không* (zero-truncation) vào đêm khuya khi không phát sinh giao dịch thuê xe, và các đợt tạm ngừng dịch vụ chủ động để đảm bảo an toàn trong các đợt thiên tai lớn (bão tuyết, bão Sandy).
+
+2. **Động lực chi phối nhu cầu (Hành vi & Nhịp sinh hoạt):**
+   - **Nhịp sinh hoạt phân hóa sâu sắc:** Khung giờ trong ngày tương tác chặt chẽ với loại ngày, tạo nên hai phân khúc hành vi tách biệt hoàn toàn: nhóm khách hội viên di chuyển cố định tạo thành hai đỉnh cao điểm sáng/chiều vào ngày làm việc, trong khi nhóm khách vãng lai chi phối hình thái đỉnh vòm giải trí trải dài từ trưa đến chiều vào cuối tuần.
+   - **Tác động phi tuyến của thời tiết:** Nhu cầu đạt đỉnh trong điều kiện thời tiết ấm áp, ôn hòa (mùa thu, mùa hè) và sụt giảm mạnh khi mưa tuyết hoặc nhiệt độ đóng băng. Đáng chú ý, hiệu ứng thời tiết cần được nhìn nhận trong mối tương quan kiểm soát theo khung giờ để tránh ngụy biện do nhịp ngày–đêm.
+   - **Xu hướng tăng trưởng mạnh mẽ:** Quy mô người dùng mở rộng rõ rệt từ năm 2011 sang 2012 trên tất cả các tháng, phản ánh sự phát triển nhanh của mạng lưới chia sẻ xe đạp công cộng.
+
+3. **Bản chất thống kê của biến mục tiêu:**
+   - Biến `cnt` có phân phối lệch phải mạnh và hiện tượng phân tán vượt mức nghiêm trọng, đồng thời mang tính tự tương quan thời gian cao. Các giá trị cực đại thực chất là các đỉnh nhu cầu hợp lệ trong giờ cao điểm chứ không phải lỗi nhập liệu.
 
 ---
 
 ### 1.6.2. Hạn chế của phương pháp và dữ liệu trong Chương 1
-1. **Thiết kế quan sát thuần túy:** Toàn bộ các phân tích trong chương dừng ở mức thống kê mô tả và tương quan đồng biến, không chứng minh mối quan hệ nhân quả.
-2. **Hạn chế chuỗi thời gian 2 năm:** Việc chỉ có 2 năm dữ liệu không đủ để phân rã độc lập hoàn toàn giữa xu hướng tăng trưởng dài hạn và chu kỳ mùa vụ.
-3. **Mất mát thông tin vận hành:** Dữ liệu thiếu thông tin về số lượng trạm mở mới, dung lượng xe sẵn có tại trạm và các đợt điều chỉnh giá cước của Capital Bikeshare.
+
+1. **Thiết kế quan sát thuần túy:** Phân tích EDA dừng ở mức phát hiện tương quan và quy luật trực quan, chưa thể xác lập mối quan hệ nhân quả tuyệt đối.
+2. **Độ dài chuỗi thời gian:** Việc chỉ có 2 năm dữ liệu gây khó khăn cho việc phân rã độc lập hoàn toàn giữa xu hướng tăng trưởng dài hạn của doanh nghiệp và chu kỳ mùa vụ tự nhiên.
+3. **Thiếu hụt thông tin phía cung:** Bộ dữ liệu chỉ ghi nhận lượt thuê thành công (nhu cầu thỏa mãn), chưa bao gồm dữ liệu về trạm hết xe/hết chỗ trả (nhu cầu bị từ chối) và các chính sách điều chỉnh giá cước.
 
 ---
 
 ### 1.6.3. Bảng hàm ý chuyển giao (Handoff Sheet) cho các thành viên tiếp theo
 
-| Thành viên nhận | Mã nhiệm vụ | Các phát hiện cốt lõi cần lưu ý | Hành động bắt buộc |
+| Thành viên nhận | Mã nhiệm vụ | Phát hiện cốt lõi từ EDA | Hành động bắt buộc |
 | :--- | :--- | :--- | :--- |
-| **TV2 (Distribution)** | **V-02** | `cnt` phân tán vượt mức ($\text{Var}/\text{Mean} = 173.66$), không có giá trị 0 (Zero-truncated). | Bắt buộc kiểm tra Negative Binomial và Zero-truncated models; không dùng Poisson đơn giản. |
-| **TV3 (Hypothesis Testing)** | **V-03** | Vi phạm giả định độc lập do tự tương quan ($r_1 = 0.8431$, $N_{\text{eff}} \approx 1,479$); `cnt` vi phạm giả định phân phối chuẩn; nhóm `weathersit = 4` chỉ có 3 dòng. | Bắt buộc chạy song song kiểm định phi tham số (Mann-Whitney U, Kruskal-Wallis); **báo cáo Effect Size**; gộp nhóm `weathersit = 4` vào nhóm 3. |
-| **TV4 (Correlation & Setup)**| **V-04** | Cặp `temp`–`atemp` có tương quan $r = 0.9877$; `casual` và `registered` gây rò rỉ dữ liệu; `hr` có liên hệ phi tuyến cực mạnh ($\eta^2 = 50.15\%$). | Loại bỏ `atemp` để chống đa cộng tuyến; cấm dùng `casual`/`registered` làm biến độc lập; diễn giải cẩn trọng Spearman của `hr`. |
-| **TV5 (Regression & Modeling)**| **V-11** | Giữ lại toàn bộ 505 ngoại lai cao điểm; tăng trưởng mạnh giữa 2 năm; chuỗi có 165 giờ đứt gãy. | **Chia tập Train/Test theo thời gian** (không chia ngẫu nhiên); cẩn trọng khi tạo Lag features tại các điểm gãy; thử nghiệm biến đổi $\sqrt{cnt}$ hoặc hồi quy đếm GLM. |
+| **TV2 (Distribution)** | **V-02** | Phân phối `cnt` phân tán vượt mức, không có giá trị 0 (Zero-truncated) | Bắt buộc đánh giá Negative Binomial hoặc Zero-truncated models; tránh dùng Poisson chuẩn. |
+| **TV3 (Hypothesis Testing)** | **V-03** | Dữ liệu vi phạm giả định độc lập (tự tương quan chuỗi) và chuẩn tắc; nhóm thời tiết bão cực đoan (`weathersit = 4`) chỉ có 3 dòng quan sát | Bắt buộc chạy kiểm định phi tham số (Mann-Whitney U, Kruskal-Wallis); báo cáo Effect Size; **chủ động gộp nhóm `weathersit = 4` vào nhóm 3** khi lập bảng chéo Chi-square/ANOVA để tránh sụp đổ bậc tự do. |
+| **TV4 (Correlation & Setup)**| **V-04** | Nhiệt độ thực và nhiệt độ cảm nhận (`temp`–`atemp`) đa cộng tuyến gần tuyệt đối; `casual` và `registered` gây rò rỉ biến mục tiêu; khung giờ có tương quan phi tuyến | Loại bỏ `atemp` khỏi mô hình; cấm dùng `casual`/`registered` làm biến dự báo `cnt`; ưu tiên hệ số tương quan phi tuyến/đơn điệu. |
+| **TV5 (Regression & Modeling)**| **V-11** | Giữ lại toàn bộ các ngoại lai cao điểm tự nhiên; chuỗi có xu hướng tăng trưởng năm và các điểm đứt gãy do bão | **Chia tập Train/Test theo trình tự thời gian** (không chia ngẫu nhiên); thử nghiệm biến đổi căn bậc hai $\sqrt{cnt}$ hoặc mô hình hồi quy đếm GLM. |
 
 ---
 
