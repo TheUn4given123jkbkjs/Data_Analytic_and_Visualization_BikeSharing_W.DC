@@ -104,7 +104,7 @@ Dành cho **TV1 (EDA Findings), TV2 (Distribution Findings), TV4 (Correlation Fi
    - **TV5 (V-11):** Chia tập Train/Test theo thời gian; cẩn trọng tạo Lag features tại các điểm gãy; thử nghiệm biến đổi $\sqrt{cnt}$ hoặc hồi quy đếm GLM.
 6. **File liên quan:** `EDA/EDA.ipynb` (Hình 1.1–1.10), `EDA/report.md`, `EDA/cleaned_data/hour_cleaned.csv`.
 
-### Correlation Findings Sheet — TV1 — v1 — DRAFT — 2026-10-09
+### Correlation Findings Sheet — TV4 — v1 — DRAFT — 2026-10-09
 
 1. **Dữ liệu/biến đã dùng:**
    - `EDA/cleaned_data/hour_cleaned.csv` (17,379 dòng × 17 biến). Dữ liệu sạch, không ô trống, không trùng lặp.
