@@ -140,5 +140,61 @@ Lưu ý: Pearson và Spearman đều đo lường mối liên hệ thống kê, 
 - Phân tích `hr` riêng: số lượt thuê xe thay đổi theo giờ và có thể có nhiều đỉnh trong ngày. Hệ số tương quan đơn lẻ có thể không phản ánh đầy đủ cấu trúc này.
 
 5. **Downstream cần lưu ý:**
+
 ....
-6. **File liên quan:** `04_Corelation_Analysis/04_correlation.ipynb` (Hình 4.1–4.5), `04_Corelation_Analysis/theories.md`, `EDA/cleaned_data/hour_cleaned.csv`.
+
+7. **File liên quan:** `04_Corelation_Analysis/04_correlation.ipynb` (Hình 4.1–4.5), `04_Corelation_Analysis/theories.md`, `EDA/cleaned_data/hour_cleaned.csv`.
+
+
+### Feature Candidate Sheet — TV4 — v1 — DRAFT — 2026-10-09
+
+1. **Dữ liệu/biến đã dùng:**
+   - `EDA/cleaned_data/hour_cleaned.csv` (17,379 dòng × 17 biến). Dữ liệu sạch, không ô trống, không trùng lặp.
+
+   - **Các biến đã dùng:**
+   - mục tiêu: `cnt`
+   - thời tiết: `temp`,`hum`,`windspeed`
+   - Thời gian: `hr`, `weekday`, `mnth`, `season`
+   - Lịch:	`holiday`, `workingday`, `yr`
+   - Điều kiện thời tiết: `weathersit`
+
+   - **Các biến không dùng:**
+   - `instant`, `dteday`: Chỉ là biến định danh
+   - `atemp`: được loại khỏi ma trận tương quan chính do có tương quan rất cao với `temp` (r = 0,9877).
+   - Hai biến `casual` và `registered` không được sử dụng làm biến dự báo độc lập cho `cnt`, vì `cnt` được tính bằng tổng của hai biến này, và tránh rò rỉ thông tin.
+
+
+2. **Phương pháp:**
+   -** Multiple Linear Regression:** Mô hình hóa mối quan hệ giữa biến phụ thuộc và nhiều biến độc lập, giúp đánh giá mức độ ảnh hưởng của từng đặc trưng lên kết quả dự báo.
+   - **Mean Baseline:** Sử dụng `DummyRegressor(strategy="mean")` làm mốc so sánh tối thiểu (benchmark), dự báo bằng giá trị trung bình cộng của tập dữ liệu huấn luyện.
+
+Việc kết hợp hai phương pháp giúp đánh giá chính xác hiệu quả thực tế của mô hình Multiple Linear Regression. Bằng cách so sánh chỉ số sai số (như MSE, RMSE, R²) của mô hình chính với Mean Baseline, chúng ta có thể xác định liệu các đặc trưng được đưa vào mô hình có thực sự đóng góp giá trị dự báo hay không.
+
+3. **Kết quả tính:**
+Model|Mean|Multiple Linear Regression
+---|---|---
+MAE|147.6173800100044|85.523027
+RMSE|188.53660442113605|116.402997
+R²|-0.006549721673292375|0.616317
+
+4. **Quyết định đã đưa ra và lý do:**
+- Loại `atemp` khỏi nhóm biến phân tích chính: `temp` và `atemp` có tương quan rất cao, cho thấy hai biến cung cấp thông tin rất tương đồng. Việc giữ cả hai có thể gây đa cộng tuyến trong một số mô hình hồi quy.
+- Không sử dụng `casual` và `registered` làm biến dự báo độc lập cho `cnt`: vì `cnt` = `casual` + `registered`, sử dụng hai biến này sẽ gây rò rỉ thông tin mục tiêu (target leakage) nếu mục tiêu là dự báo `cnt` từ các thông tin có sẵn trước thời điểm cần dự báo.
+- Các biến có tính chu kỳ được đưa qua One-Hot Encoding xử lý, cho phù hợp với bài MLR hơn.
+
+5. **Downstream cần lưu ý:**
+
+**Bảng các ứng cử viên:**
+
+Biến|Vai trò dự kiến|Xử lý đề xuất
+---|---|---
+|`temp`|Điều kiện thời tiết|Giữ dạng số
+|`hum`|Điều kiện thời tiết|Giữ dạng số
+|`windspeed`|Điều kiện thời tiết|Giữ dạng số
+|`weathersit`|Điều kiện thời tiết|One-Hot Encoding
+|`hr`|Thời gian trong ngày|One-Hot Encoding
+|`workingday`|Loại ngày|One-Hot Encoding
+|`season`|Mùa|One-Hot Encoding
+
+
+6. **File liên quan:** `05_multiple_linear_regression/05_multiple_linear_regression.ipynb` (Hình 5.1–2.5), `05_multiple_linear_regression/theories.md`, `EDA/cleaned_data/hour_cleaned.csv`.
