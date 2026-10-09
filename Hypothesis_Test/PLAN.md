@@ -1,129 +1,212 @@
 # KẾ HOẠCH CHI TIẾT: PHẦN 3 — KIỂM ĐỊNH GIẢ THUYẾT (HYPOTHESIS TESTING)
 **Thành viên phụ trách:** Thành viên 3 (TV3)  
-**Bộ dữ liệu:** Bike Sharing Dataset (`EDA/cleaned_data/hour_cleaned.csv` — 17,379 dòng)  
-**Quy chuẩn áp dụng:** `outline.md`, `rules.md`, `HANDOFF.md`
+**Bộ dữ liệu đầu vào:** `EDA/cleaned_data/hour_cleaned.csv` ($N = 17,379$ dòng, đã qua tiền xử lý bởi TV1)  
+**Tài liệu tham khảo chuyên khảo cốt lõi:** *100 Statistical Tests (3rd Edition, 2006)* — **Gopal K. Kanji**, SAGE Publications.  
+**Quy chuẩn áp dụng:** `outline.md` (Mục 3), `rules.md`, `HANDOFF.md`
 
 ---
 
-## 1. Mục tiêu và Phạm vi công việc của TV3
+## 1. Căn cứ Thực nghiệm từ TV1 (EDA) & TV2 (Phân phối) làm Nền tảng Phương pháp luận
 
-1. **Thực hiện độc lập và toàn diện Phần 3 (Kiểm định giả thuyết):**
-   - Thiết lập nền tảng lý thuyết vững chắc về các phương pháp kiểm định thống kê (tham số, phi tham số, bảng chéo).
-   - Xây dựng **3 Câu hỏi nghiên cứu (Research Questions)** gắn liền với bối cảnh nghiệp vụ thực tế của hệ thống chia sẻ xe đạp Capital Bikeshare.
-   - Kiểm tra nghiêm ngặt các giả định phân phối; chạy song song kiểm định tham số và phi tham số tương ứng; bắt buộc lượng hóa **Kích thước hiệu ứng (Effect Size)** để đánh giá ý nghĩa thực tiễn (*Practical Significance*), tránh bẫy kết luận hình thức từ cỡ mẫu lớn.
-   - Đánh giá rủi ro phương pháp luận: hiện tượng tự tương quan chuỗi thời gian ($r_1 = 0.8431$), cỡ mẫu hiệu dụng ($N_{\text{eff}} \approx 1,479$), nguy cơ Sai lầm loại 1 (Type I Error) và giải pháp kiểm soát.
-2. **Chuẩn bị đầu ra chuẩn mực để sẵn sàng gộp báo cáo chung:**
-   - Notebook Jupyter (`03_hypothesis_testing.ipynb`) và script Python (`03_hypothesis_testing.py`) chạy độc lập, tái lập 100% kết quả.
-   - Hệ thống 6 biểu đồ trực quan hóa chuyên sâu (`fig_3_1` đến `fig_3_6`) xuất ra thư mục `assets/` ở độ phân giải 300 DPI.
-   - Tài liệu báo cáo hoàn chỉnh (`report.md`) tuân thủ tuyệt đối quy chuẩn văn phong, công thức, bảng biểu và trích dẫn khoa học.
-   - Bảng tổng hợp bàn giao (`hypothesis_findings.md`) theo chuẩn `HANDOFF.md`.
+Trước khi thiết kế các bài kiểm định, TV3 tiếp nhận toàn bộ các đặc trưng dữ liệu thực nghiệm đã được chứng minh định lượng bởi TV1 và TV2:
 
----
-
-## 2. Đối chiếu phụ thuộc và Thẻ VALIDATE
-
-| Thẻ VALIDATE | Nhận từ | Nội dung đối chiếu | Trạng thái tiếp nhận & Hành động của TV3 |
-| :--- | :--- | :--- | :--- |
-| **V-01 & V-03** | **TV1 (EDA)** | - Dữ liệu sạch `hour_cleaned.csv` (17,379 dòng).<br>- Sự cố `hum = 0` (22 dòng) đã nội suy.<br>- Giữ nguyên `weathersit = 4` (3 dòng) trong file CSV.<br>- Tự tương quan chuỗi $r_1 = 0.8431$, $N_{\text{eff}} \approx 1,479$. | **ĐÃ XÁC NHẬN:** Sử dụng đúng file `EDA/cleaned_data/hour_cleaned.csv`. Chủ động **gộp `weathersit = 4` vào nhóm 3** khi lập bảng chéo/ANOVA để bảo đảm điều kiện tần số kỳ vọng $\ge 5$. |
-| **V-05** | **TV2 (Distribution)** | - `cnt` lệch phải mạnh ($\text{Skewness} = 1.28$, $\text{Kurtosis} = 1.42$).<br>- Phân tán vượt mức ($\text{Var}/\text{Mean} = 173.66 \gg 1$).<br>- Vi phạm giả định phân phối chuẩn. | **ĐÃ XÁC NHẬN:** Bắt buộc thiết kế **song song kiểm định tham số và phi tham số** (Welch's t-test vs Mann-Whitney U; Welch's ANOVA vs Kruskal-Wallis); ưu tiên kết luận dựa trên phép thử phi tham số và Effect Size. |
-| **V-08** | **TV4 (Correlation)** | Tránh trùng lặp các cặp biến trọng tâm phân tích hồi quy/tương quan tuyến tính của TV4. | **ĐÃ XÁC NHẬN:** TV3 tập trung vào so sánh biến mục tiêu `cnt` theo các biến phân loại (`workingday`, `season`) và kiểm định tính độc lập giữa 2 biến phân loại (`weathersit` × `season`), không trùng lặp phân tích tương quan biến liên tục của TV4. |
+1. **Biến mục tiêu `cnt` vi phạm nghiêm trọng giả định phân phối chuẩn:** 
+   - TV1 chỉ ra: $\text{Mean} = 189.46 > \text{Median} = 142.00$, $\text{Skewness} = 1.28$, $\text{Kurtosis} = 1.42$, tỷ số phân tán vượt mức cực mạnh $\text{Variance} / \text{Mean} = 173.66 \gg 1$.
+   - TV2 chứng minh: Mô hình Negative Binomial mô tả tốt nhất (AIC = $217,615$), trong khi phân phối chuẩn (Normal) fit rất kém với AIC lên tới $230,086$. Mọi kiểm định Goodness-of-Fit chuẩn tắc đều bác bỏ tính chuẩn ($p < 0.001$).
+2. **Phương sai dị biệt (Heteroscedasticity) giữa các phân nhóm:**
+   - TV1 chứng minh độ lệch chuẩn của `cnt` chênh lệch rất lớn giữa các mùa: Mùa xuân có $\text{Std} = 119.22$ trong khi Mùa thu có $\text{Std} = 197.71$. Giữa ngày làm việc và ngày nghỉ cũng có sự khác biệt về độ phân tán ($\text{Std} = 185.11$ vs $172.85$).
+3. **Hiện tượng bẫy cỡ mẫu lớn (Large Sample Size Artifact):**
+   - Với quy mô dữ liệu $N = 17,379$, các phép kiểm định thống kê gần như luôn cho $p\text{-value} < 0.001$ ngay cả khi mức độ khác biệt thực tế rất nhỏ. Do đó, $p\text{-value}$ không đủ để kết luận về ý nghĩa nghiệp vụ.
+4. **Hiện tượng tự tương quan chuỗi thời gian (Serial Autocorrelation):**
+   - TV1 chỉ ra tự tương quan bậc 1 đạt $r_1 = 0.8431$, khiến các quan sát không độc lập (vi phạm giả định IID) và thu hẹp **cỡ mẫu hiệu dụng thực tế chỉ còn $N_{\text{eff}} \approx 1,479$** (chiếm $\approx 8.5\%$ mẫu danh nghĩa). Nguy cơ dính Sai lầm loại 1 (Type I Error) rất cao nếu chỉ dựa vào $p\text{-value}$ thông thường.
 
 ---
 
-## 3. Thiết kế 3 Câu hỏi nghiên cứu (Research Questions)
+## 2. Mục 3.1 — Cơ sở Lý thuyết các Phương pháp Kiểm định Thống kê (Theo Gopal K. Kanji, 2006)
 
-### 📌 Research Question 1 (RQ1) — So sánh 2 nhóm độc lập (Two-Sample Comparison)
-* **Câu hỏi nghiên cứu:** *Có sự khác biệt có ý nghĩa thống kê về số lượng thuê xe trung bình mỗi giờ (`cnt`) giữa ngày làm việc (`workingday = 1`) và ngày nghỉ / cuối tuần (`workingday = 0`) hay không?*
-* **Bản chất biến số:** Biến phụ thuộc định lượng `cnt` vs Biến độc lập nhị phân `workingday` ($N_1 = 11,865$, $N_0 = 5,514$).
-* **Cặp giả thuyết:**
-  - $H_0: \mu_{\text{workingday}} = \mu_{\text{non-workingday}}$ (Lượng thuê xe trung bình mỗi giờ giữa 2 loại ngày là như nhau).
-  - $H_1: \mu_{\text{workingday}} \neq \mu_{\text{non-workingday}}$ (Có sự khác biệt về lượng thuê xe trung bình mỗi giờ giữa 2 loại ngày).
-* **Quy trình kiểm định:**
-  1. *Kiểm tra giả định:* Kiểm định tính chuẩn (Q-Q plot, Skewness), kiểm định tính đồng nhất phương sai Levene test ($p < 0.05 \rightarrow$ phương sai không bằng nhau).
-  2. *Kiểm định tham số:* Welch's $t$-test (không phụ thuộc giả định đồng nhất phương sai).
-  3. *Kiểm định phi tham số:* Mann-Whitney U test (so sánh phân bố vị trí / trung vị trên dữ liệu lệch).
-  4. *Lượng hóa Effect Size:* Cohen's $d$ và Rank-biserial correlation ($r$).
-  5. *Phân tích chuyên sâu nghiệp vụ:* Mặc dù chênh lệch trung bình tổng thể nhỏ ($193.21$ vs $181.41 \text{ lượt/h}$), phân tích phân tầng theo khung giờ (`hr`) cho thấy sự đảo chiều nhịp sinh hoạt cực mạnh (2 đỉnh 8h & 17h ngày làm việc vs đỉnh vòm 12h–16h ngày nghỉ).
+Nội dung phần lý thuyết của Báo cáo Phần 3 được thiết kế theo cấu trúc học thuật chuẩn tắc:
+
+### 3.1.1. Bốn đặc trưng định danh chung để xác định một Họ phép thử thống kê
+Theo hệ thống phân loại của Gopal K. Kanji (2006, *Classification of Tests*, tr. 19–20), bất kỳ phép kiểm định giả thuyết nào cũng được định danh và lựa chọn dựa trên **4 đặc trưng chung cốt lõi**:
+1. **Bản chất biến số và Thang đo (Data Types & Measurement Scale):** Biến đang phân tích là biến định lượng liên tục/biến đếm (`cnt`, `temp`) hay biến phân loại/định danh (`workingday`, `season`, `weathersit`)? Thang đo là khoảng/tỷ lệ (Interval/Ratio) hay thứ bậc/định danh (Ordinal/Nominal)?
+2. **Thiết kế mẫu và Số lượng nhóm so sánh (Sample Design & Number of Groups):** Bài toán nghiên cứu thuộc dạng 1 mẫu so sánh với chuẩn ($\mu_0$), 2 nhóm mẫu độc lập (Independent samples), 2 nhóm mẫu từng cặp (Paired samples), hay đa nhóm ($K \ge 3$ groups)?
+3. **Tham số mục tiêu cần kiểm định (Parameter of Interest):** Kiểm định nhằm so sánh đặc trưng nào của tổng thể? Giá trị trung bình ($\mu$), Phương sai ($\sigma^2$), Tần số xuất hiện quan sát so với kỳ vọng ($O_{ij}$ vs $E_{ij}$), hay Thứ hạng phân bố và Trung vị (Ranks / Median)?
+4. **Giả định phân phối mẫu (Distributional Assumptions):** Phép thử có bắt buộc tổng thể phải tuân theo phân phối chuẩn (*Parametric tests*) hay chấp nhận mọi dạng phân phối tự do (*Distribution-free / Non-parametric tests*)?
 
 ---
 
-### 📌 Research Question 2 (RQ2) — So sánh nhiều nhóm độc lập (Multi-Group Comparison)
-* **Câu hỏi nghiên cứu:** *Số lượng thuê xe trung bình mỗi giờ (`cnt`) có sự khác biệt có ý nghĩa thống kê giữa 4 mùa trong năm (`season`: Mùa xuân, Mùa hè, Mùa thu, Mùa đông) hay không?*
-* **Bản chất biến số:** Biến phụ thuộc định lượng `cnt` vs Biến độc lập định danh 4 nhóm `season` ($N_{\text{Xuân}} = 4,242$, $N_{\text{Hạ}} = 4,409$, $N_{\text{Thu}} = 4,496$, $N_{\text{Đông}} = 4,232$).
-* **Cặp giả thuyết:**
-  - $H_0: \mu_1 = \mu_2 = \mu_3 = \mu_4$ (Lượng thuê xe trung bình giữa 4 mùa là đồng nhất).
-  - $H_1:$ Tồn tại ít nhất một cặp mùa có lượng thuê xe trung bình khác nhau.
-* **Quy trình kiểm định:**
-  1. *Kiểm tra giả định:* Levene test kiểm tra tính đồng nhất phương sai giữa 4 mùa.
-  2. *Kiểm định tham số:* One-Way ANOVA và Welch's ANOVA (hiệu chỉnh phương sai không đồng nhất).
-  3. *Kiểm định phi tham số:* Kruskal-Wallis $H$-test.
-  4. *Kiểm định hậu định (Post-hoc Tests):* Games-Howell post-hoc test (tham số) và Dunn's test kết hợp hiệu chỉnh Bonferroni (phi tham số) để so sánh từng cặp mùa cụ thể (Xuân-Hạ, Xuân-Thu, Xuân-Đông, Hạ-Thu, Hạ-Đông, Thu-Đông).
-  5. *Lượng hóa Effect Size:* Eta-squared ($\eta^2$), Omega-squared ($\omega^2$) và Epsilon-squared ($\epsilon^2$).
+### 3.1.2. Bản chất của các Họ phép thử theo 4 đặc trưng định danh và Nguyên lý của Họ Phi tham số
+
+Dựa trên 4 đặc trưng định danh ở Mục 3.1.1, Mục 3.1.2 trình bày đầy đủ bản chất của **3 họ kiểm định tham số kinh điển** theo yêu cầu của đề bài và **nguyên lý nền tảng của họ Phi tham số**:
+
+1. **Họ phép thử $t$-test (So sánh trung bình 2 nhóm định lượng):**
+   - *Đặc trưng định danh:* Biến phụ thuộc định lượng; số nhóm so sánh tối đa 2 nhóm; tham số mục tiêu là Giá trị trung bình $\mu$; thống kê kiểm định tuân theo phân phối Student's $t$ với bậc tự do $\nu$.
+   - *Phân hóa nội bộ họ:*
+     + **Student's $t$-test (Kanji Test 8, tr. 31):** Đòi hỏi cả 2 nhóm có phân phối chuẩn VÀ phương sai đồng nhất ($\sigma_1^2 = \sigma_2^2$).
+     + **Welch's $t$-test (Kanji Test 9, tr. 33):** Loại bỏ giả định phương sai bằng nhau, áp dụng hiệu chỉnh bậc tự do Satterthwaite khi $\sigma_1^2 \neq \sigma_2^2$.
+2. **Họ phép thử ANOVA (Phân tích phương sai đa nhóm $K \ge 3$):**
+   - *Đặc trưng định danh:* Biến phụ thuộc định lượng, biến độc lập phân loại từ 3 nhóm trở lên; tham số mục tiêu là so sánh đồng thời $K$ giá trị trung bình $\mu_1 = \mu_2 = \dots = \mu_K$; thống kê kiểm định $F = \frac{\text{MS}_{\text{between}}}{\text{MS}_{\text{within}}}$ tuân theo phân phối Fisher-Snedecor $F(\nu_1, \nu_2)$.
+   - *Phân hóa nội bộ họ:*
+     + **One-way ANOVA tiêu chuẩn (Kanji Test 22, tr. 55):** Bắt buộc các nhóm chuẩn và phương sai đồng nhất.
+     + **Welch's ANOVA:** Phiên bản hiệu chỉnh trọng số phương sai khi các nhóm vi phạm tính đồng nhất phương sai.
+     + **Kiểm định Hậu định (Post-hoc Comparisons — Kanji Test 28, tr. 65):** Do ANOVA chỉ là kiểm định toàn cục (*Omnibus test*), các phép thử hậu định (Tukey HSD, Games-Howell) bắt buộc phải được kích hoạt sau khi ANOVA bác bỏ $H_0$ để kiểm tra từng cặp nhóm cụ thể mà không làm tăng sai số ngẫu nhiên gia đình (Family-wise error rate).
+3. **Họ phép thử Chi-square ($\chi^2$) (Phân tích biến phân loại / Bảng chéo):**
+   - *Đặc trưng định danh:* Cả hai biến đều là biến phân loại (Categorical); tham số mục tiêu là sự sai khác giữa tần số quan sát thực tế ($O$) và tần số kỳ vọng lý thuyết ($E$); thống kê kiểm định $\chi^2 = \sum \frac{(O - E)^2}{E}$ tuân theo phân phối $\chi^2(\nu)$.
+   - *Phân hóa nội bộ họ:*
+     + **$\chi^2$ Goodness-of-Fit (Kanji Test 37, tr. 79):** Kiểm tra 1 biến phân loại có phù hợp với phân phối lý thuyết hay không.
+     + **$\chi^2$ Test of Independence (Kanji Test 44, tr. 91):** Kiểm tra tính độc lập giữa 2 thuộc tính trong bảng chéo $m \times n$. *Giới hạn bắt buộc:* Mọi ô kỳ vọng phải thỏa $E_{ij} \ge 5$.
+4. **Nguyên lý Nền tảng của Họ Phi tham số (Distribution-free Tests):**
+   - *Nguyên lý hoạt động:* Thay vì sử dụng giá trị số thực gốc (dễ bị bóp méo bởi ngoại lai và độ lệch), họ phi tham số chuyển đổi toàn bộ dữ liệu thành **Thứ hạng (Rank Transformation)** từ nhỏ nhất đến lớn nhất và so sánh **Tổng thứ hạng (Rank Sum) hoặc Trung vị (Median)**.
+   - *Lợi thế vượt trội:* Hoàn toàn không phụ thuộc vào giả định phân phối chuẩn (*Distribution-free*), giữ nguyên độ chính xác khi dữ liệu bị lệch phải mạnh và có phân tán vượt mức như biến `cnt`.
+   - *Các đại diện đối ứng:* Mann-Whitney $U$ test (Kanji Test 48) là cặp bài trùng đối xứng của $t$-test; Kruskal-Wallis $H$-test (Kanji Test 51/54) là cặp bài trùng đối xứng của One-way ANOVA; Dunn's test là đối ứng của Post-hoc ANOVA.
 
 ---
 
-### 📌 Research Question 3 (RQ3) — Kiểm định tính độc lập bảng chéo (Contingency Chi-Square)
-* **Câu hỏi nghiên cứu:** *Có mối liên hệ phụ thuộc có ý nghĩa thống kê giữa Điều kiện thời tiết (`weathersit`) và Mùa trong năm (`season`) hay không?*
-* **Bản chất biến số:** 2 biến phân loại `weathersit` (3 mức sau khi gộp) × `season` (4 mùa).
-* **Xử lý nhóm mẫu hiếm (Bắt buộc):** Gộp 3 dòng `weathersit = 4` vào nhóm `3` tạo thành nhóm *Thời tiết bất lợi (Mưa/Tuyết/Bão)*, đảm bảo 100% các ô trong bảng chéo $3 \times 4 = 12 \text{ ô}$ đều có tần số kỳ vọng $E_{ij} \gg 5$.
-* **Cặp giả thuyết:**
-  - $H_0:$ Điều kiện thời tiết và Mùa trong năm là hai biến cố độc lập về mặt thống kê.
-  - $H_1:$ Điều kiện thời tiết và Mùa trong năm có mối liên hệ phụ thuộc lẫn nhau.
-* **Quy trình kiểm định:**
-  1. Lập bảng tần số quan sát ($O_{ij}$) và bảng tần số kỳ vọng ($E_{ij}$).
-  2. Kiểm định Chi-square độc lập Pearson ($\chi^2$).
-  3. Lượng hóa Effect Size: Hệ số **Cramér's $V$**.
-  4. Phân tích phần dư chuẩn hóa hiệu chỉnh (*Adjusted Standardized Residuals - ASR*) để chỉ rõ các cặp mùa–thời tiết xuất hiện vượt trội hoặc suy giảm đáng kể so với kỳ vọng ngẫu nhiên.
+### 3.1.3. Bảng Tổng hợp: Các Phép kiểm định được dùng trong Bài thuộc 4 Họ kiểm định
+
+Dựa trên đối chiếu giữa giới hạn trong giáo trình Gopal K. Kanji (2006) và đặc tính dữ liệu thực tế của TV1 và TV2, bảng dưới đây xác định các bài test cụ thể được đưa vào thực thi:
+
+| Họ kiểm định | Phép kiểm định cụ thể trong bài | Mã sách Kanji (2006) | Tham số / Thống kê mục tiêu | Lý do lựa chọn dựa trên Dữ liệu thực tế |
+| :--- | :--- | :--- | :--- | :--- |
+| **Kiểm tra Giả định** | **Levene's Test** | Kanji Test 31 (tr. 71) | Phương sai giữa các nhóm ($\sigma_i^2 = \sigma_j^2$) | Kiểm tra giả định Homoscedasticity trước khi chạy $t$-test và ANOVA. |
+| **Họ $t$-test** | **Welch's $t$-test** | Kanji Test 9 (tr. 33) | Trung bình 2 nhóm ($\mu_1$ vs $\mu_0$) | Không cần giả định phương sai bằng nhau; kích thước mẫu lớn kích hoạt CLT. |
+| **Họ ANOVA** | **Welch's ANOVA** | Kanji Test 22 (adj, tr. 55) | Đồng thời 4 trung bình ($\mu_1 = \dots = \mu_4$) | Thích ứng khi phương sai giữa 4 mùa không đồng nhất (Std 119 vs 198). |
+| | **Games-Howell Post-hoc** | Kanji Test 28 (tr. 65) | Chênh lệch cặp ($\mu_i - \mu_j$) | So sánh chi tiết 6 cặp mùa trong điều kiện phương sai không bằng nhau. |
+| **Họ Phi tham số** | **Mann-Whitney $U$ test** | Kanji Test 48 (tr. 96) | Thứ hạng & Trung vị 2 nhóm | Đối chứng phi tham số cho Welch's $t$-test; miễn nhiễm với độ lệch phải của `cnt`. |
+| | **Two-sample KS-test** | Kanji Test 49 (tr. 97) | Khoảng cách tích lũy $\sup \|F_1(x) - F_0(x)\|$ | So sánh sự khác biệt toàn diện về hình thái phân phối xác suất 2 loại ngày. |
+| | **Kruskal-Wallis $H$-test** | Kanji Test 51/54 (tr. 99, 104) | Thứ hạng trung bình 4 mùa | Đối chứng phi tham số cho ANOVA; không cần giả định chuẩn. |
+| | **Dunn-Bonferroni Post-hoc** | Mở rộng Test 51/54 | Chênh lệch thứ hạng cặp | So sánh cặp phi tham số với hiệu chỉnh mức ý nghĩa $\alpha_{\text{adj}} = 0.05 / 6$. |
+| **Đánh giá Chuỗi** | **Serial Autocorrelation** | Kanji Test 64 (tr. 120) | Tự tương quan chuỗi ($r_1$) | Hiệu chỉnh cỡ mẫu hiệu dụng $N_{\text{eff}} \approx 1,479$, kiểm soát rủi ro Sai lầm loại 1. |
 
 ---
 
-## 4. Chiến lược Phương pháp luận: Kiểm soát Rủi ro Sai lầm Loại 1
+## 3. Mục 3.2 — Xây dựng và Thực thi 2 Câu hỏi Nghiên cứu Cốt lõi
 
-Với mẫu dữ liệu lớn ($N = 17,379$) và tự tương quan thời gian cao ($r_1 = 0.8431$), TV3 thực thi nghiêm ngặt **3 nguyên tắc phương pháp luận**:
+### Phần Mở đầu Mục 3.2: Đặt vấn đề và Xác lập 2 Câu hỏi Nghiên cứu Nghiệp vụ
 
-1. **Quy tắc bác bỏ $H_0$ kép:** Bác bỏ $H_0$ khi và chỉ khi thỏa mãn đồng thời:
-   - Ý nghĩa thống kê: $p\text{-value} < \alpha = 0.05$.
-   - Ý nghĩa thực tiễn: $\text{Effect Size}$ vượt qua ngưỡng tối thiểu có ý nghĩa nghiệp vụ (Cohen's $d \ge 0.2$, $\eta^2 \ge 0.01$, Cramér's $V \ge 0.1$).
-2. **Phân tích độ bền vững qua Cỡ mẫu hiệu dụng ($N_{\text{eff}}$ Robustness Check):**
-   - Tính toán lại giá trị kiểm định điều chỉnh dựa trên cỡ mẫu độc lập thực tế $N_{\text{eff}} \approx 1,479$:
+Trước khi đi vào các quy trình kiểm định kỹ thuật, Mục 3.2 xác lập rõ **2 Câu hỏi nghiên cứu trọng tâm** bắt nguồn từ nhu cầu vận hành thực tế của hệ thống Capital Bikeshare:
+
+> * **Động cơ thực tiễn:** Trong quản lý hệ thống xe đạp công cộng, hai quyết định vận hành quan trọng nhất là:
+>   1. **Điều phối xe theo ngày (Daily Fleet Scheduling):** Liệu nhu cầu thuê xe giữa ngày làm việc và ngày nghỉ có thực sự khác nhau về quy mô trung bình để nhà vận hành phải thay đổi tổng số lượng xe cung ứng mỗi ngày hay không?
+>   2. **Kế hoạch bảo trì và cân bằng trạm theo mùa vụ (Seasonal Station Rebalancing):** Nhu cầu thuê xe biến động ra sao qua 4 mùa? Mùa nào sụt giảm sâu cần thu hồi xe về xưởng bảo dưỡng, và mùa nào đạt đỉnh cần tối đa hóa năng lực phục vụ?
+>
+> * **Xác lập 2 Câu hỏi nghiên cứu chính thức:**
+>   - **Câu hỏi nghiên cứu 1 (RQ1):** *Có sự khác biệt có ý nghĩa thống kê về số lượng thuê xe trung bình mỗi giờ (`cnt`) giữa ngày làm việc (`workingday = 1`) và ngày nghỉ / cuối tuần (`workingday = 0`) hay không?*
+>   - **Câu hỏi nghiên cứu 2 (RQ2):** *Số lượng thuê xe trung bình mỗi giờ (`cnt`) có sự khác biệt có ý nghĩa thống kê giữa 4 mùa trong năm (`season`: Mùa xuân, Mùa hè, Mùa thu, Mùa đông) hay không? Cụ thể những cặp mùa nào tạo ra sự khác biệt?*
+
+Sau phần đặt vấn đề chung, Mục 3.2 được chia thành 2 đề mục giải quyết chi tiết:
+
+---
+
+### 3.2.1. So sánh 2 nhóm độc lập: `workingday = 1` (Ngày làm việc) và `workingday = 0` (Ngày nghỉ / Cuối tuần)
+
+* **Thiết lập giả thuyết thống kê:**
+  - Giả thuyết không ($H_0$): $\mu_{\text{workingday}} = \mu_{\text{non-workingday}}$ (hoặc hàm phân phối $F_1(x) = F_0(x)$ — Không có sự khác biệt về nhu cầu thuê xe trung bình mỗi giờ giữa hai loại ngày).
+  - Giả thuyết đối ($H_1$): $\mu_{\text{workingday}} \neq \mu_{\text{non-workingday}}$ (hoặc hàm phân phối $F_1(x) \neq F_0(x)$ — Có sự khác biệt có ý nghĩa thống kê về nhu cầu thuê xe giữa hai loại ngày).
+* **Quy trình đa kiểm định thực thi:**
+  1. **Kiểm tra giả định:**
+     - Vẽ Q-Q plot và phân phối mật độ KDE của `cnt` trên 2 nhóm ngày (`fig_3_1`).
+     - Chạy kiểm định Levene test (Kanji Test 31) để kiểm tra tính đồng nhất phương sai giữa ngày làm việc và ngày nghỉ.
+  2. **Kiểm định tham số:**
+     - Thực thi **Welch's $t$-test (Kanji Test 9)** để so sánh trung bình 2 nhóm độc lập, loại bỏ giả định phương sai đồng nhất thông qua hiệu chỉnh Satterthwaite.
+  3. **Kiểm định phi tham số đối chứng:**
+     - Thực thi **Mann-Whitney $U$ test (Kanji Test 48)** để so sánh thứ hạng và trung vị, kiểm chứng xem kết luận có bị bóp méo bởi độ lệch phải của `cnt` hay không.
+     - Thực thi **Two-sample Kolmogorov-Smirnov test (Kanji Test 49)** để so sánh toàn diện khoảng cách lớn nhất giữa hai hàm phân phối tích lũy.
+  4. **Lượng hóa Kích thước hiệu ứng (Effect Size):**
+     - Tính toán **Cohen's $d$** (cho kiểm định tham số) và **Rank-biserial correlation $r$** (cho kiểm định phi tham số).
+  5. **Bóc tách bản chất thực tiễn qua Phân tầng theo giờ (Stratified Analysis):**
+     - Trực quan hóa và đối chiếu biểu đồ đường theo 24 khung giờ (`fig_3_3`): phân tích hiện tượng "triệt tiêu lẫn nhau" khi tính trung bình gộp 24h (ngày làm việc cao điểm sáng/chiều bù trừ với ngày nghỉ cao điểm trưa/chiều), làm rõ lý do tại sao quy mô trung bình 24h chênh lệch nhỏ nhưng bản chất nhịp sinh hoạt lại hoàn toàn đối lập.
+  6. **Kết luận và Hàm ý nghiệp vụ.**
+
+---
+
+### 3.2.2. So sánh 4 nhóm độc lập: `season` (4 Mùa trong năm: Mùa xuân, Mùa hè, Mùa thu, Mùa đông)
+
+* **Thiết lập giả thuyết thống kê đa nhóm:**
+  - Giả thuyết không ($H_0$): $\mu_1 = \mu_2 = \mu_3 = \mu_4$ (Lượng thuê xe trung bình mỗi giờ là như nhau giữa cả 4 mùa trong năm).
+  - Giả thuyết đối ($H_1$): Tồn tại ít nhất một cặp mùa có lượng thuê xe trung bình khác nhau ($\exists (i, j): \mu_i \neq \mu_j$).
+* **Quy trình đa kiểm định thực thi:**
+  1. **Kiểm tra giả định:**
+     - Trực quan hóa phân phối `cnt` trên từng mùa bằng Boxplot và biểu đồ phân tán (`fig_3_4`).
+     - Chạy kiểm định Levene test (Kanji Test 31) để kiểm tra tính đồng nhất phương sai giữa 4 nhóm mùa.
+  2. **Kiểm định tham số đa nhóm:**
+     - Thực thi **One-way ANOVA tiêu chuẩn (Kanji Test 22)** và **Welch's ANOVA** (hiệu chỉnh phương sai dị biệt giữa các mùa).
+  3. **Kiểm định phi tham số đa nhóm đối chứng:**
+     - Thực thi **Kruskal-Wallis $H$-test (Kanji Test 51 & 54)** để so sánh thứ hạng phân bố giữa 4 mùa, kiểm tra tính bền vững trước sự vi phạm phân phối chuẩn.
+  4. **Kiểm định Hậu định đa biến (Post-hoc Multiple Comparisons):**
+     - Khi kiểm định tổng quát bác bỏ $H_0$, thực hiện so sánh cặp cho toàn bộ $6$ cặp mùa:
+       + Tham số: **Games-Howell post-hoc test** (Kanji Test 28, thích ứng với phương sai không đồng nhất).
+       + Phi tham số: **Dunn's test** kết hợp hiệu chỉnh mức ý nghĩa **Bonferroni** ($\alpha_{\text{adj}} = 0.05 / 6 \approx 0.0083$).
+  5. **Lượng hóa Kích thước hiệu ứng:**
+     - Tính toán **Eta-squared ($\eta^2$)**, **Omega-squared ($\omega^2$)** cho ANOVA và **Epsilon-squared ($\epsilon^2$)** cho Kruskal-Wallis.
+     - Trực quan hóa khoảng tin cậy $95\%$ chênh lệch giữa các cặp mùa bằng Forest plot (`fig_3_5`).
+  6. **Kết luận và Hàm ý nghiệp vụ.**
+
+---
+
+## 4. Mục 3.3 — Đánh giá Độ bền vững & Kiểm soát Rủi ro Sai lầm Loại 1
+
+1. **Quy tắc Bác bỏ $H_0$ Kép (Dual-Criterion Rule):**
+   - Chỉ kết luận có sự khác biệt có ý nghĩa thực tiễn khi thỏa mãn đồng thời:
+     + Ý nghĩa thống kê: $p\text{-value} < \alpha = 0.05$.
+     + Ý nghĩa thực tiễn: Kích thước hiệu ứng đạt ngưỡng tối thiểu theo chuẩn quốc tế (Cohen's $d \ge 0.20$ cho RQ1; $\eta^2 \ge 0.01$ cho RQ2).
+2. **Kế hoạch Kiểm tra Độ bền vững theo Cỡ mẫu hiệu dụng ($N_{\text{eff}}$ Robustness Check):**
+   - Áp dụng công thức điều chỉnh chuỗi thời gian (Kanji Test 64) dựa trên $N_{\text{eff}} \approx 1,479$:
      $$\text{Statistic}_{\text{adj}} = \text{Statistic}_{\text{gốc}} \times \sqrt{\frac{N_{\text{eff}}}{N}} \approx \frac{\text{Statistic}_{\text{gốc}}}{3.43}$$
-   - Đối chiếu xem kết luận bác bỏ $H_0$ có bền vững trước sự suy giảm bậc tự do hiệu dụng hay không.
-3. **Văn phong kết luận khoa học:**
+   - Đánh giá xem kết luận kiểm định có còn giữ vững ý nghĩa thống kê hay không sau khi loại bỏ lượng thông tin trùng lặp.
+   - Chạy kiểm định đối chứng trên chuỗi dữ liệu tổng hợp theo cấp độ ngày ($N_{\text{day}} = 731$ ngày).
+3. **Văn phong khoa học chuẩn mực:**
    - Dùng: *"Có đủ bằng chứng thống kê ở mức ý nghĩa $\alpha = 0.05$ để bác bỏ giả thuyết $H_0$..."* hoặc *"Chưa đủ bằng chứng thống kê để bác bỏ giả thuyết $H_0$..."*.
-   - **Tuyệt đối không viết "Chấp nhận $H_0$"**.
+   - Tuyệt đối không viết "Chấp nhận $H_0$".
 
 ---
 
-## 5. Cấu trúc Tài liệu Báo cáo Dự kiến (`Hypothesis_Test/report.md`)
+## 5. Danh mục 5 Biểu đồ Trực quan hóa Dự kiến (`Hypothesis_Test/assets/`)
+
+| Tên tệp | Tên biểu đồ chính thức | Loại biểu đồ | Mục đích phân tích & Giả định kiểm tra |
+| :--- | :--- | :--- | :--- |
+| `fig_3_1_workingday_assumptions.png` | **Hình 3.1. Kiểm tra giả định phân phối và phương sai của cnt theo loại ngày** | Q-Q plot & KDE density plot | Kiểm tra tính chuẩn và so sánh trực quan phương sai của `cnt` giữa ngày làm việc vs ngày nghỉ. |
+| `fig_3_2_workingday_cnt_comparison.png` | **Hình 3.2. So sánh phân phối và mức độ tập trung cnt giữa Ngày làm việc và Ngày nghỉ** | Boxplot kết hợp Violin plot & khoảng tin cậy 95% Mean | Minh họa phân vị, trung vị và hình thái đuôi của 2 nhóm ngày phục vụ Welch's t-test và Mann-Whitney U. |
+| `fig_3_3_workingday_hourly_interaction.png` | **Hình 3.3. Phân tích tương tác nhịp sinh hoạt theo giờ giữa ngày làm việc và ngày nghỉ** | Multi-line chart theo 24 khung giờ | Bóc tách bản chất thực tiễn của RQ1: phân tích sự đảo chiều nhu cầu theo giờ (commuter vs leisure). |
+| `fig_3_4_season_cnt_distributions.png` | **Hình 3.4. Phân phối số lượng thuê xe cnt theo 4 mùa trong năm** | Boxplot kết hợp Strip plot phân tán | Trực quan hóa sự chênh lệch phân phối và độ phân tán dị biệt giữa 4 mùa phục vụ ANOVA và Kruskal-Wallis. |
+| `fig_3_5_season_posthoc_diffs.png` | **Hình 3.5. Kết quả so sánh hậu định chênh lệch trung bình từng cặp mùa** | Forest plot biểu diễn khoảng tin cậy 95% chênh lệch cặp | Biểu diễn kết quả so sánh hậu định (Games-Howell & Dunn-Bonferroni) cho 6 cặp mùa. |
+
+---
+
+## 6. Cấu trúc Tài liệu Báo cáo Dự kiến (`Hypothesis_Test/report.md`)
 
 ```text
 # CHƯƠNG 3. KIỂM ĐỊNH GIẢ THUYẾT (HYPOTHESIS TESTING)
 
-## 3.1. Cơ sở lý thuyết các phương pháp kiểm định thống kê
-   3.1.1. Bản chất của kiểm định giả thuyết thống kê (H0, H1, mức ý nghĩa, p-value, miền bác bỏ)
-   3.1.2. Sai lầm loại 1, Sai lầm loại 2 và Tầm quan trọng của Kích thước hiệu ứng (Effect Size)
-   3.1.3. Kiểm định tham số vs Kiểm định phi tham số (t-test vs Mann-Whitney U, ANOVA vs Kruskal-Wallis)
-   3.1.4. Kiểm định tính độc lập Chi-square và Phân tích phần dư hiệu chỉnh
+## 3.1. Cơ sở lý thuyết các phương pháp kiểm định thống kê (Theo Gopal K. Kanji, 2006)
+   3.1.1. Bốn đặc trưng định danh chung để xác định một Họ phép thử thống kê
+   3.1.2. Bản chất của các Họ phép thử theo 4 đặc trưng định danh và Nguyên lý của Họ Phi tham số
+          - Họ phép thử t-test (Student's t, Welch's t)
+          - Họ phép thử ANOVA (One-way ANOVA, Welch's ANOVA, Post-hoc)
+          - Họ phép thử Chi-square (Goodness-of-Fit, Test of Independence)
+          - Nguyên lý nền tảng của Họ Phi tham số (Rank Transformation, Median dominance)
+   3.1.3. Bảng tổng hợp: Các phép kiểm định được dùng trong bài thuộc 4 họ kiểm định
+   3.1.4. Sai lầm loại 1, Sai lầm loại 2 và Tầm quan trọng của Kích thước hiệu ứng (Effect Size)
    3.1.5. Thách thức phương pháp luận: Cỡ mẫu lớn và Tự tương quan chuỗi thời gian (N_eff)
 
-## 3.2. Xây dựng và Thực thi các Câu hỏi nghiên cứu
-   3.2.1. Câu hỏi nghiên cứu 1: So sánh nhu cầu thuê xe giữa Ngày làm việc và Ngày nghỉ (RQ1)
-          - Đặt vấn đề và Thiết lập giả thuyết
-          - Kiểm tra giả định (Tính chuẩn, Đồng nhất phương sai)
-          - Kết quả kiểm định tham số (Welch's t-test) và phi tham số (Mann-Whitney U)
-          - Lượng hóa Effect Size (Cohen's d, Rank-biserial r) và Phân tầng theo giờ
-          - Kết luận và Ý nghĩa thực tiễn
-   3.2.2. Câu hỏi nghiên cứu 2: So sánh nhu cầu thuê xe giữa các Mùa trong năm (RQ2)
-          - Đặt vấn đề và Thiết lập giả thuyết
-          - Kiểm tra giả định (Levene test)
-          - Kết quả kiểm định ANOVA, Welch's ANOVA và Kruskal-Wallis
-          - Phân tích hậu định từng cặp mùa (Games-Howell & Dunn-Bonferroni)
-          - Lượng hóa Effect Size (Eta-squared, Epsilon-squared) và Kết luận
-   3.2.3. Câu hỏi nghiên cứu 3: Kiểm định tính độc lập giữa Mùa và Điều kiện thời tiết (RQ3)
-          - Đặt vấn đề và Xử lý nhóm mẫu hiếm (Gộp weathersit = 4 vào nhóm 3)
-          - Bảng chéo quan sát và tần số kỳ vọng
-          - Kết quả kiểm định Pearson Chi-square và Cramér's V
-          - Phân tích phần dư chuẩn hóa hiệu chỉnh (ASR) và Kết luận
+## 3.2. Xây dựng và Thực thi 2 Câu hỏi nghiên cứu
+   [Phần Mở đầu Mục 3.2: Đặt vấn đề nghiệp vụ và Xác lập 2 Câu hỏi nghiên cứu chính thức]
+   3.2.1. So sánh 2 nhóm độc lập: workingday = 1 (Ngày làm việc) và workingday = 0 (Ngày nghỉ) (RQ1)
+          - Thiết lập giả thuyết H0/H1
+          - Kiểm tra giả định phân phối và phương sai (Levene test)
+          - Thực thi kiểm định tham số: Welch's t-test (Kanji Test 9)
+          - Thực thi kiểm định phi tham số: Mann-Whitney U (Kanji Test 48) & Kolmogorov-Smirnov (Kanji Test 49)
+          - Lượng hóa Effect Size (Cohen's d, Rank-biserial r)
+          - Bóc tách bản chất thực tiễn qua phân tầng nhịp giờ (Hình 3.3)
+          - Kết luận và Ý nghĩa nghiệp vụ
+   3.2.2. So sánh 4 nhóm độc lập: season (4 Mùa trong năm: Xuân, Hạ, Thu, Đông) (RQ2)
+          - Thiết lập giả thuyết đa nhóm H0/H1
+          - Kiểm tra giả định phương sai giữa 4 mùa (Levene test)
+          - Thực thi kiểm định tham số: One-Way ANOVA & Welch's ANOVA (Kanji Test 22)
+          - Thực thi kiểm định phi tham số: Kruskal-Wallis H-test (Kanji Test 51/54)
+          - Phân tích hậu định từng cặp mùa: Games-Howell & Dunn-Bonferroni (Kanji Test 28)
+          - Lượng hóa Effect Size (Eta-squared, Epsilon-squared) và Forest plot (Hình 3.5)
+          - Kết luận và Ý nghĩa nghiệp vụ
 
 ## 3.3. Đánh giá độ bền vững và Kiểm soát Sai lầm loại 1
    3.3.1. Đánh giá độ bền vững theo Cỡ mẫu hiệu dụng (N_eff Correction)
@@ -139,44 +222,15 @@ Với mẫu dữ liệu lớn ($N = 17,379$) và tự tương quan thời gian c
 
 ---
 
-## 6. Danh mục 6 Biểu đồ Trực quan hóa (`Hypothesis_Test/assets/`)
-
-| Tên tệp | Tên biểu đồ chính thức | Nội dung biểu thị |
-| :--- | :--- | :--- |
-| `fig_3_1_workingday_assumptions.png` | **Hình 3.1. Kiểm tra giả định phân phối và phương sai của cnt theo loại ngày** | Q-Q plot và phân phối mật độ KDE của `cnt` trên ngày làm việc vs ngày nghỉ |
-| `fig_3_2_workingday_cnt_comparison.png` | **Hình 3.2. So sánh phân phối và giá trị trung bình cnt giữa Ngày làm việc và Ngày nghỉ** | Boxplot kết hợp Violin plot và khoảng tin cậy 95% Mean `cnt` |
-| `fig_3_3_workingday_hourly_interaction.png` | **Hình 3.3. Phân tích tương tác nhịp sinh hoạt theo giờ giữa ngày làm việc và ngày nghỉ** | Line chart xu hướng `cnt` theo 24 khung giờ tách biệt giữa 2 loại ngày |
-| `fig_3_4_season_cnt_distributions.png` | **Hình 3.4. Phân phối số lượng thuê xe cnt theo 4 mùa trong năm** | Boxplot + Strip plot phân tán thể hiện sự chênh lệch phân phối giữa 4 mùa |
-| `fig_3_5_season_posthoc_diffs.png` | **Hình 3.5. Kết quả so sánh hậu định chênh lệch trung bình từng cặp mùa** | Forest plot biểu diễn khoảng tin cậy 95% chênh lệch khác biệt trung bình giữa 6 cặp mùa |
-| `fig_3_6_weather_season_contingency.png` | **Hình 3.6. Ma trận bảng chéo và Phần dư chuẩn hóa hiệu chỉnh giữa Thời tiết và Mùa** | Heatmap phần dư chuẩn hóa hiệu chỉnh (ASR) giữa 3 mức thời tiết × 4 mùa |
-
----
-
-## 7. Cấu trúc Thư mục và File đầu ra của TV3
-
-```text
-Hypothesis_Test/
-├── PLAN.md                     # Kế hoạch chi tiết của TV3 (file này)
-├── README.md                   # Hướng dẫn chạy môi trường, luồng xử lý và tóm tắt kết quả
-├── requirements.txt            # Thư viện sử dụng (scipy, statsmodels, pingouin, seaborn, matplotlib)
-├── 03_hypothesis_testing.py    # Script Python thực thi tính toán thuần
-├── 03_hypothesis_testing.ipynb # Jupyter Notebook trực quan, đầy đủ biểu đồ, bảng biểu và diễn giải
-├── hypothesis_findings.md      # Findings Sheet bàn giao theo chuẩn HANDOFF.md
-├── report.md                   # Toàn bộ nội dung báo cáo Chương 3 hoàn chỉnh
-└── assets/                     # 6 hình ảnh biểu đồ độ phân giải 300 DPI (fig_3_1 đến fig_3_6)
-```
-
----
-
-## 8. Lộ trình Triển khai Chi tiết
+## 7. Lộ trình Triển khai Chi tiết
 
 1. **Giai đoạn 1: Môi trường và Script tính toán (`03_hypothesis_testing.py`):**
-   - Viết toàn bộ hàm thống kê: Levene, Welch t-test, Mann-Whitney U, Cohen's d, Rank-biserial r, Welch ANOVA, Kruskal-Wallis, Games-Howell, Dunn-Bonferroni, Eta-squared, Epsilon-squared, Chi-square, Cramér's V, ASR matrix, $N_{\text{eff}}$ adjustment.
-   - Xuất trọn vẹn 6 hình ảnh `fig_3_1` đến `fig_3_6` vào `Hypothesis_Test/assets/`.
+   - Viết toàn bộ hàm thống kê: Levene test, Welch's t-test (Kanji Test 9), Mann-Whitney U (Kanji Test 48), KS-test (Kanji Test 49), Cohen's d, Rank-biserial r, One-way ANOVA, Welch's ANOVA (Kanji Test 22), Kruskal-Wallis (Kanji Test 51/54), Games-Howell, Dunn-Bonferroni, Eta-squared $\eta^2$, $N_{\text{eff}}$ adjustment.
+   - Xuất trọn vẹn 5 hình ảnh biểu đồ chuẩn 300 DPI vào thư mục `Hypothesis_Test/assets/`.
 2. **Giai đoạn 2: Xây dựng Jupyter Notebook (`03_hypothesis_testing.ipynb`):**
-   - Tích hợp code chạy và trình bày kết quả bảng biểu, biểu đồ rõ ràng, có ghi chú tiếng Việt hoàn chỉnh.
-3. **Giai đoạn 3: Soạn thảo Báo cáo chuyên sâu (`Hypothesis_Test/report.md`):**
-   - Viết báo cáo học thuật đầy đủ từ Mục 3.1 đến Mục 3.4 theo đúng chuẩn `rules.md` (không có lỗi LaTeX, dấu thập phân `.`, công thức rõ ràng, nhận xét theo chuỗi Quan sát $\rightarrow$ Bằng chứng $\rightarrow$ Ý nghĩa).
+   - Tổ chức notebook khoa học, hiển thị rõ ràng bảng kết quả thống kê, trích dẫn mã phép thử Kanji, biểu đồ trực quan và nhận xét.
+3. **Giai đoạn 3: Soạn thảo Báo cáo Hoàn chỉnh (`Hypothesis_Test/report.md`):**
+   - Soạn thảo báo cáo học thuật đầy đủ từ Mục 3.1 (đủ 3.1.1, 3.1.2, 3.1.3 theo 4 đặc trưng) đến Mục 3.4 theo đúng chuẩn `rules.md`.
 4. **Giai đoạn 4: Hoàn thiện Bàn giao và Quản lý Repo:**
    - Tạo `hypothesis_findings.md`, `README.md`, `requirements.txt`.
    - Cập nhật dòng thông báo bàn giao chính thức trong `HANDOFF.md`.
