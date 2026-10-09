@@ -100,12 +100,14 @@ Vì vậy, trong hồi quy đa biến, Adjusted $R^2$ thường hữu ích hơn 
 ### 5.1.7. Sai số và phần dư
 
 **Sai số (Error)**
+
 Trong mô hình lý thuyết:
-$$Y_i=\hat{Y}_i+\varepsilon_i$$
+$$Y_{i}=\beta _{0}+\beta _{1}X_{1i}+\beta _{2}X_{2i}+...+\beta _{k}X_{ki}+\varepsilon _{i}$$
 
 $\varepsilon_i$ là sai số ngẫu nhiên, đại diện cho những yếu tố ảnh hưởng đến $Y$ nhưng không được đưa vào mô hình.
 
 **Phần dư (Residual)**
+
 Sau khi mô hình được ước lượng, ta không biết chính xác $\varepsilon_i$, mà tính được phần dư:
 
 $$e_i=Y_i-\hat{Y}_i$$
