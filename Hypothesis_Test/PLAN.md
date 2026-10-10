@@ -47,10 +47,50 @@ Xuất phát từ 2 động cơ thực tiễn nêu trên, nghiên cứu chính t
 
 ## 3. Cơ sở Lý thuyết các Phương pháp Kiểm định Thống kê (Theo Gopal K. Kanji, 2006)
 
-Để xây dựng hệ thống kiểm định đa chiều, khách quan và khoa học giải quyết RQ1 và RQ2, phần lý thuyết của Chương 3 được thiết kế theo hệ thống phân loại học thuật chuẩn tắc:
+### 3.1. Bản chất của Kiểm định Thống kê & Quy trình 5 bước Chuẩn tắc (Neave-Kanji Framework)
 
-### 3.1. Bốn đặc trưng định danh chung để xác định một Họ phép thử thống kê
-Theo hệ thống phân loại của Gopal K. Kanji (2006, *Classification of Tests*, tr. 19–20), bất kỳ phép kiểm định giả thuyết nào cũng được định danh và lựa chọn dựa trên **4 đặc trưng chung cốt lõi**:
+#### 1. Vì sao phải thực hiện kiểm định giả thuyết thống kê?
+Khi quan sát dữ liệu thực tế, sự chênh lệch giữa hai số trung bình mẫu (ví dụ: ngày làm việc $\text{Mean} = 193.21$ vs ngày nghỉ $\text{Mean} = 181.41$) luôn chứa đựng hai khả năng:
+- **Khả năng 1:** Chênh lệch này chỉ là sự ngẫu nhiên thuần túy do quá trình lấy mẫu (Sampling variation / Random noise).
+- **Khả năng 2:** Chênh lệch này phản ánh một sự khác biệt thực chất và có tính quy luật của tổng thể hành vi người dùng.
+
+Kiểm định giả thuyết thống kê là công cụ toán học duy nhất cho phép định lượng xác suất xảy ra của sự chênh lệch do ngẫu nhiên, từ đó cung cấp căn cứ khách quan để đưa ra quyết định nghiệp vụ.
+
+#### 2. Triết lý kiểm định nền tảng theo Gopal K. Kanji (2006, tr. 2)
+Theo Gopal K. Kanji (2006, *Introduction to Statistical Testing*), có hai nguyên tắc triết lý cốt tử cần nắm vững:
+- **Kiểm định không nhằm mục đích "chứng minh" giả thuyết:** Các phép thử thống kê không được thiết kế để chứng minh hay bác bỏ một điều gì là chân lý tuyệt đối. Mục tiêu duy nhất của kiểm định là **chỉ ra rằng một ý niệm (giả thuyết) là không thể đứng vững (untenable) khi nó dẫn tới một xác suất xảy ra quá nhỏ trong thực tế**.
+- **Giả thuyết Không ($H_0$) luôn đại diện cho trạng thái giữ nguyên (Status Quo):** Giả thuyết mà ta cố gắng tìm bằng chứng bác bỏ luôn là giả thuyết "không có sự thay đổi / không có sự khác biệt" (ví dụ: $\mu_1 = \mu_2$).
+- **Nguyên tắc vàng về kết luận:** **Tuyệt đối không bao giờ kết luận "chấp nhận $H_0$"**. Ta chỉ kết luận: *"Có đủ bằng chứng bác bỏ $H_0$"* hoặc *"Chưa đủ bằng chứng bác bỏ $H_0$"* (Do not reject $H_0$).
+
+#### 3. Quy trình Kiểm định 5 Bước Chuẩn tắc (Neave-Kanji Five-Step Method)
+Để giải quyết bài toán kiểm định một cách khoa học, nghiên cứu tuân thủ nghiêm ngặt quy trình 5 bước được Gopal K. Kanji (2006, tr. 2–3) trích dẫn từ phương pháp luận của H.R. Neave (1976):
+
+```mermaid
+flowchart LR
+    S1["Bước 1: Thiết lập Giả thuyết<br>(H0 Status Quo vs H1 Action)"] --> S2["Bước 2: Xây dựng Thống kê T<br>(Tác chế thuần túy từ dữ liệu)"]
+    S2 --> S3["Bước 3: Xác lập Miền Bác bỏ<br>(Critical Region 1 đuôi/2 đuôi)"]
+    S3 --> S4["Bước 4: Mức ý nghĩa & Sai lầm<br>(Kiểm soát Alpha & Beta)"]
+    S4 --> S5["Bước 5: Ra quyết định & Robustness<br>(p-value, Effect Size, N_eff)"]
+```
+
+- **Bước 1 — Phát biểu bài toán thực tiễn thành cặp giả thuyết ($H_0$ và $H_1$):**
+  + Giả thuyết đối ($H_1$ — *Action hypothesis*): Đại diện cho tình huống mà nhà nghiên cứu muốn phát hiện để đưa ra hành động can thiệp (ví dụ: có sự khác biệt giữa các nhóm). Việc xác lập $H_1$ quyết định phép thử là 1 đuôi hay 2 đuôi.
+  + Giả thuyết không ($H_0$ — *Status quo*): Điểm tựa chuẩn đối chứng, khẳng định không có sự khác biệt.
+- **Bước 2 — Xây dựng Thống kê kiểm định ($T$):**
+  + Thống kê $T(X)$ là một hàm toán học thuần túy của dữ liệu mẫu. Một thống kê tốt phải thỏa mãn 2 điều kiện: (a) Có hành vi khác biệt rõ rệt khi $H_0$ đúng so với khi $H_1$ đúng; (b) Có hàm phân phối xác suất tính toán được dưới giả định $H_0$ đúng.
+- **Bước 3 — Xác lập Miền bác bỏ (Critical Region):**
+  + Xác định tập hợp các giá trị của $T$ có xác suất xuất hiện cực nhỏ dưới $H_0$. Nếu giá trị tính toán của $T$ rơi vào miền này, ta có cơ sở bác bỏ $H_0$ để ủng hộ $H_1$.
+- **Bước 4 — Thiết lập Mức ý nghĩa $\alpha$ & Kiểm soát Sai lầm:**
+  + Mức ý nghĩa $\alpha$ (thường chọn $\alpha = 0.05$) là giới hạn rủi ro chấp nhận được của **Sai lầm loại 1 (Type I Error)** — rủi ro bác bỏ $H_0$ khi $H_0$ thực sự đúng.
+  + **Sai lầm loại 2 (Type II Error — $\beta$):** Rủi ro không bác bỏ $H_0$ khi $H_0$ thực sự sai. Lực lượng của phép thử (Power of test) được định nghĩa là $1 - \beta$.
+- **Bước 5 — Ra quyết định thực tế, Lượng hóa Hiệu ứng & Đánh giá Độ bền vững (Robustness):**
+  + Thay vì chỉ dừng lại ở việc $T$ có rơi vào miền bác bỏ hay không, bước 5 tính toán chính xác $p\text{-value}$ thực tế.
+  + **Đặc biệt theo Kanji (2006, tr. 3–4):** Bắt buộc phải đánh giá **Độ bền vững (Robustness)** của phép thử trước sự vi phạm các giả định (như vi phạm tính chuẩn hay phương sai đồng nhất), đồng thời kết hợp Kích thước hiệu ứng (Effect Size) để xác định ý nghĩa thực tiễn.
+
+---
+
+### 3.2. Bốn đặc trưng định danh chung để xác định một Họ phép thử thống kê
+Để lựa chọn chính xác phép thử cho Bước 2 trong quy trình 5 bước, Gopal K. Kanji (2006, *Classification of Tests*, tr. 19–20) hệ thống hóa việc phân loại dựa trên **4 đặc trưng định danh chung cốt lõi**:
 1. **Bản chất biến số và Thang đo (Data Types & Measurement Scale):** Biến đang phân tích là biến định lượng liên tục/biến đếm (`cnt`, `temp`) hay biến phân loại/định danh (`workingday`, `season`, `weathersit`)? Thang đo là khoảng/tỷ lệ (Interval/Ratio) hay thứ bậc/định danh (Ordinal/Nominal)?
 2. **Thiết kế mẫu và Số lượng nhóm so sánh (Sample Design & Number of Groups):** Bài toán nghiên cứu thuộc dạng 1 mẫu so sánh với chuẩn ($\mu_0$), 2 nhóm mẫu độc lập (Independent samples), 2 nhóm mẫu từng cặp (Paired samples), hay đa nhóm ($K \ge 3$ groups)?
 3. **Tham số mục tiêu cần kiểm định (Parameter of Interest):** Kiểm định nhằm so sánh đặc trưng nào của tổng thể? Giá trị trung bình ($\mu$), Phương sai ($\sigma^2$), Tần số xuất hiện quan sát so với kỳ vọng ($O_{ij}$ vs $E_{ij}$), hay Thứ hạng phân bố và Trung vị (Ranks / Median)?
@@ -58,9 +98,9 @@ Theo hệ thống phân loại của Gopal K. Kanji (2006, *Classification of Te
 
 ---
 
-### 3.2. Bản chất các Họ phép thử theo 4 đặc trưng định danh & Nguyên lý Họ Phi tham số
+### 3.3. Bản chất các Họ phép thử theo 4 đặc trưng định danh & Nguyên lý Họ Phi tham số
 
-Dựa trên 4 đặc trưng định danh ở Mục 3.1, bản chất của **3 họ kiểm định tham số kinh điển** và **nguyên lý nền tảng của họ Phi tham số** được trình bày như sau:
+Dựa trên 4 đặc trưng định danh ở Mục 3.2, bản chất của **3 họ kiểm định tham số kinh điển** và **nguyên lý nền tảng của họ Phi tham số** được trình bày như sau:
 
 1. **Họ phép thử $t$-test (So sánh trung bình 2 nhóm định lượng):**
    - *Đặc trưng định danh:* Biến phụ thuộc định lượng; số nhóm so sánh tối đa 2 nhóm; tham số mục tiêu là Giá trị trung bình $\mu$; thống kê kiểm định tuân theo phân phối Student's $t$ với bậc tự do $\nu$.
@@ -85,7 +125,7 @@ Dựa trên 4 đặc trưng định danh ở Mục 3.1, bản chất của **3 h
 
 ---
 
-### 3.3. Bảng Tổng hợp: Các Phép kiểm định được dùng trong Bài thuộc 4 Họ kiểm định
+### 3.4. Bảng Tổng hợp: Các Phép kiểm định được dùng trong Bài thuộc 4 Họ kiểm định
 
 Dựa trên đối chiếu giữa giới hạn trong giáo trình Gopal K. Kanji (2006) và đặc tính dữ liệu thực tế của TV1 và TV2, bảng dưới đây xác định các bài test cụ thể được đưa vào thực thi:
 
@@ -110,7 +150,7 @@ Dựa trên đối chiếu giữa giới hạn trong giáo trình Gopal K. Kanji
 * **Thiết lập giả thuyết thống kê:**
   - Giả thuyết không ($H_0$): $\mu_{\text{workingday}} = \mu_{\text{non-workingday}}$ (hoặc hàm phân phối $F_1(x) = F_0(x)$ — Không có sự khác biệt về nhu cầu thuê xe trung bình mỗi giờ giữa hai loại ngày).
   - Giả thuyết đối ($H_1$): $\mu_{\text{workingday}} \neq \mu_{\text{non-workingday}}$ (hoặc hàm phân phối $F_1(x) \neq F_0(x)$ — Có sự khác biệt có ý nghĩa thống kê về nhu cầu thuê xe giữa hai loại ngày).
-* **Quy trình đa kiểm định thực thi:**
+* **Quy trình đa kiểm định thực thi (Ứng dụng Quy trình 5 bước Neave-Kanji):**
   1. **Kiểm tra giả định nội nhóm:**
      - Vẽ Q-Q plot và phân phối mật độ KDE của `cnt` tách riêng trên 2 nhóm ngày (`fig_3_1`).
      - Chạy kiểm định Levene test (Kanji Test 31) để kiểm tra tính đồng nhất phương sai giữa ngày làm việc và ngày nghỉ.
@@ -132,7 +172,7 @@ Dựa trên đối chiếu giữa giới hạn trong giáo trình Gopal K. Kanji
 * **Thiết lập giả thuyết thống kê đa nhóm:**
   - Giả thuyết không ($H_0$): $\mu_{\text{Spring}} = \mu_{\text{Summer}} = \mu_{\text{Fall}} = \mu_{\text{Winter}}$ (Lượng thuê xe trung bình mỗi giờ là như nhau giữa cả 4 mùa trong năm).
   - Giả thuyết đối ($H_1$): Tồn tại ít nhất một cặp mùa có lượng thuê xe trung bình khác nhau ($\exists (i, j): \mu_i \neq \mu_j$).
-* **Quy trình đa kiểm định thực thi:**
+* **Quy trình đa kiểm định thực thi (Ứng dụng Quy trình 5 bước Neave-Kanji):**
   1. **Kiểm tra giả định:**
      - Trực quan hóa phân phối `cnt` trên từng mùa bằng Boxplot và biểu đồ phân tán (`fig_3_4` / tái sử dụng Hình 1.7 EDA).
      - Chạy kiểm định Levene test (Kanji Test 31) để kiểm tra tính đồng nhất phương sai giữa 4 nhóm mùa.
@@ -189,18 +229,19 @@ Dựa trên đối chiếu giữa giới hạn trong giáo trình Gopal K. Kanji
 
 ## 3.1. Đặt vấn đề Nghiệp vụ & Cơ sở Lý thuyết các Phương pháp Kiểm định (Theo Gopal K. Kanji, 2006)
    3.1.1. Động cơ thực tiễn và Xác lập 2 Câu hỏi nghiên cứu (RQ1 & RQ2)
-   3.1.2. Bốn đặc trưng định danh chung để xác định một Họ phép thử thống kê
-   3.1.3. Bản chất của các Họ phép thử theo 4 đặc trưng định danh và Nguyên lý của Họ Phi tham số
+   3.1.2. Bản chất của Kiểm định Thống kê & Quy trình 5 bước Chuẩn tắc (Neave-Kanji Framework)
+   3.1.3. Bốn đặc trưng định danh chung để xác định một Họ phép thử thống kê
+   3.1.4. Bản chất của các Họ phép thử theo 4 đặc trưng định danh và Nguyên lý của Họ Phi tham số
           - Họ phép thử t-test (Student's t, Welch's t)
           - Họ phép thử ANOVA (One-way ANOVA, Welch's ANOVA, Post-hoc)
           - Họ phép thử Chi-square (Goodness-of-Fit, Test of Independence)
           - Nguyên lý nền tảng của Họ Phi tham số (Rank Transformation, Median dominance)
-   3.1.4. Bảng tổng hợp: Các phép kiểm định được dùng trong bài thuộc 4 họ kiểm định
-   3.1.5. Căn cứ thực nghiệm từ EDA & Phân phối: Thách thức cỡ mẫu lớn và Tự tương quan chuỗi (N_eff)
+   3.1.5. Bảng tổng hợp: Các phép kiểm định được dùng trong bài thuộc 4 họ kiểm định
+   3.1.6. Căn cứ thực nghiệm từ EDA & Phân phối: Thách thức cỡ mẫu lớn và Tự tương quan chuỗi (N_eff)
 
 ## 3.2. Thực thi Kiểm định cho 2 Câu hỏi Nghiên cứu
    3.2.1. So sánh 2 nhóm độc lập: workingday = 1 (Ngày làm việc) và workingday = 0 (Ngày nghỉ) (RQ1)
-          - Thiết lập giả thuyết H0/H1
+          - Thiết lập giả thuyết H0/H1 theo Bước 1
           - Kiểm tra giả định phân phối và phương sai (Levene test)
           - Thực thi kiểm định tham số: Welch's t-test (Kanji Test 9)
           - Thực thi kiểm định phi tham số: Mann-Whitney U (Kanji Test 48) & Kolmogorov-Smirnov (Kanji Test 49)
@@ -208,7 +249,7 @@ Dựa trên đối chiếu giữa giới hạn trong giáo trình Gopal K. Kanji
           - Bóc tách bản chất thực tiễn qua phân tầng nhịp giờ (Hình 3.3)
           - Kết luận và Ý nghĩa nghiệp vụ
    3.2.2. So sánh 4 nhóm độc lập: season (4 Mùa trong năm: Xuân, Hạ, Thu, Đông) (RQ2)
-          - Thiết lập giả thuyết đa nhóm H0/H1
+          - Thiết lập giả thuyết đa nhóm H0/H1 theo Bước 1
           - Kiểm tra giả định phương sai giữa 4 mùa (Levene test)
           - Thực thi kiểm định tham số: One-Way ANOVA & Welch's ANOVA (Kanji Test 22)
           - Thực thi kiểm định phi tham số: Kruskal-Wallis H-test (Kanji Test 51/54)
