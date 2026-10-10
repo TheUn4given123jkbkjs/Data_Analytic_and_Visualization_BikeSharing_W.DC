@@ -208,17 +208,27 @@ Dựa trên đối chiếu giữa giới hạn trong giáo trình Gopal K. Kanji
 
 ---
 
-## 6. Danh mục Biểu đồ Trực quan hóa (`Hypothesis_Test/assets/`)
+## 6. Danh mục Biểu đồ Trực quan hóa
+
+Để tối ưu hóa hiệu quả, tránh lãng phí thời gian và tăng cường tính liên kết phương pháp luận giữa các chương theo tinh thần `HANDOFF.md`, danh mục biểu đồ của Chương 3 được phân tách rõ ràng thành hai nhóm:
+
+### 6.1. Các Biểu đồ Suy diễn Thống kê do TV3 Code Mới (`Hypothesis_Test/assets/`)
+Hai biểu đồ này là đặc thù duy nhất của thống kê suy diễn mà Chương 1 và Chương 2 hoàn toàn chưa có:
 
 | Mã file | Tên biểu đồ chính thức | Loại biểu đồ | Mục đích phân tích & Giả định kiểm tra |
 | :--- | :--- | :--- | :--- |
-| `fig_3_1_workingday_assumptions.png` | **Hình 3.1. Kiểm tra giả định phân phối và phương sai của cnt theo loại ngày** | Q-Q plot & KDE density plot nội nhóm | Kiểm tra tính chuẩn và so sánh trực quan phương sai của `cnt` giữa ngày làm việc vs ngày nghỉ. |
-| `fig_3_2_workingday_cnt_comparison.png` | **Hình 3.2. So sánh phân phối và mức độ tập trung cnt giữa Ngày làm việc và Ngày nghỉ** | Boxplot kết hợp Violin plot & khoảng tin cậy 95% Mean | Minh họa phân vị, trung vị và hình thái đuôi của 2 nhóm ngày phục vụ Welch's t-test và Mann-Whitney U. |
-| `fig_3_3_workingday_hourly_interaction.png` | **Hình 3.3. Phân tích tương tác nhịp sinh hoạt theo giờ giữa ngày làm việc và ngày nghỉ** | Multi-line chart theo 24 khung giờ | Bóc tách bản chất thực tiễn của RQ1: phân tích sự đảo chiều nhu cầu theo giờ (commuter vs leisure). |
-| `fig_3_4_season_cnt_distributions.png` | **Hình 3.4. Phân phối số lượng thuê xe cnt theo 4 mùa trong năm** | Boxplot kết hợp Strip plot phân tán | Trực quan hóa sự chênh lệch phân phối và độ phân tán dị biệt giữa 4 mùa phục vụ ANOVA và Kruskal-Wallis. |
-| `fig_3_5_season_posthoc_diffs.png` | **Hình 3.5. Kết quả so sánh hậu định chênh lệch trung bình từng cặp mùa** | Forest plot biểu diễn khoảng tin cậy 95% chênh lệch cặp | Biểu diễn kết quả so sánh hậu định (Games-Howell & Dunn-Bonferroni) cho 6 cặp mùa. |
+| `fig_3_1_workingday_assumptions.png` | **Hình 3.1. Kiểm tra giả định phân phối chuẩn và phương sai nội nhóm của cnt theo loại ngày** | Q-Q plot kép & Phân phối mật độ KDE nội nhóm | Kiểm tra tính chuẩn riêng biệt cho từng nhóm (`workingday = 1` vs `0`), làm căn cứ bắt buộc để chuyển từ Student's $t$ sang Welch's $t$ và Mann-Whitney $U$. |
+| `fig_3_2_season_posthoc_forest.png` | **Hình 3.2. Kết quả so sánh hậu định chênh lệch trung bình từng cặp mùa** | Forest plot biểu diễn Khoảng tin cậy 95% chênh lệch cặp | Biểu diễn trực quan kết quả kiểm định hậu định Games-Howell & Dunn-Bonferroni cho 6 cặp mùa ($C_4^2 = 6$), đánh dấu mức ý nghĩa ($p_{\text{adj}} < 0.001$, $***$) và vạch chuẩn 0. |
 
-*(Lưu ý: Báo cáo sẽ tích hợp dẫn chiếu các asset có sẵn từ Chương 1 gồm `hinh1.6.png`, `hinh1.7.png` và Chương 2 `fig_2_5_workingday_comparison.png` để tối ưu hóa sự kết nối liên chương).*
+### 6.2. Các Biểu đồ Mô tả Tái sử dụng Trực tiếp từ Chương 1 & Chương 2 (Dẫn chiếu Liên chương)
+Thay vì code vẽ lại những gì các thành viên khác đã làm rất tốt, Báo cáo Chương 3 trực tiếp nhúng và dẫn chiếu các asset có sẵn:
+
+| Đường dẫn Asset | Tên biểu đồ gốc | Nguồn | Mục đích tái sử dụng trong Chương 3 |
+| :--- | :--- | :--- | :--- |
+| `EDA/assets/hinh1.6.png` | **Hình 1.6. So sánh nhu cầu thuê xe theo giờ giữa ngày làm việc và ngày nghỉ** | **TV1 (EDA)** | **Minh chứng RQ1 (Mục 4.1):** Làm rõ nghịch lý triệt tiêu khi tính trung bình 24h (Cohen's $d$ nhỏ nhưng nhịp giờ 8h/17h commuter đối lập hoàn toàn với 13h leisure). |
+| `EDA/assets/hinh1.7.png` | **Hình 1.7. Phân phối cnt theo các mùa trong năm và các điều kiện thời tiết** | **TV1 (EDA)** | **Minh chứng RQ2 (Mục 4.2):** Làm bằng chứng trực quan cho hiện tượng Phương sai dị biệt giữa 4 mùa trước khi chạy Levene test và Welch's ANOVA. |
+| `Distribution/assets/fig_2_3_cnt_qq_gof.png` | **Hình 2.3. Q-Q plot và kiểm tra Goodness-of-fit cho cnt** | **TV2 (Distribution)** | **Minh chứng Lý thuyết (Mục 3.1 & 3.2):** Bằng chứng thực nghiệm chứng minh `cnt` vi phạm tính chuẩn toàn cục. |
+| `Distribution/assets/fig_2_7_temp_by_season.png` | **Hình 2.7. Phân bố nhiệt độ temp theo 4 mùa** | **TV2 (Distribution)** | **Minh chứng RQ2 (Mục 4.2):** Giải thích nguyên nhân khí hậu khiến lượng thuê xe biến động qua 4 mùa (mùa thu đỉnh, mùa xuân đáy). |
 
 ---
 
@@ -238,24 +248,26 @@ Dựa trên đối chiếu giữa giới hạn trong giáo trình Gopal K. Kanji
           - Nguyên lý nền tảng của Họ Phi tham số (Rank Transformation, Median dominance)
    3.1.5. Bảng tổng hợp: Các phép kiểm định được dùng trong bài thuộc 4 họ kiểm định
    3.1.6. Căn cứ thực nghiệm từ EDA & Phân phối: Thách thức cỡ mẫu lớn và Tự tương quan chuỗi (N_eff)
+          (Dẫn chiếu Hình 2.3 từ TV2)
 
 ## 3.2. Thực thi Kiểm định cho 2 Câu hỏi Nghiên cứu
    3.2.1. So sánh 2 nhóm độc lập: workingday = 1 (Ngày làm việc) và workingday = 0 (Ngày nghỉ) (RQ1)
           - Thiết lập giả thuyết H0/H1 theo Bước 1
-          - Kiểm tra giả định phân phối và phương sai (Levene test)
+          - Kiểm tra giả định phân phối và phương sai (Hình 3.1 & Levene test)
           - Thực thi kiểm định tham số: Welch's t-test (Kanji Test 9)
           - Thực thi kiểm định phi tham số: Mann-Whitney U (Kanji Test 48) & Kolmogorov-Smirnov (Kanji Test 49)
           - Lượng hóa Effect Size (Cohen's d, Rank-biserial r)
-          - Bóc tách bản chất thực tiễn qua phân tầng nhịp giờ (Hình 3.3)
-          - Kết luận và Ý nghĩa nghiệp vụ
+          - Bóc tách bản chất thực tiễn qua phân tầng nhịp giờ (Dẫn chiếu Hình 1.6 từ TV1)
+          - Kết luận và Ý nghĩa nghiệp vụ cho Daily Scheduling
    3.2.2. So sánh 4 nhóm độc lập: season (4 Mùa trong năm: Xuân, Hạ, Thu, Đông) (RQ2)
           - Thiết lập giả thuyết đa nhóm H0/H1 theo Bước 1
-          - Kiểm tra giả định phương sai giữa 4 mùa (Levene test)
+          - Kiểm tra giả định phương sai giữa 4 mùa (Dẫn chiếu Hình 1.7 từ TV1 & Levene test)
           - Thực thi kiểm định tham số: One-Way ANOVA & Welch's ANOVA (Kanji Test 22)
           - Thực thi kiểm định phi tham số: Kruskal-Wallis H-test (Kanji Test 51/54)
           - Phân tích hậu định từng cặp mùa: Games-Howell & Dunn-Bonferroni (Kanji Test 28)
-          - Lượng hóa Effect Size (Eta-squared, Epsilon-squared) và Forest plot (Hình 3.5)
-          - Kết luận và Ý nghĩa nghiệp vụ
+          - Lượng hóa Effect Size (Eta-squared, Epsilon-squared) và Forest plot (Hình 3.2)
+          - Thảo luận cơ chế khí hậu mùa vụ (Dẫn chiếu Hình 2.7 từ TV2)
+          - Kết luận và Ý nghĩa nghiệp vụ cho Seasonal Maintenance
 
 ## 3.3. Đánh giá độ bền vững và Kiểm soát Sai lầm loại 1
    3.3.1. Đánh giá độ bền vững theo Cỡ mẫu hiệu dụng (N_eff Correction)
@@ -275,11 +287,14 @@ Dựa trên đối chiếu giữa giới hạn trong giáo trình Gopal K. Kanji
 
 1. **Giai đoạn 1: Môi trường và Script tính toán (`03_hypothesis_testing.py`):**
    - Viết toàn bộ hàm thống kê: Levene test, Welch's t-test (Kanji Test 9), Mann-Whitney U (Kanji Test 48), KS-test (Kanji Test 49), Cohen's d, Rank-biserial r, One-way ANOVA, Welch's ANOVA (Kanji Test 22), Kruskal-Wallis (Kanji Test 51/54), Games-Howell, Dunn-Bonferroni, Eta-squared $\eta^2$, $N_{\text{eff}}$ adjustment.
-   - Xuất trọn vẹn 5 hình ảnh biểu đồ chuẩn 300 DPI vào thư mục `Hypothesis_Test/assets/`.
+   - Xuất trọn vẹn 2 hình ảnh biểu đồ suy diễn chất lượng cao (300 DPI) vào thư mục `Hypothesis_Test/assets/`:
+     + `fig_3_1_workingday_assumptions.png`
+     + `fig_3_2_season_posthoc_forest.png`
 2. **Giai đoạn 2: Xây dựng Jupyter Notebook (`03_hypothesis_testing.ipynb`):**
-   - Tổ chức notebook khoa học, hiển thị rõ ràng bảng kết quả thống kê, trích dẫn mã phép thử Kanji, biểu đồ trực quan và nhận xét.
+   - Tổ chức notebook khoa học, hiển thị rõ ràng bảng kết quả thống kê, trích dẫn mã phép thử Kanji, biểu đồ nhúng và nhận xét học thuật.
 3. **Giai đoạn 3: Soạn thảo Báo cáo Hoàn chỉnh (`Hypothesis_Test/report.md`):**
-   - Soạn thảo báo cáo học thuật đầy đủ từ Mục 3.1 đến Mục 3.4 theo đúng chuẩn `rules.md`.
+   - Soạn thảo báo cáo học thuật đầy đủ từ Mục 3.1 đến Mục 3.4 theo đúng chuẩn `rules.md`, tích hợp 2 hình mới và các liên kết dẫn chiếu asset từ Chương 1 và 2.
 4. **Giai đoạn 4: Hoàn thiện Bàn giao và Quản lý Repo:**
    - Tạo `hypothesis_findings.md`, `README.md`, `requirements.txt`.
    - Cập nhật dòng thông báo bàn giao chính thức trong `HANDOFF.md`.
+
