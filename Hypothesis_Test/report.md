@@ -418,6 +418,107 @@ Cơ chế vi khí hậu tại thủ đô Washington D.C. giải thích trọn v�
 
 ---
 
+## 3.3. Đánh giá Độ bền vững & Kiểm soát Rủi ro Sai lầm Loại 1
+
+Một trong những đóng góp phương pháp luận quan trọng nhất của chuyên khảo *100 Statistical Tests* (Gopal K. Kanji, 2006, tr. 3–4 & Kanji Test 64) là nguyên tắc: **Một kết luận thống kê chỉ thực sự đáng tin cậy khi nó vượt qua các bài kiểm tra độ bền vững (Robustness Checks)** trước sự vi phạm các tiền giả định nền tảng. 
+
+Trong tập dữ liệu Bike Sharing theo giờ, hai thách thức lớn nhất đã được xác lập ở Mục 3.1.6 là: Hiện tượng **Tự tương quan chuỗi thời gian ($r_1 = 0.8431$)** và **Bẫy cỡ mẫu cực lớn ($N = 17,379$)**. Phần này tiến hành hai kiểm tra độ bền vững chuyên sâu nhằm bảo vệ kết luận nghiên cứu khỏi rủi ro Sai lầm loại 1 (Type I Error).
+
+---
+
+### 3.3.1. Đánh giá Độ bền vững theo Cỡ mẫu Hiệu dụng ($N_{\text{eff}}$ Correction)
+
+#### 1. Cơ sở lý thuyết hiệu chỉnh chuỗi thời gian
+Tiền giả định cốt lõi của phép thử $t$ và ANOVA là các quan sát phải độc lập với nhau (IID). Khi dữ liệu chuỗi thời gian có mức độ tự tương quan bậc 1 rất cao ($r_1 = 0.8431$), các quan sát ở giờ liền kề mang lượng thông tin trùng lặp rất lớn (ví dụ: lượng thuê xe lúc 8h sáng có tính phụ thuộc mật thiết vào lượng thuê xe lúc 7h sáng). 
+
+Theo lý thuyết xử lý mẫu chuỗi thời gian (Kanji Test 64, tr. 120), lượng thông tin thực tế của mẫu bị suy giảm, tương đương với một **Cỡ mẫu hiệu dụng độc lập ($N_{\text{eff}}$)** nhỏ hơn nhiều so với cỡ mẫu danh nghĩa $N$:
+$$N_{\text{eff}} = N \times \frac{1 - r_1}{1 + r_1} = 17,379 \times \frac{1 - 0.8431}{1 + 0.8431} \approx 1,479 \text{ quan sát}$$
+
+Hệ số phóng đại phương sai (Variance Inflation) là $\frac{N}{N_{\text{eff}}} \approx 11.75$, đồng nghĩa với việc sai số chuẩn danh nghĩa $\text{SE}$ đã bị thu nhỏ nhân tạo đi $\sqrt{11.75} \approx 3.428 \text{ lần}$, làm cho các thống kê kiểm định $t^*$ và $F$ danh nghĩa bị thổi phồng tương ứng. Để kiểm tra độ bền vững, thống kê kiểm định cần được hiệu chỉnh co về cỡ mẫu hiệu dụng thực tế:
+$$\text{Statistic}_{\text{adj}} = \text{Statistic}_{\text{gốc}} \times \sqrt{\frac{N_{\text{eff}}}{N}} \approx \frac{\text{Statistic}_{\text{gốc}}}{3.428}$$
+
+#### 2. Kết quả kiểm tra độ bền vững với RQ1 (Ngày làm việc vs Ngày nghỉ)
+- Thống kê Welch's $t$-test danh nghĩa: $t^* = 4.0951$ ($p = 4.25 \times 10^{-5} < 0.001$).
+- Thống kê sau hiệu chỉnh $N_{\text{eff}}$:
+  $$t_{\text{adj}} = 4.0951 \times \sqrt{\frac{1,479}{17,379}} = 4.0951 \times 0.2917 = 1.1946$$
+- Bậc tự do hiệu chỉnh: $\nu_{\text{adj}} \approx 1,479 - 2 = 1,477$.
+- Giá trị $p$-value hiệu chỉnh hai phía:
+  $$p_{\text{adj}} = 2 \times [1 - \Phi(1.1946)] = 0.2323 > 0.05$$
+- **Kết luận đột phá:** Khi kiểm soát hiện tượng tự tương quan chuỗi thời gian, giá trị $p_{\text{adj}} = 0.2323$ vượt xa ngưỡng ý nghĩa $\alpha = 0.05$. Kết luận bác bỏ $H_0$ ở cấp độ danh nghĩa **hoàn toàn bị đảo ngược — Ta chưa đủ bằng chứng thống kê để khẳng định có sự khác biệt về nhu cầu thuê xe giữa Ngày làm việc và Ngày nghỉ!** Điều này đồng thuận tuyệt đối với kích thước hiệu ứng không đáng kể của Cohen ($d = 0.0651$).
+
+#### 3. Kết quả kiểm tra độ bền vững với RQ2 (4 Mùa trong năm)
+- Thống kê Welch's ANOVA danh nghĩa: $F_{\text{Welch}} = 606.73$ ($p < 10^{-300}$).
+- Thống kê sau hiệu chỉnh co mẫu $N_{\text{eff}}$:
+  $$F_{\text{adj}} = F_{\text{Welch}} \times \left(\frac{N_{\text{eff}}}{N}\right) = 606.73 \times \frac{1,479}{17,379} \approx 51.64$$
+- Với bậc tự do $\nu_1 = 3, \nu_2 \approx 805$, giá trị $p_{\text{adj}} < 10^{-25} \ll 0.001$.
+- **Kết luận:** Ngay cả khi bị triệt tiêu lượng thông tin trùng lặp chuỗi thời gian, thống kê $F_{\text{adj}} = 51.64$ vẫn vượt xa giá trị tới hạn ($F_{\text{crit}} \approx 2.61$). Tác động của yếu tố mùa vụ là **bền vững tuyệt đối (Ultra-robust)** trước mọi hiệu chỉnh cỡ mẫu.
+
+---
+
+### 3.3.2. Đối chứng Kiểm định trên Chuỗi Dữ liệu Tổng hợp Cấp độ Ngày ($N = 731$ ngày)
+
+Để triệt tiêu hoàn toàn sự tự tương quan giữa 24 khung giờ trong ngày mà không cần giả định toán học về $N_{\text{eff}}$, nghiên cứu tiến hành một kiểm định đối chứng thực nghiệm độc lập: **Tổng hợp toàn bộ lượt thuê xe thành chuỗi dữ liệu cấp độ ngày (Day-level Aggregates)**:
+$$\text{cnt}_{\text{day}} = \sum_{\text{hr}=0}^{23} \text{cnt}_{\text{hr}} \quad (N_{\text{day}} = 731 \text{ ngày trong 2 năm 2011–2012})$$
+
+Ở cấp độ ngày, mỗi ngày là một đơn vị quan sát độc lập, sự biến thiên nhịp giờ trong ngày bị triệt tiêu hoàn toàn. Kết quả thống kê mô tả và kiểm định đối chứng được trình bày tại Bảng 3.7:
+
+**Bảng 3.7. Bảng đối chiếu kiểm định RQ1 giữa cấp độ Giờ gốc và cấp độ Ngày tổng hợp**
+
+| Cấp độ Phân tích | Quy mô Mẫu ($N$) | Trung bình ($\overline{x}$, lượt) | Độ lệch chuẩn ($s$) | Thống kê Kiểm định | $p$-value Thực nghiệm | Kết luận Thống kê |
+| :--- | :---: | :---: | :---: | :---: | :---: | :--- |
+| **Cấp Giờ Danh nghĩa** | $N_1 = 11,865$<br>$N_0 = 5,514$ | $\overline{x}_1 = 193.21$<br>$\overline{x}_0 = 181.41$ | $s_1 = 185.11$<br>$s_0 = 172.85$ | Welch's $t^* = 4.0951$ | $4.25 \times 10^{-5}$ | Bác bỏ $H_0$ (Bẫy cỡ mẫu lớn) |
+| **Cấp Giờ Hiệu chỉnh $N_{\text{eff}}$** | $N_{\text{eff}} \approx 1,479$ | $\Delta = +11.80$ | $\text{SE}_{\text{adj}} = 9.88$ | $t_{\text{adj}} = 1.1946$ | $0.2323$ | **Chưa đủ cơ sở bác bỏ $H_0$** ($p > 0.05$) |
+| **Cấp Ngày Tổng hợp (Welch $t$)** | $N_1 = 500 \text{ ngày}$<br>$N_0 = 231 \text{ ngày}$ | $\overline{x}_1 = 4,584.82$<br>$\overline{x}_0 = 4,330.17$ | $s_1 = 1,878.42$<br>$s_0 = 2,052.14$ | Welch's $t = 1.6014$<br>($\nu = 418.17$) | $0.1101$ | **Chưa đủ cơ sở bác bỏ $H_0$** ($p > 0.05$) |
+| **Cấp Ngày Tổng hợp (Mann-Whitney)** | $N_1 = 500 \text{ ngày}$<br>$N_0 = 231 \text{ ngày}$ | $\text{Med}_1 = 4,566.5$<br>$\text{Med}_0 = 4,369.0$ | — | Mann-Whitney $U = 54,699.0$ | $0.1186$ | **Chưa đủ cơ sở bác bỏ $H_0$** ($p > 0.05$) |
+
+*Nhận định phương pháp luận:*
+Cả phép thử tham số (Welch's $t$, $p = 0.1101$) và phi tham số (Mann-Whitney $U$, $p = 0.1186$) trên tập dữ liệu cấp ngày đều cho kết quả đồng thuận tuyệt đối: **Không có sự khác biệt có ý nghĩa thống kê về tổng số lượt thuê xe mỗi ngày giữa Ngày làm việc và Ngày nghỉ.** Kết quả này củng cố vững chắc cho luận điểm: Sự chênh lệch $11.80$ lượt/giờ ở dữ liệu theo giờ danh nghĩa hoàn toàn là hiện tượng phóng đại do cỡ mẫu lớn kết hợp tự tương quan chuỗi.
+
+---
+
+## 3.4. Kết luận, Hạn chế và Bảng Hàm ý Chuyển giao Downstream
+
+### 3.4.1. Tóm tắt các Kết luận Kiểm định Chính
+
+Qua quá trình thực thi nghiêm ngặt quy trình 5 bước Neave-Kanji, kết hợp kiểm tra giả định, kiểm định đa họ tham số/phi tham số, đánh giá kích thước hiệu ứng và kiểm tra độ bền vững chuỗi thời gian, nghiên cứu đưa ra 3 kết luận khoa học cốt lõi:
+
+1. **Kết luận về RQ1 (Ngày làm việc vs Ngày nghỉ):**
+   - Về mặt tổng lượng nhu cầu trung bình 24 giờ, **chưa đủ bằng chứng thống kê để khẳng định có sự khác biệt thực chất giữa Ngày làm việc và Ngày nghỉ** (Cohen's $d = 0.0651$ không đáng kể; $p_{\text{adj}} = 0.2323$ khi hiệu chỉnh $N_{\text{eff}}$; $p = 0.1101$ ở cấp ngày).
+   - Tuy nhiên, sự khác biệt mang tính sống còn đối với bài toán vận hành nằm ở **cấu trúc phân phối nhịp giờ (Hình 1.6)**: Ngày làm việc có phân phối hai đỉnh cực mạnh phục vụ người đi làm công sở (8h sáng và 17h-18h chiều); ngày nghỉ có phân phối hình chuông đơn phục vụ hoạt động giải trí vào buổi trưa (12h-15h).
+2. **Kết luận về RQ2 (4 Mùa trong năm):**
+   - Yếu tố mùa vụ tác động cực kỳ mạnh mẽ và có ý nghĩa thống kê bền vững đến nhu cầu thuê xe ($F_{\text{Welch}} = 606.73, p < 0.001$, $\eta^2 = 6.60\%$, Medium effect size).
+   - Thứ tự nhu cầu trung bình giữa các mùa: $\text{Mùa thu } (236.02) > \text{Mùa hè } (208.34) \approx \text{Mùa đông } (198.87) > \text{Mùa xuân } (111.11)$.
+   - Kiểm định hậu nghiệm Games-Howell (*Kanji Test 28*) và Dunn-Bonferroni chứng minh 5/6 cặp mùa khác biệt rất lớn ($p < 0.001^{***}$).
+3. **Phát hiện phản trực giác quan trọng nhất:**
+   - **Nhu cầu thuê xe giữa Mùa hè và Mùa đông là tương đương nhau trên phương diện thống kê** ($\Delta = +9.48$ lượt/h, khoảng tin cậy $95\%$ chứa 0: $[-0.79, +19.74]$, $p = 0.0826 > 0.05$). Nguyên nhân xuất phát từ sự tương tác vi khí hậu: Mùa hè D.C. quá nóng ẩm gây ức chế đạp xe ban ngày, trong khi mùa đông tuy lạnh nhưng khô ráo giúp duy trì ổn định thói quen đi làm của người dân.
+
+---
+
+### 3.4.2. Hạn chế về Phương pháp luận và Dữ liệu
+
+Nghiên cứu ghi nhận 3 giới hạn khách quan cần được lưu ý khi diễn giải kết quả:
+1. **Bản chất Chuỗi thời gian chưa được xử lý bằng Mô hình Động:** Mặc dù nghiên cứu đã áp dụng hiệu chỉnh cỡ mẫu hiệu dụng $N_{\text{eff}}$ và đối chứng cấp ngày, các phép kiểm định cổ điển (Kanji Tests 9, 22, 28, 48) về bản chất vẫn dựa trên khung lý thuyết tĩnh. Các cấu trúc tự hồi quy phức tạp (ARIMA) hay tính chu kỳ đa tầng (Multiple Seasonality) cần các mô hình chuỗi thời gian chuyên sâu để xử lý triệt để.
+2. **Dữ liệu đếm gộp không phân tách được Người dùng Định danh:** Tập dữ liệu chỉ cung cấp tổng lượt thuê `cnt` theo từng giờ mà không có mã định danh hành khách (User ID). Do đó, kiểm định không thể bóc tách hiệu ứng khách hàng trung thành (lặp lại hành vi nhiều lần trong ngày) với khách hàng mới.
+3. **Giới hạn Khung thời gian 2 Năm (2011–2012):** Khoảng thời gian 2 năm đại diện cho giai đoạn hệ thống Capital Bikeshare đang mở rộng mạng lưới trạm. Một phần mức tăng trưởng nhu cầu ở năm 2012 có thể phản ánh xu hướng mở rộng quy mô hệ thống (Trend component) chứ không thuần túy là yếu tố mùa vụ tự nhiên.
+
+---
+
+### 3.4.3. Bảng Hàm ý Chuyển giao Phương pháp luận cho TV4 và TV5 (Downstream Handoff)
+
+Để hiện thực hóa triết lý phối hợp nhóm liền mạch theo quy định tại `HANDOFF.md`, Bảng 3.8 đúc kết toàn bộ các khuyến nghị kỹ thuật bắt buộc chuyển giao cho **Thành viên 4 (Mô hình Hồi quy)** và **Thành viên 5 (Mô hình Phân cụm)**:
+
+**Bảng 3.8. Bảng chuyển giao khuyến nghị phương pháp luận từ Chương 3 cho TV4 và TV5**
+
+| Thành viên Tiếp nhận / Mô hình | Phát hiện Thống kê từ Chương 3 | Hành động Kỹ thuật Bắt buộc (Actionable Guidance) | Rủi ro Cần Phòng tránh nếu Bỏ qua |
+| :--- | :--- | :--- | :--- |
+| **TV4: Mô hình Hồi quy Đếm**<br>*(Poisson, Negative Binomial, OLS Baseline)* | • RQ1 cho thấy chênh lệch trung bình `workingday` rất nhỏ ($d = 0.0651$), nhưng cấu trúc nhịp giờ (Hình 1.6) phân hóa cực đoan thành 2 đỉnh nhọn đối lập. | **Bắt buộc đưa biến tương tác bậc cao giữa loại ngày và giờ vào mô hình:**<br>`cnt ~ workingday * hr` (hoặc tạo cụm biến tương tác dummy `workingday:hr_peak`). | Nếu chỉ đưa `workingday` vào dưới dạng biến độc lập đơn lẻ (main effect), hệ số hồi quy sẽ bị triệt tiêu ($\beta \approx 0$ hoặc không có ý nghĩa), dẫn đến đánh giá sai lệch hoàn toàn vai trò của ngày làm việc. |
+| **TV4: Mô hình Hồi quy Đếm**<br>*(Poisson, Negative Binomial, OLS Baseline)* | • RQ2 phát hiện Mùa hè và Mùa đông có nhu cầu tương đương ($p = 0.0826 > 0.05$).<br>• Mùa xuân có nhu cầu thấp nhất vượt trội ($111.11$). | **1. Chọn Mùa xuân (`season = 1`) làm nhóm đối chứng cơ sở (Reference Category)** để các hệ số mùa khác luôn mang giá trị dương có ý nghĩa.<br>**2. Xem xét gộp chung biến mùa hè và mùa đông** thành một nhóm chung trong mô hình tinh gọn (Parsimonious Model) nhằm tiết kiệm bậc tự do. | Tránh hiện tượng đa cộng tuyến hoặc ước lượng hệ số dư thừa giữa Mùa hè và Mùa đông khi cả hai mang kỳ vọng gần tương đương nhau. |
+| **TV4: Đánh giá Sai số Mô hình Hồi quy** | • Dữ liệu có tự tương quan bậc 1 rất cao ($r_1 = 0.8431$), vi phạm giả định sai số độc lập. | **Bắt buộc sử dụng Sai số chuẩn Vững Newey-West (HAC Standard Errors)** để kiểm định ý nghĩa các hệ số $\beta$, tránh dùng sai số chuẩn OLS thông thường. | Sai số chuẩn thông thường sẽ bị thu nhỏ nhân tạo $\approx 3.4$ lần, dẫn đến việc ngộ nhận các biến không có ý nghĩa thành có ý nghĩa thống kê (Lạm phát Sai lầm loại 1). |
+| **TV5: Phân cụm Dữ liệu**<br>*(K-Means, DBSCAN, Hierarchical Clustering)* | • Nhu cầu theo giờ của ngày làm việc và ngày nghỉ có hình thái phân phối hoàn toàn khác biệt (Bimodal vs Unimodal). | **Không phân cụm trên từng dòng quan sát theo giờ đơn lẻ.**<br>Cần tái cấu trúc dữ liệu thành **Ma trận Vector 24 chiều cho từng ngày** ($731 \times 24$), trong đó mỗi hàng là một ngày và 24 cột là 24 giờ để phân cụm hình thái ngày. | Phân cụm trên từng giờ đơn lẻ sẽ chỉ nhóm các giờ theo mức độ đông/vắng (ví dụ: giờ cao điểm vs giờ đêm), hoàn toàn làm mất đi bức tranh phân hóa hành vi giữa ngày làm việc và ngày nghỉ. |
+| **TV5: Phân cụm Dữ liệu**<br>*(K-Means, DBSCAN, Hierarchical Clustering)* | • Phương sai giữa các mùa bị dị biệt cực đoan ($F_{\text{Levene}} = 324.50$, phương sai Mùa thu gấp 2.75 lần Mùa xuân). | **Cần chuẩn hóa dữ liệu theo phân vị mùa (Min-Max hoặc Z-score cục bộ theo từng mùa)** trước khi đưa vào thuật toán phân cụm dựa trên khoảng cách Euclid (K-Means). | Nếu không chuẩn hóa theo mùa, các cụm hình thành sẽ bị chi phối hoàn toàn bởi biên độ độ lớn tuyệt đối của Mùa thu và làm lu mờ hoàn toàn các cụm đặc trưng của Mùa xuân. |
+
+---
+
 ## Tài liệu Tham khảo
 
 1. **Cohen, J. (1988).** *Statistical Power Analysis for the Behavioral Sciences* (2nd ed.). Lawrence Erlbaum Associates.
