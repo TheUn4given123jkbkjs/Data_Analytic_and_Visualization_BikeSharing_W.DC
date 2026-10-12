@@ -81,6 +81,7 @@ Dành cho **TV1 (EDA Findings), TV2 (Distribution Findings), TV4 (Correlation Fi
 [2026-10-04] [TV1] [DRAFT] [Phần 1.1.1] — `temp`–`atemp` Pearson 0.9877 (giữ một biến); `weathersit = 4` chỉ 3 dòng (loại/gộp nhóm 3); thiếu 165 giờ (0.94%), không chèn dòng giả; tự tương quan bậc 1 của `cnt` = 0.8431 (quan sát không độc lập) — ảnh hưởng: TV3, TV4, TV5 (V-03, V-09, V-11)
 [2026-10-04] [TV1] [FINAL] [Phần 1] — Hoàn thành toàn bộ phần 1
 [2026-10-08] [TV1] [CHANGE] [Phần 1] — Cập nhật toàn diện: (1) Xuất `EDA/cleaned_data/hour_cleaned.csv`; (2) Bỏ hoàn toàn ma trận tương quan Spearman/Pearson khỏi EDA để tránh trùng lặp, chuyển giao toàn quyền phân tích tương quan cho TV4 (V-04); (3) Bổ sung kiểm tra độ nhạy cho 165 giờ thiếu và 22 dòng `hum = 0`; (4) Định lượng cỡ mẫu hiệu dụng $N_{\text{eff}} \approx 1,479$ (~8.51%) cho TV3; (5) Đồng bộ 100% tiếng Việt có dấu cho toàn bộ biểu đồ Hình 1.1–1.10 trong notebook và assets — ảnh hưởng: TV2, TV3, TV4, TV5 (V-02, V-03, V-04, V-11)
+[2026-10-12 13:00] [TV3] [FINAL] [Phần 3] — Hoàn thành toàn diện Chương 3 Kiểm định Giả thuyết: (1) RQ1 (workingday): Welch t p < 0.001 danh nghĩa nhưng Cohen d = 0.0651 không đáng kể, p_adj(N_eff = 1,479) = 0.2323 và cấp ngày p = 0.1101 khẳng định tổng 24h tương đương, phân hóa nhịp giờ bimodal vs unimodal; (2) RQ2 (season): Welch ANOVA F = 606.73, eta^2 = 6.60% (bền vững tuyệt đối), Mùa thu cao nhất (236.02), Mùa xuân thấp nhất (111.11); (3) Phát hiện phản trực giác: Games-Howell và Dunn-Bonferroni đồng thuận Mùa hè vs Mùa đông không khác biệt (Delta = +9.48, p = 0.0826 > 0.05); (4) Chuyển giao: TV4 bắt buộc dùng biến tương tác workingday*hr và Newey-West HAC, TV5 tái cấu trúc matrix 731x24 và chuẩn hóa theo mùa — ảnh hưởng: TV4, TV5 (V-03, V-04, V-11)
 ```
 
 ### EDA Findings Sheet — TV1 — v1 — FINAL — 2026-10-08
@@ -199,3 +200,23 @@ Biến|Vai trò dự kiến|Xử lý đề xuất
 
 
 6. **File liên quan:** `05_multiple_linear_regression/05_multiple_linear_regression.ipynb` (Hình 5.1–2.5), `05_multiple_linear_regression/theories.md`, `EDA/cleaned_data/hour_cleaned.csv`.
+
+---
+
+### Hypothesis Testing Findings Sheet — TV3 — v1 — FINAL — 2026-10-12
+
+1. **Dữ liệu/biến đã dùng:** `EDA/cleaned_data/hour_cleaned.csv` ($N = 17,379$ dòng theo giờ); các biến `cnt`, `workingday`, `season`.
+2. **Phương pháp:** Quy trình 5 bước Neave-Kanji (2006); Levene's Test (Test 31); Welch's $t$-test (Test 9); Mann-Whitney $U$ (Test 48); KS-test (Test 49); Cohen's $d$; Welch's ANOVA (Test 22 adj); Kruskal-Wallis (Test 51/54); $\eta^2$; Games-Howell Post-hoc (Test 28) & Dunn-Bonferroni; Hiệu chỉnh $N_{\text{eff}} \approx 1,479$ (Test 64) và đối chứng chuỗi cấp ngày ($N = 731$).
+3. **Kết quả chính:**
+   - **RQ1 (workingday):** $\overline{x}_1 = 193.21$ vs $\overline{x}_0 = 181.41$ ($\Delta = +11.80$). Welch $t^* = 4.0951$ ($p < 0.001$), Mann-Whitney $U = 33,565,313$ ($p = 0.0056$). Tuy nhiên Cohen's $d = 0.0651$ (hiệu ứng không đáng kể). Hiệu chỉnh $N_{\text{eff}} = 1,479 \rightarrow t_{\text{adj}} = 1.1946, p = 0.2323 > 0.05$ (mất ý nghĩa); Đối chứng cấp ngày $N = 731 \rightarrow \text{Welch } t = 1.6014, p = 0.1101 > 0.05$ (không khác biệt).
+   - **RQ2 (season):** Mùa thu đỉnh ($236.02$) $>$ Mùa hè ($208.34$) $\approx$ Mùa đông ($198.87$) $>$ Mùa xuân đáy ($111.11$). Welch ANOVA $F = 606.73, p < 0.001, \eta^2 = 6.60\%$ (hiệu ứng trung bình, siêu bền vững trước $N_{\text{eff}}$).
+   - **Phát hiện phản trực giác:** Cặp Mùa hè vs Mùa đông không khác biệt có ý nghĩa thống kê ($\Delta = +9.48, \text{CI}_{95\%} = [-0.79, +19.74], p_{\text{Games-Howell}} = 0.0826 > 0.05$; Dunn-Bonferroni $p = 0.4339 > 0.05$).
+4. **Quyết định đã đưa ra và lý do:**
+   - Khẳng định tổng quy mô 24h giữa ngày làm việc và ngày nghỉ là tương đương, không cắt giảm tổng đội xe.
+   - Bác bỏ mô hình One-way ANOVA cổ điển do phương sai dị biệt nặng ($F_{\text{Levene}} = 324.50$), dùng Welch ANOVA và Games-Howell.
+   - Thừa nhận nhu cầu Mùa hè và Mùa đông tương đương do tương tác khí hậu (mùa hè quá nóng ẩm gây ức chế, mùa đông duy trì ổn định commuter).
+5. **Downstream cần lưu ý (V-03, V-04, V-11):**
+   - **TV4 (Hồi quy):** Bắt buộc đưa biến tương tác `workingday * hr` vào mô hình (không dùng `workingday` đơn lẻ vì sẽ bị triệt tiêu); chọn Mùa xuân làm nhóm cơ sở; cân nhắc gộp Mùa hè và Mùa đông thành 1 nhóm trong mô hình tinh gọn; bắt buộc dùng Sai số chuẩn Newey-West HAC để kiểm soát tự tương quan chuỗi ($r_1 = 0.8431$).
+   - **TV5 (Phân cụm):** Tái cấu trúc ma trận $731 \times 24$ (mỗi hàng là 1 ngày) để phân cụm theo hình thái ngày (2 đỉnh vs 1 đỉnh); bắt buộc chuẩn hóa dữ liệu theo mùa trước khi chạy K-Means để tránh bị biên độ Mùa thu chi phối.
+6. **File liên quan:** `Hypothesis_Test/03_hypothesis_testing.ipynb`, `Hypothesis_Test/03_hypothesis_testing.py`, `Hypothesis_Test/assets/fig_3_1_workingday_assumptions.png`, `Hypothesis_Test/assets/fig_3_2_season_posthoc_forest.png`, `Hypothesis_Test/report.md`.
+

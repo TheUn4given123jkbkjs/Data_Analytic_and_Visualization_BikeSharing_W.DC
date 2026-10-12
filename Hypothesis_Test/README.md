@@ -7,6 +7,7 @@ Thư mục này chứa toàn bộ mã nguồn, dữ liệu thực nghiệm, bi�
 ## 1. Cấu trúc thư mục
 * `PLAN.md`: Bản kế hoạch chi tiết, tiêu chuẩn thực hiện và các bước triển khai.
 * `03_hypothesis_testing.ipynb`: Jupyter Notebook hoàn chỉnh từ nạp dữ liệu, kiểm tra giả định, thực thi kiểm định tham số và phi tham số, tính effect size và trực quan hóa.
+* `03_hypothesis_testing.py`: Mã nguồn Python độc lập dùng để tái lập toàn bộ tính toán và xuất tự động biểu đồ.
 * `report.md`: Báo cáo chi tiết Phần 3 (sẵn sàng tích hợp vào báo cáo tổng thể).
 * `hypothesis_findings.md`: Findings Sheet bàn giao thông tin cho các thành viên khác theo mẫu `HANDOFF.md`.
 * `requirements.txt`: Danh sách các thư viện cần thiết.
