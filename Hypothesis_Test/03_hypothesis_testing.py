@@ -246,32 +246,33 @@ for s1, s2 in pairs_s:
     ci_low = diff - (q_crit / np.sqrt(2)) * se
     ci_high = diff + (q_crit / np.sqrt(2)) * se
     
+    pair_name = f"{season_names[s1]} vs {season_names[s2]}"
     sig_label = "***" if p_val < 0.001 else ("**" if p_val < 0.01 else ("*" if p_val < 0.05 else "ns"))
     
     gh_results.append({
-        'pair': f"{season_names[s1].split()[0]} vs {season_names[s2].split()[0]}",
+        'pair': pair_name,
         's1': s1, 's2': s2,
         'diff': diff, 'se': se, 't': t_val, 'df': df_pair,
         'ci_low': ci_low, 'ci_high': ci_high,
         'p_val': p_val, 'sig': sig_label
     })
     
-    print(f"  {season_names[s1].split()[0]} vs {season_names[s2].split()[0]}: Diff = {diff:+.2f}, SE = {se:.2f}, 95% CI = [{ci_low:+.2f}, {ci_high:+.2f}], p = {p_val:.4e} ({sig_label})")
+    print(f"  {pair_name}: Diff = {diff:+.2f}, SE = {se:.2f}, 95% CI = [{ci_low:+.2f}, {ci_high:+.2f}], p = {p_val:.4e} ({sig_label})")
 
 gh_df = pd.DataFrame(gh_results)
 
 # ==============================================================================
 # VẼ HÌNH 3.2: FOREST PLOT CHO KIỂM ĐỊNH HẬU ĐỊNH GAMES-HOWELL
 # ==============================================================================
-print("\n--> Vẽ Hình 3.2: fig_3_2_season_posthoc_forest.png...")
-fig, ax = plt.subplots(figsize=(12, 7), dpi=300)
+print("\n--> Vẽ lại Hình 3.2: fig_3_2_season_posthoc_forest.png...")
+fig, ax = plt.subplots(figsize=(13, 7.5), dpi=300)
 
 y_positions = np.arange(len(gh_df))[::-1]  # Đảo ngược để cặp 1 ở trên cùng
 
 colors = ['#d95f02' if row['sig'] == 'ns' else '#1f77b4' for _, row in gh_df.iterrows()]
 
 # Vẽ vạch chuẩn 0
-ax.axvline(0, color='#d62728', linestyle='--', linewidth=1.5, alpha=0.8, label='Vạch chuẩn 0 (Không có chênh lệch)')
+ax.axvline(0, color='#d62728', linestyle='--', linewidth=1.5, alpha=0.8, label='Vạch chuẩn 0 (Không chênh lệch)')
 
 # Vẽ thanh khoảng tin cậy và điểm ước lượng
 for y, (_, row), color in zip(y_positions, gh_df.iterrows(), colors):
@@ -282,16 +283,15 @@ for y, (_, row), color in zip(y_positions, gh_df.iterrows(), colors):
     # Point estimate
     ax.plot(row['diff'], y, marker='o', markersize=8, color=color, markeredgecolor='black', markeredgewidth=1)
     
-    # Nhãn số liệu bên cạnh
+    # Nhãn số liệu bên cạnh - TẤT CẢ đặt ở BÊN PHẢI thanh khoảng tin cậy
     if row['sig'] == 'ns':
         label_text = f"Delta = {row['diff']:+.2f} [{row['ci_low']:+.1f}, {row['ci_high']:+.1f}] | p = {row['p_val']:.3f} (ns)"
     else:
         label_text = f"Delta = {row['diff']:+.2f} [{row['ci_low']:+.1f}, {row['ci_high']:+.1f}] | p < 0.001***"
     
-    # Canh lề text
-    text_x = row['ci_high'] + 4 if row['diff'] > -60 else row['ci_low'] - 4
-    ha = 'left' if row['diff'] > -60 else 'right'
-    ax.text(text_x, y, label_text, va='center', ha=ha, fontsize=9.5, fontweight='bold', color=color)
+    # Canh lề text: luôn đặt bên phải của ci_high
+    text_x = row['ci_high'] + 3.5
+    ax.text(text_x, y, label_text, va='center', ha='left', fontsize=9.5, fontweight='bold', color=color)
 
 ax.set_yticks(y_positions)
 ax.set_yticklabels(gh_df['pair'], fontsize=11, fontweight='bold')
@@ -301,7 +301,7 @@ ax.set_title('Hình 3.2. Khoảng tin cậy 95% chênh lệch trung bình từng
 
 # Chú giải
 ax.grid(True, linestyle=':', alpha=0.6, axis='x')
-ax.set_xlim(-165, 95)
+ax.set_xlim(-150, 125)
 
 # Thêm hộp ghi chú kết luận
 summary_box = (
@@ -310,7 +310,7 @@ summary_box = (
     "• Cặp Mùa hè vs Mùa đông: p = 0.083 (ns, CI chứa 0)\n"
     "-> Nhu cầu Mùa hè và Mùa đông tương đương nhau!"
 )
-ax.text(0.02, 0.08, summary_box, transform=ax.transAxes, fontsize=10,
+ax.text(0.03, 0.12, summary_box, transform=ax.transAxes, fontsize=10,
         bbox=dict(boxstyle='round,pad=0.6', facecolor='#f8f9fa', edgecolor='#bbb', alpha=0.9))
 
 plt.tight_layout()
