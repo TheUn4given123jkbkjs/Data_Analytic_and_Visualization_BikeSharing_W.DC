@@ -43,10 +43,9 @@
   - [1.4. Phát hiện và xử lý giá trị ngoại lai (Outliers)](#14-phát-hiện-và-xử-lý-giá-trị-ngoại-lai-outliers)
     - [1.4.1. Phương pháp phát hiện ngoại lai](#141-phương-pháp-phát-hiện-ngoại-lai)
     - [1.4.2. Đánh giá và quyết định xử lý ngoại lai](#142-đánh-giá-và-quyết-định-xử-lý-ngoại-lai)
-  - [1.5. Kết luận và hạn chế của phần 1](#15-kết-luận-và-hạn-chế-của-phần-1)
-    - [1.5.1. Tóm tắt phát hiện chính](#151-tóm-tắt-phát-hiện-chính)
-    - [1.5.2. Hạn chế của dữ liệu và phương pháp](#152-hạn-chế-của-dữ-liệu-và-phương-pháp)
-    - [1.5.3. Hàm ý cho các phần phân tích tiếp theo](#153-hàm-ý-cho-các-phần-phân-tích-tiếp-theo)
+  - [1.6. Kết luận và Hạn chế của Phần 1](#16-kết-luận-và-hạn-chế-của-phần-1)
+    - [1.6.1. Tóm tắt các phát hiện cốt lõi](#161-tóm-tắt-các-phát-hiện-cốt-lõi)
+    - [1.6.2. Hạn chế của phương pháp và dữ liệu](#162-hạn-chế-của-phương-pháp-và-dữ-liệu)
 - [PHẦN 2. PHÂN TÍCH PHÂN PHỐI XÁC SUẤT](#phần-2-phân-tích-phân-phối-xác-suất)
   - [2.1. Giới thiệu và Kiểm tra Dữ liệu Đầu vào](#21-giới-thiệu-và-kiểm-tra-dữ-liệu-đầu-vào)
     - [2.1.1. Bối cảnh và Mục tiêu Nghiên cứu](#211-bối-cảnh-và-mục-tiêu-nghiên-cứu)
@@ -69,10 +68,9 @@
   - [2.7. Phân tích Biến Giải thích: Nhiệt độ (temp) và Hiệu ứng Mùa vụ](#27-phân-tích-biến-giải-thích-nhiệt-độ-temp-và-hiệu-ứng-mùa-vụ)
     - [2.7.1. Mô hình Phân phối Normal so với Beta cho temp](#271-mô-hình-phân-phối-normal-so-với-beta-cho-temp)
     - [2.7.2. Hiệu ứng Chu kỳ 4 Mùa Giải mã Dạng Đa Đỉnh (Multimodal) của temp](#272-hiệu-ứng-chu-kỳ-4-mùa-giải-mã-dạng-đa-đỉnh-multimodal-của-temp)
-  - [2.8. Kết luận và Hàm ý Chuyển giao Downstream](#28-kết-luận-và-hàm-ý-chuyển-giao-downstream)
+  - [2.8. Kết luận và Hạn chế của Phần 2](#28-kết-luận-và-hạn-chế-của-phần-2)
     - [2.8.1. Tóm tắt Kết luận Khoa học](#281-tóm-tắt-kết-luận-khoa-học)
     - [2.8.2. Hạn chế Phương pháp luận](#282-hạn-chế-phương-pháp-luận)
-    - [2.8.3. Bảng Chuyển giao Khuyến nghị Kỹ thuật cho TV3, TV4, TV5](#283-bảng-chuyển-giao-khuyến-nghị-kỹ-thuật-cho-tv3-tv4-tv5)
 - [PHẦN 3. KIỂM ĐỊNH GIẢ THUYẾT (HYPOTHESIS TESTING)](#phần-3-kiểm-định-giả-thuyết-hypothesis-testing)
   - [3.1. Cơ sở Lý thuyết và Khung Phương pháp luận](#31-cơ-sở-lý-thuyết-và-khung-phương-pháp-luận)
     - [3.1.1. Động cơ Thực tiễn và Nhu cầu Suy diễn Thống kê](#311-động-cơ-thực-tiễn-và-nhu-cầu-suy-diễn-thống-kê)
@@ -86,10 +84,9 @@
     - [3.3.1. Vấn đề Tự tương quan Chuỗi và Sự suy giảm Cỡ mẫu Hiệu dụng](#331-vấn-đề-tự-tương-quan-chuỗi-và-sự-suy-giảm-cỡ-mẫu-hiệu-dụng)
     - [3.3.2. Kiểm tra Độ bền vững qua Hiệu chỉnh Thống kê theo Neff](#332-kiểm-tra-độ-bền-vững-qua-hiệu-chỉnh-thống-kê-theo-neff)
     - [3.3.3. Đối chứng Thực nghiệm trên Chuỗi Thời gian Tổng hợp Cấp độ Ngày](#333-đối-chứng-thực-nghiệm-trên-chuỗi-thời-gian-tổng-hợp-cấp-độ-ngày)
-  - [3.4. Kết luận, Hạn chế và Bàn giao Downstream](#34-kết-luận-hạn-chế-và-bàn-giao-downstream)
+  - [3.4. Kết luận và Hạn chế của Phần 3](#34-kết-luận-và-hạn-chế-của-phần-3)
     - [3.4.1. Tóm tắt các Kết luận Kiểm định Chính](#341-tóm-tắt-các-kết-luận-kiểm-định-chính)
     - [3.4.2. Hạn chế về Phương pháp luận và Dữ liệu](#342-hạn-chế-về-phương-pháp-luận-và-dữ-liệu)
-    - [3.4.3. Bảng Hàm ý Chuyển giao Phương pháp luận cho TV4 và TV5](#343-bảng-hàm-ý-chuyển-giao-phương-pháp-luận-cho-tv4-và-tv5)
 - [TÀI LIỆU THAM KHẢO CHUNG](#tài-liệu-tham-khảo-chung)
 
 ---
@@ -114,7 +111,6 @@
 | **Bảng 2.7** | So sánh kết quả ước lượng phân phối cho biến nhiệt độ (	emp) ( = 17,379$) |
 | **Bảng 2.7b**| Phân tích độ nhạy biên (Boundary Clipping Sensitivity) của mô hình Beta |
 | **Bảng 2.8** | Thống kê mô tả nhiệt độ chuẩn hóa (	emp) phân tầng theo 4 mùa |
-| **Bảng 2.9** | Bảng chuyển giao khuyến nghị phương pháp luận từ Chương 2 cho các thành viên tiếp theo |
 | **Bảng 3.1** | Tổng hợp các phép kiểm định thống kê sử dụng trong Chương 3 theo quy chiếu Gopal K. Kanji |
 | **Bảng 3.2** | Thống kê mô tả số lượng thuê xe mỗi giờ (cnt) theo loại ngày |
 | **Bảng 3.3** | Bảng tổng hợp kết quả các phép kiểm định thống kê cho RQ1 |
@@ -122,7 +118,6 @@
 | **Bảng 3.5** | Kết quả các phép kiểm định tổng quát (Omnibus Tests) cho RQ2 |
 | **Bảng 3.6** | Bảng tổng hợp đối chiếu hai phương pháp kiểm định hậu nghiệm (Post-hoc) cho 6 cặp mùa |
 | **Bảng 3.7** | Bảng đối chiếu kiểm định RQ1 giữa cấp độ Giờ gốc và cấp độ Ngày tổng hợp |
-| **Bảng 3.8** | Bảng chuyển giao khuyến nghị phương pháp luận từ Chương 3 cho TV4 và TV5 |
 
 ---
 
@@ -540,7 +535,7 @@ Dữ liệu chuỗi thời gian theo giờ vi phạm nghiêm trọng giả đị
 
 ---
 
-## 1.6. Kết luận và Hàm ý chuyển giao (Handoff)
+## 1.6. Kết luận và Hạn chế của Phần 1
 
 ### 1.6.1. Tóm tắt các phát hiện và Thông điệp cốt lõi (Key Insights)
 
@@ -568,15 +563,6 @@ Quá trình khám phá dữ liệu (EDA) đã làm sáng tỏ các đặc trưng
 
 ---
 
-### 1.6.3. Bảng hàm ý chuyển giao (Handoff Sheet) cho các thành viên tiếp theo
-
-| Thành viên nhận | Mã nhiệm vụ | Phát hiện cốt lõi từ EDA | Hành động bắt buộc |
-| :--- | :--- | :--- | :--- |
-| **TV2 (Distribution)** | **V-02** | Phân phối `cnt` phân tán vượt mức, không có giá trị 0 (Zero-truncated) | Bắt buộc đánh giá Negative Binomial hoặc Zero-truncated models; tránh dùng Poisson chuẩn. |
-| **TV3 (Hypothesis Testing)** | **V-03** | Dữ liệu vi phạm giả định độc lập (tự tương quan chuỗi) và chuẩn tắc; nhóm thời tiết bão cực đoan (`weathersit = 4`) chỉ có 3 dòng quan sát | Bắt buộc chạy kiểm định phi tham số (Mann-Whitney U, Kruskal-Wallis); báo cáo Effect Size; **chủ động gộp nhóm `weathersit = 4` vào nhóm 3** khi lập bảng chéo Chi-square/ANOVA để tránh sụp đổ bậc tự do. |
-| **TV4 (Correlation & Setup)**| **V-04** | Nhiệt độ thực và nhiệt độ cảm nhận (`temp`–`atemp`) đa cộng tuyến gần tuyệt đối; `casual` và `registered` gây rò rỉ biến mục tiêu; khung giờ có tương quan phi tuyến | Loại bỏ `atemp` khỏi mô hình; cấm dùng `casual`/`registered` làm biến dự báo `cnt`; ưu tiên hệ số tương quan phi tuyến/đơn điệu. |
-| **TV5 (Regression & Modeling)**| **V-11** | Giữ lại toàn bộ các ngoại lai cao điểm tự nhiên; chuỗi có xu hướng tăng trưởng năm và các điểm đứt gãy do bão | **Chia tập Train/Test theo trình tự thời gian** (không chia ngẫu nhiên); thử nghiệm biến đổi căn bậc hai $\sqrt{cnt}$ hoặc mô hình hồi quy đếm GLM. |
-
 ---
 
 
@@ -596,7 +582,6 @@ Mục tiêu cốt lõi của Chương 2 là thực hiện phân tích xác suấ
 3. **Kiểm định độ phù hợp (Goodness-of-Fit - GOF) và trực quan hóa Q-Q Plot:** Đánh giá sai số phân vị và khoảng cách Kolmogorov-Smirnov ($D$), làm rõ hiện tượng "phạt cỡ mẫu lớn" của các kiểm định cổ điển khi cỡ mẫu $N = 17,379$.
 4. **Giải mã bản chất đa chế độ (Multi-regime):** Khảo sát cấu trúc hỗn hợp thực nghiệm (Empirical Mixture) của `cnt` thông qua nhịp giờ phân tách theo loại ngày (`workingday`), chỉ ra nguyên nhân bản chất khiến các mô hình đơn biến không thể khớp trọn vẹn toàn bộ dải phân phối.
 5. **Mô hình hóa biến giải thích liên tục (`temp`) và hiệu ứng mùa vụ:** So sánh mô hình Normal và Beta cho biến `temp` trên miền $[0, 1]$, kiểm tra độ nhạy biên (boundary sensitivity) và bóc tách các đỉnh gợn sóng thông qua phân bố nhiệt độ theo 4 mùa.
-6. **Đóng gói hàm ý chuyển giao downstream:** Cung cấp cơ sở khoa học cho TV3 (chọn kiểm định tham số/phi tham số), TV4 (lựa chọn tương quan Pearson/Spearman) và TV5 (chiến lược tạo đặc trưng và lựa chọn hàm liên kết GLM).
 
 ---
 
@@ -867,7 +852,7 @@ Trên đồ thị Histogram của `temp` (Hình 2.4), mật độ không có m�
 
 ---
 
-## 2.8. Kết luận và Hàm ý Chuyển giao Downstream
+## 2.8. Kết luận và Hạn chế của Phần 2
 
 ### 2.8.1. Tóm tắt Kết luận Khoa học
 1. **Phân phối của `cnt`:** Bị lệch phải nghiêm trọng (Skewness 1.28), có độ nhọn Leptokurtic (Kurtosis 1.42) và phân tán vượt mức cực đoan ($\text{Variance}/\text{Mean} = 173.66$).
@@ -882,16 +867,6 @@ Trên đồ thị Histogram của `temp` (Hình 2.4), mật độ không có m�
 2. **Giới hạn của mô hình tĩnh đơn biến:** Không thể biểu diễn đồng thời cả hai đỉnh cao điểm công sở và trần dung lượng trạm xe nếu không đưa thêm các biến điều kiện phụ trợ.
 
 ---
-
-### 2.8.3. Bảng Chuyển giao Khuyến nghị Kỹ thuật cho TV3, TV4, TV5
-
-**Bảng 2.9. Bảng chuyển giao khuyến nghị phương pháp luận từ Chương 2 cho các thành viên tiếp theo**
-
-| Thành viên tiếp nhận / Nhiệm vụ | Phát hiện từ Chương 2 | Hành động kỹ thuật bắt buộc (Downstream Guidance) | Rủi ro cần phòng tránh |
-| :--- | :--- | :--- | :--- |
-| **TV3: Kiểm định Giả thuyết**<br>*(V-05: Lựa chọn phép kiểm định)* | `cnt` vi phạm nghiêm trọng tính chuẩn ($D_{\text{Normal}} = 0.0769$); phương sai giữa các nhóm biến động rất lớn. | **Bắt buộc dùng kiểm định vững phương sai (Welch's t, Welch's ANOVA)** kết hợp kiểm định phi tham số đối chứng (Mann-Whitney U, Kruskal-Wallis); luôn báo cáo kích thước hiệu ứng (Cohen's d, $\eta^2$). | Tránh dùng Student's t-test hoặc ANOVA cổ điển vì nguy cơ lạm phát Sai lầm loại 1 nghiêm trọng. |
-| **TV4: Phân tích Tương quan & Lý thuyết MLR**<br>*(V-06, V-07: Lập bài toán)* | Quan hệ phân vị giữa `cnt` và các biến thời tiết phi tuyến; `cnt` có đuôi dài làm méo mó các mối quan hệ tuyến tính. | **1. Ưu tiên tương quan hạng Spearman** thay vì chỉ phụ thuộc vào Pearson.<br>**2. Định hướng biến đổi target:** Cân nhắc $\log(1 + cnt)$ để ổn định phương sai cho OLS. | Tránh ngộ nhận về mối liên hệ tuyến tính yếu khi thực tế tồn tại quan hệ phi tuyến mạnh mẽ. |
-| **TV5: Xây dựng Mô hình Hồi quy**<br>*(V-09, V-11: Feature Engineering & Đánh giá)* | Cấu trúc đa chế độ thể hiện 2 đỉnh nhọn ngày làm việc (08h, 17h) và 1 đỉnh vòm ngày nghỉ (13h); `temp` phân tầng theo mùa. | **1. Bắt buộc tạo biến tương tác giữa giờ và loại ngày:** Kết hợp các hài Fourier $(\sin, \cos)$ của giờ với `workingday`.<br>**2. Quy đổi về thang gốc:** Mọi chỉ số đánh giá (MAE, RMSE) sau khi fit trên $\log(1+cnt)$ phải quy đổi ngược qua $e^z - 1$. | Nếu chỉ đưa `workingday` như một biến độc lập đơn lẻ, hệ số sẽ bị triệt tiêu và mất hoàn toàn khả năng dự báo theo giờ. |
 
 ---
 
@@ -1376,7 +1351,7 @@ Cả phép thử tham số (Welch's $t$, $p = 0.1101$) và phi tham số (Mann-W
 
 ---
 
-## 3.4. Kết luận, Hạn chế và Bảng Hàm ý Chuyển giao Downstream
+## 3.4. Kết luận và Hạn chế của Phần 3
 
 ### 3.4.1. Tóm tắt các Kết luận Kiểm định Chính
 
@@ -1402,19 +1377,6 @@ Nghiên cứu ghi nhận 3 giới hạn khách quan cần được lưu ý khi d
 3. **Giới hạn Khung thời gian 2 Năm (2011–2012):** Khoảng thời gian 2 năm đại diện cho giai đoạn hệ thống Capital Bikeshare đang mở rộng mạng lưới trạm. Một phần mức tăng trưởng nhu cầu ở năm 2012 có thể phản ánh xu hướng mở rộng quy mô hệ thống (Trend component) chứ không thuần túy là yếu tố mùa vụ tự nhiên.
 
 ---
-
-### 3.4.3. Bảng Hàm ý Chuyển giao Phương pháp luận cho TV4 và TV5 (Downstream Handoff)
-
-Để hiện thực hóa triết lý phối hợp nhóm liền mạch theo quy định tại `outline.md` và `HANDOFF.md`, Bảng 3.8 đúc kết toàn bộ các khuyến nghị kỹ thuật bắt buộc chuyển giao cho **Thành viên 4 (Phần 4: Phân tích Tương quan & Phần 5: Lý thuyết, Định hướng Mô hình Hồi quy)** và **Thành viên 5 (Phần 6: Xây dựng và Đánh giá Mô hình Hồi quy Thực chiến)**:
-
-**Bảng 3.8. Bảng chuyển giao khuyến nghị phương pháp luận từ Chương 3 cho TV4 và TV5**
-
-| Thành viên Tiếp nhận / Phần Phụ trách | Phát hiện Thống kê từ Chương 3 | Hành động Kỹ thuật Bắt buộc (Actionable Guidance) | Rủi ro Cần Phòng tránh nếu Bỏ qua |
-| :--- | :--- | :--- | :--- |
-| **TV4: Phần 4 — Phân tích Tương quan**<br>*(Pearson vs Spearman)* | • RQ1 cho thấy tương quan tuyến tính giữa `workingday` và `cnt` là không đáng kể ($d = 0.0651$) do bị triệt tiêu 24h.<br>• RQ2 cho thấy quan hệ thời tiết/mùa vụ phi tuyến (Mùa hè $\approx$ Mùa đông). | **1. Phân tích tương quan theo phân tầng:** Nhận xét rõ giới hạn của hệ số tương quan tuyến tính Pearson khi quan hệ giữa giờ và lượt thuê có dạng hai đỉnh chu kỳ.<br>**2. Ưu tiên hệ số Spearman:** Sử dụng tương quan hạng Spearman để nắm bắt tốt hơn các mối quan hệ phi tuyến đơn điệu giữa các biến thời tiết và `cnt`. | Tránh ngộ nhận rằng `workingday` hay `hr` có ít mối liên hệ với nhu cầu thuê xe chỉ vì hệ số tương quan tuyến tính tổng thể đơn lẻ ở mức thấp. |
-| **TV4: Phần 5 — Lý thuyết & Bài toán Hồi quy**<br>*(Lập phương trình, Feature Candidate Sheet)* | • `cnt` vi phạm nặng tính chuẩn, lệch phải và phương sai dị biệt cực đoan ($F_{\text{Levene}} = 324.50$).<br>• Cặp Mùa hè và Mùa đông có nhu cầu tương đương nhau ($p = 0.0826 > 0.05$). | **1. Định hướng biến mục tiêu:** Nêu rõ trong cơ sở lý thuyết việc lựa chọn biến đổi $\log(1 + \text{cnt})$ để ổn định phương sai cho OLS.<br>**2. Lập Feature Candidate Sheet:** Đề xuất đưa biến tương tác giữa `workingday` và `hr` vào danh sách ứng viên chuyển giao cho TV5; chọn Mùa xuân làm nhóm cơ sở (`reference category`) khi mã hóa mùa vụ. | Nếu không đưa biến tương tác `workingday × hr` vào danh sách ứng viên, mô hình hồi quy ở Phần 6 sẽ không nắm bắt được 2 đỉnh giờ cao điểm công sở. |
-| **TV5: Phần 6 — Kỹ thuật Tạo Đặc trưng**<br>*(Feature Engineering cho Mô hình MLR)* | • Nhịp giờ ngày làm việc (2 đỉnh 8h, 17h) hoàn toàn đối lập với ngày nghỉ (1 đỉnh vòm 13h) dù tổng 24h tương đương. | **Bắt buộc đưa biến tương tác giữa giờ và loại ngày vào mô hình:**<br>Mã hóa giờ qua các hài lượng giác Fourier ($sin, cos$) kết hợp biến tương tác tích: `hr_sin1×workingday` ... `hr_cos5×workingday` như TV5 đã thiết kế. | Nếu chỉ đưa `workingday` vào dưới dạng biến độc lập đơn lẻ (main effect), hệ số hồi quy sẽ bị triệt tiêu ($\beta \approx 0$ hoặc không có ý nghĩa), làm sai lệch hoàn toàn khả năng dự báo theo giờ. |
-| **TV5: Phần 6 — Kiểm tra Giả định & Đánh giá Mô hình**<br>*(Assumptions Check & Chronological Split)* | • Dữ liệu có tự tương quan bậc 1 rất cao ($r_1 = 0.8431$), vi phạm giả định sai số độc lập.<br>• Nhu cầu có xu hướng tăng trưởng và phụ thuộc chuỗi thời gian. | **1. Kiểm định tính độc lập phần dư:** Giải thích rõ hiện tượng thống kê Durbin-Watson rơi xuống mức thấp ($DW \approx 0.68 < 1.5$) là hệ quả khách quan của dữ liệu chuỗi thời gian.<br>**2. Chiến lược chia dữ liệu:** Áp dụng Chronological Split (cắt theo mốc thời gian 2012-03-31) thay vì Random Split để phản ánh đúng năng lực ngoại suy tương lai. | Tránh ngộ nhận về tính độc lập của phần dư và tránh dùng Random Split đơn thuần vì sẽ làm chỉ số kiểm tra $R^2$ trở nên lạc quan nhân tạo do rò rỉ dữ liệu giữa các giờ liền kề. |
 
 ---
 
