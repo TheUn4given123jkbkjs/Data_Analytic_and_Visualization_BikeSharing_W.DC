@@ -357,25 +357,33 @@ Kết quả các phép kiểm định tổng quát đa nhóm được trình bà
   $$\epsilon^2 = \frac{H - k + 1}{N - k} = \frac{1,190.27 - 4 + 1}{17,379 - 4} \approx 0.0683 \quad (6.83\%)$$
 Theo phân loại của Cohen (1988), $\eta^2 \ge 0.06$ đại diện cho một **Hiệu ứng ở mức độ Trung bình (Medium Effect Size)**. Yếu tố mùa vụ giải thích trực tiếp khoảng $6.6\%$ tổng độ biến thiên của nhu cầu thuê xe toàn hệ thống. Đây là một tác động thực chất rất lớn, vượt trội hoàn toàn so với biến loại ngày ở RQ1.
 
-#### 4. Bước 5: Phân tích Hậu định Từng Cặp Mùa (Games-Howell Post-hoc Test) & Cơ chế Khí hậu
+#### 4. Bước 5: Kiểm định Hậu nghiệm (Post-hoc Tests) Từng Cặp Mùa — Games-Howell (*Kanji Test 28*) và Dunn-Bonferroni
 
-##### a. Kết quả Kiểm định Hậu định Games-Howell (*Kanji Test 28*)
-Do kiểm định tổng quát bác bỏ $H_0$, bước tiếp theo là xác định chính xác những cặp mùa nào có sự sai biệt thực chất. Vì phương sai không đồng nhất, thủ tục **Games-Howell (*Kanji Test 28*)** được áp dụng cho toàn bộ $m = C_4^2 = 6$ cặp so sánh, kiểm soát nghiêm ngặt sai lầm loại 1 toàn họ (FWER) ở mức $0.05$. 
+##### a. Kết quả Kiểm định Hậu nghiệm Song hành (Games-Howell & Dunn-Bonferroni)
+Do các kiểm định tổng thể đa nhóm (Welch's ANOVA và Kruskal-Wallis) đều bác bỏ $H_0$ ($p < 0.001$), bước tiếp theo mang tính quyết định là tiến hành **kiểm định hậu nghiệm (Post-hoc multiple comparisons)** để xác định chính xác những cặp mùa nào có sự sai biệt thực chất, đồng thời kiểm soát nghiêm ngặt nguy cơ lạm phát sai lầm loại 1 toàn họ (Family-wise Error Rate - FWER ở mức $lpha = 0.05$).
 
-Kết quả chi tiết được tổng hợp tại Bảng 3.6 và trực quan hóa trên **Hình 3.2**:
+Nghiên cứu áp dụng đồng thời hai phương pháp kiểm định hậu nghiệm tương ứng với hai họ thống kê:
+1. **Kiểm định Hậu nghiệm Tham số: Games-Howell Post-hoc (*Kanji Test 28*, tr. 65):**
+   - Được thiết kế chuyên biệt cho trường hợp cỡ mẫu không bằng nhau và phương sai dị biệt nặng nề. Phép thử sử dụng phân phối Studentized Range ($q$) kết hợp bậc tự do hiệu chỉnh Welch-Satterthwaite riêng cho từng cặp:
+     $$q = \frac{|\overline{x}_i - \overline{x}_j|}{\sqrt{\frac{1}{2}\left(\frac{s_i^2}{n_i} + \frac{s_j^2}{n_j}\right)}}, \quad \nu_{ij} = \frac{\left(\frac{s_i^2}{n_i} + \frac{s_j^2}{n_j}\right)^2}{\frac{(s_i^2 / n_i)^2}{n_i - 1} + \frac{(s_j^2 / n_j)^2}{n_j - 1}}$$
+2. **Kiểm định Hậu nghiệm Phi tham số: Dunn's Post-hoc Test (*Dunn, 1964*) kết hợp hiệu chỉnh Bonferroni:**
+   - Hoạt động trên thang đo thứ hạng toàn cục ($R_k$), tính toán thống kê chuẩn hóa $z$ dựa trên sai số chuẩn điều chỉnh các giá trị trùng lặp (Ties correction), sau đó nhân $p$-value với số cặp so sánh ($m = C_4^2 = 6$) theo nguyên lý Bonferroni:
+     $$z = \frac{\overline{R}_i - \overline{R}_j}{\sqrt{\left[\frac{N(N+1)}{12} - \frac{\sum (t_s^3 - t_s)}{12(N-1)}\right] \left(\frac{1}{n_i} + \frac{1}{n_j}\right)}}, \quad p_{\text{adj}} = \min(1.0, 6 \times p_{\text{unadj}})$$
 
-**Bảng 3.6. Kết quả kiểm định so sánh hậu định Games-Howell (Kanji Test 28) cho 6 cặp mùa**
+Kết quả đối chiếu song hành của hai phương pháp kiểm định hậu nghiệm trên cả 6 cặp mùa được trình bày tại Bảng 3.6 và trực quan hóa trên **Hình 3.2**:
 
-| STT | Cặp So sánh Mùa vụ | Chênh lệch ($\Delta$, lượt/h) | Sai số chuẩn ($\text{SE}$) | Bậc tự do ($\nu$) | Khoảng tin cậy $95\%$ CI | $p$-value điều chỉnh | Mức ý nghĩa |
-| :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| 1 | **Mùa xuân vs Mùa hè** | $-97.23$ | $3.38$ | $7,508.8$ | $[-105.90, -88.55]$ | $< 0.0001$ | $p < 0.001^{***}$ |
-| 2 | **Mùa xuân vs Mùa thu** | $-124.90$ | $3.47$ | $7,587.2$ | $[-133.82, -115.98]$ | $< 0.0001$ | $p < 0.001^{***}$ |
-| 3 | **Mùa xuân vs Mùa đông** | $-87.75$ | $3.36$ | $7,249.4$ | $[-96.38, -79.13]$ | $< 0.0001$ | $p < 0.001^{***}$ |
-| 4 | **Mùa hè vs Mùa thu** | $-27.67$ | $4.09$ | $8,898.3$ | $[-38.19, -17.16]$ | $9.10 \times 10^{-11}$| $p < 0.001^{***}$ |
-| 5 | **Mùa hè vs Mùa đông** | $\mathbf{+9.48}$ | $\mathbf{3.99}$ | $\mathbf{8,609.9}$ | $\mathbf{[-0.79, +19.74]}$ | $\mathbf{0.0826}$ | **Không có ý nghĩa (ns)** |
-| 6 | **Mùa thu vs Mùa đông** | $+37.15$ | $4.07$ | $8,674.8$ | $[+26.68, +47.62]$ | $< 0.0001$ | $p < 0.001^{***}$ |
+**Bảng 3.6. Bảng tổng hợp đối chiếu hai phương pháp kiểm định hậu nghiệm (Post-hoc) cho 6 cặp mùa**
 
-*Ghi chú:* Kiểm định phi tham số Dunn-Bonferroni đối chứng cho cặp Mùa hè vs Mùa đông cũng trả về $p_{\text{adj}} = 0.4339 > 0.05$ (đồng thuận kết luận).
+| STT | Cặp So sánh Mùa vụ | Hậu nghiệm Tham số: Games-Howell (Test 28)<br>Chênh lệch ($\Delta$) $\pm$ 95% CI [$p_{\text{adj}}$] | Hậu nghiệm Phi tham số: Dunn-Bonferroni<br>Chênh lệch Thứ hạng $\Delta \overline{R}$ [$z$, $p_{\text{adj}}$] | Kết luận Thống kê | Mức Ý nghĩa |
+| :---: | :--- | :---: | :---: | :--- | :---: |
+| 1 | **Mùa xuân vs Mùa hè** | $\Delta = -97.23$ $[-105.90, -88.55]$ [$p < 0.0001$] | $\Delta \overline{R} = -2,730.17$ [$z = -25.30, p < 0.0001$] | **Bác bỏ $H_0$** | $p < 0.001^{***}$ |
+| 2 | **Mùa xuân vs Mùa thu** | $\Delta = -124.90$ $[-133.82, -115.98]$ [$p < 0.0001$] | $\Delta \overline{R} = -3,510.04$ [$z = -32.69, p < 0.0001$] | **Bác bỏ $H_0$** | $p < 0.001^{***}$ |
+| 3 | **Mùa xuân vs Mùa đông** | $\Delta = -87.75$ $[-96.38, -79.13]$ [$p < 0.0001$] | $\Delta \overline{R} = -2,536.15$ [$z = -23.27, p < 0.0001$] | **Bác bỏ $H_0$** | $p < 0.001^{***}$ |
+| 4 | **Mùa hè vs Mùa thu** | $\Delta = -27.67$ $[-38.19, -17.16]$ [$p < 0.0001$] | $\Delta \overline{R} = -779.87$ [$z = -7.33, p = 1.34 \times 10^{-12}$] | **Bác bỏ $H_0$** | $p < 0.001^{***}$ |
+| 5 | **Mùa hè vs Mùa đông** | $\mathbf{\Delta = +9.48}$ $\mathbf{[-0.79, +19.74]}$ $\mathbf{[p = 0.0826]}$ | $\mathbf{\Delta \overline{R} = +194.03}$ $\mathbf{[z = +1.80, p = 0.4339]}$ | **Chưa đủ cơ sở bác bỏ $H_0$** | **Không có ý nghĩa (ns)** |
+| 6 | **Mùa thu vs Mùa đông** | $\Delta = +37.15$ $[+26.68, +47.62]$ [$p < 0.0001$] | $\Delta \overline{R} = +973.90$ [$z = +9.06, p < 0.0001$] | **Bác bỏ $H_0$** | $p < 0.001^{***}$ |
+
+*Nhận xét về tính vững:* Cả hai phương pháp kiểm định hậu nghiệm tham số (Games-Howell) và phi tham số (Dunn-Bonferroni) đưa ra **kết luận đồng thuận tuyệt đối $100\%$ trên toàn bộ 6 cặp so sánh**: 5/6 cặp mùa khác biệt cực kỳ mạnh mẽ ($p < 0.001^{***}$), trong khi cặp Mùa hè vs Mùa đông đều không đạt mức ý nghĩa thống kê ($p > 0.05$).
 
 ![Hình 3.2. Khoảng tin cậy 95% chênh lệch trung bình từng cặp mùa từ kiểm định Games-Howell (Kanji Test 28)](assets/fig_3_2_season_posthoc_forest.png)
 
