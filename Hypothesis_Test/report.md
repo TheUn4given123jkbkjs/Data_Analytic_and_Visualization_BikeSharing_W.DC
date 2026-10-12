@@ -197,11 +197,228 @@ Toàn bộ hệ thống kiểm định ở Bảng 3.1 được thiết kế tr�
 
 ---
 
+## 3.2. Thực thi Kiểm định cho 2 Câu hỏi Nghiên cứu
+
+Sau khi xác lập cơ sở phương pháp luận và bảng phân loại kiểm định ở Mục 3.1, phần này tiến hành triển khai chi tiết quy trình 5 bước Neave-Kanji cho hai câu hỏi nghiên cứu cốt lõi trên tập dữ liệu sạch `EDA/cleaned_data/hour_cleaned.csv` ($N = 17,379$).
+
+---
+
+### 3.2.1. Nghiên cứu RQ1: So sánh 2 Nhóm Độc lập — Ngày làm việc (`workingday = 1`) và Ngày nghỉ (`workingday = 0`)
+
+#### 1. Bước 1: Phát biểu Cặp Giả thuyết Thống kê
+Nhằm trả lời bài toán điều phối đội xe hàng ngày (Daily Fleet Scheduling), nghiên cứu kiểm tra xem liệu nhu cầu thuê xe trung bình mỗi giờ giữa ngày làm việc hành chính và ngày nghỉ/cuối tuần có sự khác biệt thực chất hay không:
+- **Giả thuyết Không ($H_0$):** Không có sự khác biệt về số lượng thuê xe trung bình mỗi giờ giữa ngày làm việc và ngày nghỉ.
+  $$H_0: \mu_{\text{workingday}} = \mu_{\text{non-workingday}} \quad (\text{hoặc } \mu_1 - \mu_0 = 0)$$
+- **Giả thuyết Đối ($H_1$):** Có sự khác biệt có ý nghĩa thống kê về số lượng thuê xe trung bình mỗi giờ giữa hai loại ngày.
+  $$H_1: \mu_{\text{workingday}} \neq \mu_{\text{non-workingday}} \quad (\text{hoặc } \mu_1 - \mu_0 \neq 0)$$
+- **Mức ý nghĩa kiểm định:** $\alpha = 0.05$ (Kiểm định hai phía — Two-tailed test).
+
+#### 2. Bước 2 & 3: Thống kê Mô tả và Kiểm tra Giả định Phân phối, Phương sai Nội nhóm
+Để chọn đại lượng kiểm định thích hợp, trước hết ta tổng hợp các chỉ số thống kê mô tả thực nghiệm trên hai phân nhóm dữ liệu tại Bảng 3.2:
+
+**Bảng 3.2. Thống kê mô tả số lượng thuê xe mỗi giờ (`cnt`) theo loại ngày**
+
+| Chỉ số Thống kê | Ngày làm việc (`workingday = 1`) | Ngày nghỉ / Cuối tuần (`workingday = 0`) | Chênh lệch ($\Delta = \text{Nhóm 1} - \text{Nhóm 0}$) |
+| :--- | :---: | :---: | :---: |
+| **Cỡ mẫu quan sát ($N$)** | $11,865$ ($68.27\%$) | $5,514$ ($31.73\%$) | $N_{\text{total}} = 17,379$ |
+| **Trung bình ($\overline{x}$, Mean)** | $193.21$ lượt/giờ | $181.41$ lượt/giờ | $+11.80$ lượt/giờ |
+| **Trung vị ($\text{Med}$, Median)** | $151.00$ lượt/giờ | $119.00$ lượt/giờ | $+32.00$ lượt/giờ |
+| **Độ lệch chuẩn ($s$, Std)** | $185.11$ | $172.85$ | $+12.26$ |
+| **Phương sai ($s^2$, Variance)** | $34,265.71$ | $29,877.12$ | $+4,388.59$ |
+| **Hệ số bất đối xứng ($\text{Skewness}$)** | $1.3529$ | $1.0574$ | Lệch phải mạnh ở cả 2 nhóm |
+| **Hệ số nhọn ($\text{Kurtosis}$)** | $1.6378$ | $0.6587$ | Đuôi dài hơn phân phối chuẩn |
+
+Việc kiểm tra hai giả định nền tảng (Tính chuẩn và Đồng nhất phương sai) được trực quan hóa toàn diện trên **Hình 3.1**:
+
+![Hình 3.1. Kiểm tra giả định phân phối chuẩn và phương sai nội nhóm của cnt theo loại ngày](assets/fig_3_1_workingday_assumptions.png)
+
+Từ kết quả trực quan hóa trên Hình 3.1 và kiểm định thống kê:
+- **Kiểm tra tính chuẩn (Normality Check — Panel B & C):** Đồ thị Q-Q plot của cả hai phân nhóm đều bị uốn cong chữ S gãy khúc dữ dội khỏi đường thẳng tham chiếu màu đỏ ($y = x$), đặc biệt kéo dài ở vùng phân vị cao. Hệ số Skewness đều $> 1.0$ ($\text{Skew}_1 = 1.35$, $\text{Skew}_0 = 1.06$), khẳng định biến `cnt` **vi phạm nghiêm trọng giả định phân phối chuẩn trong từng phân nhóm**.
+- **Kiểm tra tính đồng nhất phương sai (Homoscedasticity Check — Panel D):** Thực thi **Levene's Test (*Kanji Test 31*, trung vị)**:
+  $$F_{\text{Levene}} = 2.7390, \quad p = 0.0979 > 0.05$$
+  Do $p > 0.05$, ta chưa đủ bằng chứng bác bỏ giả định phương sai đồng nhất. Tuy nhiên, do hai nhóm có cỡ mẫu chênh lệch lớn ($N_1 / N_0 \approx 2.15$) kết hợp với việc vi phạm nặng tính chuẩn, Student's $t$-test cổ điển tiềm ẩn rủi ro sai lệch. Phép thử **Welch's $t$-test (*Kanji Test 9*)** được lựa chọn làm phép kiểm định tham số chủ đạo nhờ đặc tính vững (robustness), song song với các phép thử phi tham số **Mann-Whitney $U$ (*Kanji Test 48*)** và **Kolmogorov-Smirnov (*Kanji Test 49*)**.
+
+#### 3. Bước 4: Thực thi Tính toán Thống kê và $p$-value
+Kết quả thực thi các phép kiểm định thống kê cho RQ1 được tổng hợp chi tiết trong Bảng 3.3:
+
+**Bảng 3.3. Bảng tổng hợp kết quả các phép kiểm định thống kê cho RQ1**
+
+| Phép kiểm định | Mã sách Kanji (2006) | Thống kê Kiểm định | Bậc tự do / Tham số | $p$-value Thực nghiệm | Ngưỡng $\alpha$ | Kết luận Thống kê |
+| :--- | :--- | :---: | :---: | :---: | :---: | :--- |
+| **Levene's Test** | Test 31 (tr. 71) | $F = 2.7390$ | $k = 2$ | $0.0979$ | $0.05$ | Chưa đủ bằng chứng bác bỏ $H_0$ phương sai bằng nhau |
+| **Welch's $t$-test** | Test 9 (tr. 33) | $t^* = 4.0951$ | $\nu = 11,444.68$ | $4.25 \times 10^{-5}$ | $0.05$ | **Bác bỏ $H_0$** ($p < 0.001^{***}$) |
+| **Mann-Whitney $U$** | Test 48 (tr. 96) | $U = 33,565,313.0$ | $r_{\text{rb}} = -0.0261$ | $0.0056$ | $0.05$ | **Bác bỏ $H_0$** ($p = 0.0056^{**}$) |
+| **Two-sample KS-test** | Test 49 (tr. 97) | $D = 0.0748$ | $N_1, N_0$ | $9.35 \times 10^{-19}$ | $0.05$ | **Bác bỏ $H_0$** ($p < 0.001^{***}$) |
+| **Cohen's $d$ (Effect Size)** | Cohen (1988) | $d = 0.0651$ | $s_p = 181.33$ | — | $|d| \ge 0.20$ | **Hiệu ứng không đáng kể (Negligible Effect)** |
+
+*Chi tiết các đại lượng thống kê:*
+- **Welch's $t$-test (Kanji Test 9):**
+  - Sai số chuẩn chênh lệch trung bình:
+    $$\text{SE} = \sqrt{\frac{s_1^2}{n_1} + \frac{s_0^2}{n_0}} = \sqrt{\frac{34,265.71}{11,865} + \frac{29,877.12}{5,514}} \approx 2.8814$$
+  - Thống kê kiểm định:
+    $$t^* = \frac{193.21 - 181.41}{2.8814} = 4.0951$$
+  - Bậc tự do hiệu chỉnh Welch-Satterthwaite: $\nu \approx 11,444.68$.
+  - Khoảng tin cậy $95\%$ của chênh lệch trung bình:
+    $$\text{CI}_{95\%} = (\overline{x}_1 - \overline{x}_0) \pm t_{0.975, \nu} \times \text{SE} = 11.80 \pm 1.960 \times 2.8814 = [6.15, 17.45] \text{ lượt/giờ}$$
+  - Do $p = 4.25 \times 10^{-5} < 0.001$, trên phương diện ý nghĩa thống kê danh nghĩa, ta có đủ bằng chứng để bác bỏ giả thuyết $H_0$.
+- **Mann-Whitney $U$ test (Kanji Test 48):**
+  - Tổng thứ hạng kiểm tra trung vị cho giá trị $U = 33,565,313.0$, trả về $p = 0.0056 < 0.01$, củng cố kết luận bác bỏ $H_0$ trên thang đo thứ hạng.
+  - Hệ số tương quan Rank-biserial: $r_{\text{rb}} = 1 - \frac{2U}{n_1 n_0} = -0.0261$.
+- **Kolmogorov-Smirnov test (Kanji Test 49):**
+  - Khoảng cách thẳng đứng cực đại giữa hai hàm phân phối tích lũy là $D = 0.0748$, $p = 9.35 \times 10^{-19} < 0.001$, chứng minh hình thái phân phối xác suất tổng thể giữa hai loại ngày có sự phân hóa nhất định.
+
+#### 4. Bước 5: Đánh giá Kích thước Hiệu ứng & Bóc tách Nghịch lý Thực tiễn qua Nhịp giờ
+
+##### a. Lượng hóa Kích thước Hiệu ứng (Effect Size)
+Mặc dù cả ba phép thử danh nghĩa đều trả về $p < 0.01$ (đạt ý nghĩa thống kê), việc đánh giá kích thước hiệu ứng chuẩn hóa mang lại một bức tranh hoàn toàn khác:
+- Độ lệch chuẩn gộp: $s_p = \sqrt{\frac{(11,865-1)(185.11)^2 + (5,514-1)(172.85)^2}{11,865 + 5,514 - 2}} \approx 181.33$.
+- Kích thước hiệu ứng Cohen's $d$:
+  $$d = \frac{\overline{x}_1 - \overline{x}_0}{s_p} = \frac{11.80}{181.33} \approx 0.0651$$
+Theo quy chuẩn thẩm định của Cohen (1988), một hiệu ứng chỉ được xem là có ý nghĩa thực tiễn ở mức nhỏ (Small) khi $|d| \ge 0.20$, trung bình (Medium) khi $|d| \ge 0.50$, và lớn (Large) khi $|d| \ge 0.80$. Giá trị $d = 0.0651$ rơi sâu vào vùng **"Không đáng kể" (Negligible effect / Trivial)**. Tương tự, hệ số Rank-biserial $|r_{\text{rb}}| = 0.0261 \ll 0.10$. 
+
+Điều này khẳng định: **Việc bác bỏ $H_0$ ở cấp độ danh nghĩa chủ yếu là hệ quả của cỡ mẫu cực lớn ($N = 17,379$), khiến phép thử phát hiện cả những sai biệt vô cùng nhỏ nhặt ($11.80$ lượt/giờ trên nền độ lệch chuẩn $> 180$) vốn không mang lại ý nghĩa kinh tế thực chất.**
+
+##### b. Bóc tách Nghịch lý Triệt tiêu qua Phân tầng Nhịp giờ (Stratified Hourly Pattern)
+Để trả lời trọn vẹn câu hỏi tại sao chênh lệch trung bình 24 giờ lại nhỏ ($11.80$ lượt/giờ), nghiên cứu tái sử dụng và dẫn chiếu trực tiếp **Hình 1.6** từ Báo cáo Khám phá Dữ liệu (TV1):
+
+![Hình 1.6. So sánh nhu cầu thuê xe theo giờ giữa ngày làm việc và ngày nghỉ (Trích xuất từ Chương 1 - TV1)](../EDA/assets/hinh1.6.png)
+
+Phân tích Hình 1.6 làm sáng tỏ hiện tượng **Triệt tiêu lẫn nhau (Cancellation Effect)** khi tính trung bình gộp 24 giờ:
+1. **Cấu trúc nhu cầu Ngày làm việc (`workingday = 1`):** Phản ánh đặc trưng sinh hoạt của nhóm hành khách đi làm định kỳ (Commuters). Biểu đồ xuất hiện **hai đỉnh nhọn cực đại (Bimodal distribution)** trùng khớp hoàn toàn với khung giờ cao điểm công sở:
+   - Đỉnh sáng: Lúc $8\text{h}$ sáng ($\overline{x} \approx 360 \text{ lượt/giờ}$).
+   - Đỉnh chiều: Lúc $17\text{h} - 18\text{h}$ chiều ($\overline{x} \approx 430 - 460 \text{ lượt/giờ}$).
+   - Ngược lại, vào giữa trưa ($10\text{h} - 15\text{h}$), nhu cầu sụt giảm xuống mức trung bình thấp ($\approx 180 - 200 \text{ lượt/giờ}$).
+2. **Cấu trúc nhu cầu Ngày nghỉ (`workingday = 0`):** Phản ánh hành vi giải trí, du lịch và dạo phố (Leisure / Casual users). Biểu đồ có dạng **hình chuông đơn thoải (Unimodal distribution)**:
+   - Hoàn toàn vắng bóng đỉnh sáng lúc $8\text{h}$ ($\overline{x} < 100 \text{ lượt/giờ}$).
+   - Tăng dần đều từ $10\text{h}$ sáng và đạt đỉnh thoải duy nhất vào buổi trưa và đầu giờ chiều ($12\text{h} - 15\text{h}$, đạt $\approx 370 - 380 \text{ lượt/giờ}$).
+3. **Cơ chế triệt tiêu:** Khoảng thặng dư khổng lồ của ngày nghỉ vào buổi trưa ($+180 \text{ lượt/giờ}$) đã bù trừ trực tiếp cho khoảng thiếu hụt vào hai khung giờ cao điểm sáng và chiều của ngày làm việc. Khi tích phân tổng lượt thuê trên toàn bộ chu kỳ 24 giờ, tổng diện tích dưới đường cong của hai loại ngày là **xấp xỉ tương đương nhau** ($\approx 4,637$ lượt/ngày làm việc so với $\approx 4,354$ lượt/ngày nghỉ).
+
+##### c. Kết luận và Hàm ý Nghiệp vụ cho Daily Fleet Scheduling
+- **Kết luận Thống kê:** Mặc dù kiểm định danh nghĩa bác bỏ $H_0$ do cỡ mẫu lớn, kích thước hiệu ứng $d = 0.0651$ chứng minh tổng nhu cầu trung bình 24 giờ giữa ngày làm việc và ngày nghỉ là tương đương trên thực tế.
+- **Hàm ý Vận hành Đội xe:**
+  - *Tổng quy mô phương tiện (Fleet Size):* Nhà vận hành **không cần thiết phải cắt giảm hay tăng thêm tổng số lượng xe đạp hoạt động trên toàn thành phố** giữa ngày làm việc và ngày nghỉ, vì tổng nhu cầu trong ngày không chênh lệch đáng kể.
+  - *Biểu đồ Điều phối theo Giờ (Dynamic Hourly Rebalancing):* Bắt buộc phải áp dụng **hai chiến lược điều phối trạm đối lập nhau**:
+    + Vào ngày làm việc: Tập trung xe tại các trạm đầu mối giao thông công cộng, trạm tàu điện ngầm (Metro) và khu dân cư trước $7\text{h}30$ sáng; tăng cường rút bớt xe giải phóng trạm tại khu trung tâm tài chính và công sở trước $16\text{h}30$ chiều.
+    + Vào ngày nghỉ: Chuyển dịch trọng tâm phân bổ xe ra các tuyến đường ven sông, công viên, khu di tích lịch sử và trung tâm thương mại từ $10\text{h}$ sáng đến $16\text{h}$ chiều.
+
+---
+
+### 3.2.2. Nghiên cứu RQ2: So sánh 4 Nhóm Độc lập — Sự Khác biệt Nhu cầu Giữa 4 Mùa trong Năm (`season`)
+
+#### 1. Bước 1: Phát biểu Cặp Giả thuyết Thống kê Đa nhóm
+Nhằm giải quyết bài toán bảo dưỡng đại tu và tái cân bằng trạm theo mùa (Seasonal Rebalancing & Fleet Maintenance), nghiên cứu kiểm định sự khác biệt về số lượng thuê xe trung bình mỗi giờ giữa 4 mùa trong năm (Mùa xuân: `season = 1`, Mùa hè: `season = 2`, Mùa thu: `season = 3`, Mùa đông: `season = 4`):
+- **Giả thuyết Không ($H_0$):** Lượng thuê xe trung bình mỗi giờ là như nhau ở cả 4 mùa trong năm.
+  $$H_0: \mu_{\text{Spring}} = \mu_{\text{Summer}} = \mu_{\text{Fall}} = \mu_{\text{Winter}} \quad (\text{hoặc } \mu_1 = \mu_2 = \mu_3 = \mu_4)$$
+- **Giả thuyết Đối ($H_1$):** Tồn tại ít nhất một cặp mùa có lượng thuê xe trung bình khác nhau.
+  $$H_1: \exists (i, j) \text{ sao cho } \mu_i \neq \mu_j \quad (1 \le i < j \le 4)$$
+- **Mức ý nghĩa kiểm định:** $\alpha = 0.05$.
+
+#### 2. Bước 2 & 3: Thống kê Mô tả và Kiểm tra Giả định Phương sai Giữa 4 Mùa
+Số liệu thống kê mô tả chi tiết của 4 mùa được tổng hợp tại Bảng 3.4:
+
+**Bảng 3.4. Thống kê mô tả số lượng thuê xe mỗi giờ (`cnt`) phân theo 4 mùa**
+
+| Mùa vụ (`season`) | Tên Mùa | Cỡ mẫu ($N$) | Tỷ lệ | Trung bình ($\overline{x}$) | Trung vị ($\text{Med}$) | Độ lệch chuẩn ($s$) | Phương sai ($s^2$) | Hệ số lệch ($\text{Skew}$) |
+| :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **$1$** | Mùa xuân (Spring) | $4,242$ | $24.41\%$ | $111.11$ | $76.00$ | $119.22$ | $14,213.62$ | $1.9119$ |
+| **$2$** | Mùa hè (Summer) | $4,409$ | $25.37\%$ | $208.34$ | $165.00$ | $188.36$ | $35,478.43$ | $1.0401$ |
+| **$3$** | Mùa thu (Fall) | $4,496$ | $25.87\%$ | $236.02$ | $199.00$ | $197.71$ | $39,088.08$ | $0.9865$ |
+| **$4$** | Mùa đông (Winter) | $4,232$ | $24.35\%$ | $198.87$ | $155.50$ | $182.97$ | $33,476.99$ | $1.2422$ |
+| **Toàn bộ** | **Tổng thể** | $17,379$ | $100\%$ | $189.46$ | $142.00$ | $181.39$ | $32,901.87$ | $1.2774$ |
+
+Để kiểm tra trực quan hình thái phân tán và phương sai giữa các mùa, nghiên cứu tái sử dụng **Hình 1.7** từ Chương 1:
+
+![Hình 1.7. Phân phối cnt theo các mùa trong năm và điều kiện thời tiết (Trích xuất từ Chương 1 - TV1)](../EDA/assets/hinh1.7.png)
+
+- **Kiểm định tính đồng nhất phương sai đa nhóm (Levene Test — *Kanji Test 31*):**
+  Thực hiện kiểm định Levene đa nhóm dựa trên trung vị cho 4 mùa:
+  $$F_{\text{Levene}} = 324.50, \quad p = 5.03 \times 10^{-205} \ll 0.001$$
+  Giá trị $p$-value cực nhỏ bác bỏ dứt khoát giả định phương sai đồng nhất. Độ lệch chuẩn giữa các nhóm dao động từ $119.22$ (Mùa xuân) lên tới $197.71$ (Mùa thu) — phương sai mùa thu cao gấp gần $2.75$ lần mùa xuân.
+- **Lựa chọn phương pháp:** Hiện tượng phương sai dị biệt cực đoan (Severe Heteroscedasticity) làm vô hiệu hóa One-way ANOVA truyền thống (*Kanji Test 22*). Nghiên cứu xác lập **Welch's ANOVA** làm kiểm định tham số chủ đạo, phối hợp đối chứng phi tham số **Kruskal-Wallis $H$-test (*Kanji Test 51/54*)** và thủ tục so sánh cặp **Games-Howell Post-hoc (*Kanji Test 28*)**.
+
+#### 3. Bước 4: Thực thi Kiểm định Tổng thể Đa nhóm (Omnibus Tests) & Kích thước Hiệu ứng
+Kết quả các phép kiểm định tổng quát đa nhóm được trình bày tại Bảng 3.5:
+
+**Bảng 3.5. Kết quả các phép kiểm định tổng quát (Omnibus Tests) cho RQ2**
+
+| Phép kiểm định Tổng quát | Mã sách Kanji (2006) | Thống kê Kiểm định | Bậc tự do ($\nu$) | $p$-value Thực nghiệm | Kích thước Hiệu ứng | Kết luận Thống kê |
+| :--- | :--- | :---: | :---: | :---: | :---: | :--- |
+| **Levene's Test 4 mùa** | Test 31 (tr. 71) | $F = 324.50$ | $k = 4$ | $5.03 \times 10^{-205}$ | — | **Bác bỏ giả định đồng nhất phương sai** |
+| **Welch's ANOVA** | Kanji Test 22 adj | $F_{\text{Welch}} = 606.73$ | $\nu_1 = 3, \nu_2 = 9,462.11$ | $< 10^{-300}$ | $\eta^2 = 0.0660$ | **Bác bỏ $H_0$** ($p < 0.001^{***}$) |
+| **One-way ANOVA cổ điển**| Test 22 (tr. 55) | $F = 409.18$ | $\nu_1 = 3, \nu_2 = 17,375$ | $7.40 \times 10^{-257}$ | $\omega^2 = 0.0658$ | **Bác bỏ $H_0$** ($p < 0.001^{***}$) |
+| **Kruskal-Wallis $H$-test**| Test 51/54 (tr. 99) | $H = 1,190.27$ | $\nu = 3$ | $9.47 \times 10^{-258}$ | $\epsilon^2 = 0.0683$ | **Bác bỏ $H_0$** ($p < 0.001^{***}$) |
+
+*Lượng hóa Kích thước Hiệu ứng Toàn cục:*
+- Tổng bình phương giữa các nhóm: $\text{SS}_{\text{between}} = \sum_{j=1}^4 n_j (\overline{x}_j - \overline{x})^2 = 38,799,017$.
+- Tổng bình phương toàn phần: $\text{SS}_{\text{total}} = 588,095,496$.
+- Tỷ số Eta-squared:
+  $$\eta^2 = \frac{\text{SS}_{\text{between}}}{\text{SS}_{\text{total}}} = \frac{38,799,017}{588,095,496} \approx 0.0660 \quad (6.60\%)$$
+- Hệ số phi tham số Epsilon-squared:
+  $$\epsilon^2 = \frac{H - k + 1}{N - k} = \frac{1,190.27 - 4 + 1}{17,379 - 4} \approx 0.0683 \quad (6.83\%)$$
+Theo phân loại của Cohen (1988), $\eta^2 \ge 0.06$ đại diện cho một **Hiệu ứng ở mức độ Trung bình (Medium Effect Size)**. Yếu tố mùa vụ giải thích trực tiếp khoảng $6.6\%$ tổng độ biến thiên của nhu cầu thuê xe toàn hệ thống. Đây là một tác động thực chất rất lớn, vượt trội hoàn toàn so với biến loại ngày ở RQ1.
+
+#### 4. Bước 5: Phân tích Hậu định Từng Cặp Mùa (Games-Howell Post-hoc Test) & Cơ chế Khí hậu
+
+##### a. Kết quả Kiểm định Hậu định Games-Howell (*Kanji Test 28*)
+Do kiểm định tổng quát bác bỏ $H_0$, bước tiếp theo là xác định chính xác những cặp mùa nào có sự sai biệt thực chất. Vì phương sai không đồng nhất, thủ tục **Games-Howell (*Kanji Test 28*)** được áp dụng cho toàn bộ $m = C_4^2 = 6$ cặp so sánh, kiểm soát nghiêm ngặt sai lầm loại 1 toàn họ (FWER) ở mức $0.05$. 
+
+Kết quả chi tiết được tổng hợp tại Bảng 3.6 và trực quan hóa trên **Hình 3.2**:
+
+**Bảng 3.6. Kết quả kiểm định so sánh hậu định Games-Howell (Kanji Test 28) cho 6 cặp mùa**
+
+| STT | Cặp So sánh Mùa vụ | Chênh lệch ($\Delta$, lượt/h) | Sai số chuẩn ($\text{SE}$) | Bậc tự do ($\nu$) | Khoảng tin cậy $95\%$ CI | $p$-value điều chỉnh | Mức ý nghĩa |
+| :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| 1 | **Mùa xuân vs Mùa hè** | $-97.23$ | $3.38$ | $7,508.8$ | $[-105.90, -88.55]$ | $< 0.0001$ | $p < 0.001^{***}$ |
+| 2 | **Mùa xuân vs Mùa thu** | $-124.90$ | $3.47$ | $7,587.2$ | $[-133.82, -115.98]$ | $< 0.0001$ | $p < 0.001^{***}$ |
+| 3 | **Mùa xuân vs Mùa đông** | $-87.75$ | $3.36$ | $7,249.4$ | $[-96.38, -79.13]$ | $< 0.0001$ | $p < 0.001^{***}$ |
+| 4 | **Mùa hè vs Mùa thu** | $-27.67$ | $4.09$ | $8,898.3$ | $[-38.19, -17.16]$ | $9.10 \times 10^{-11}$| $p < 0.001^{***}$ |
+| 5 | **Mùa hè vs Mùa đông** | $\mathbf{+9.48}$ | $\mathbf{3.99}$ | $\mathbf{8,609.9}$ | $\mathbf{[-0.79, +19.74]}$ | $\mathbf{0.0826}$ | **Không có ý nghĩa (ns)** |
+| 6 | **Mùa thu vs Mùa đông** | $+37.15$ | $4.07$ | $8,674.8$ | $[+26.68, +47.62]$ | $< 0.0001$ | $p < 0.001^{***}$ |
+
+*Ghi chú:* Kiểm định phi tham số Dunn-Bonferroni đối chứng cho cặp Mùa hè vs Mùa đông cũng trả về $p_{\text{adj}} = 0.4339 > 0.05$ (đồng thuận kết luận).
+
+![Hình 3.2. Khoảng tin cậy 95% chênh lệch trung bình từng cặp mùa từ kiểm định Games-Howell (Kanji Test 28)](assets/fig_3_2_season_posthoc_forest.png)
+
+##### b. Phát hiện Thực nghiệm Phản trực giác: Sự Tương đồng Nhu cầu Giữa Mùa hè và Mùa đông
+Quan sát Forest plot trên Hình 3.2 làm nổi bật hai quy luật cốt lõi:
+1. **5/6 cặp mùa có sự khác biệt cực kỳ ý nghĩa thống kê ($p < 0.001^{***}$):**
+   - Mùa xuân có nhu cầu sụt giảm sâu sắc nhất so với tất cả các mùa còn lại (thấp hơn Mùa hè $97.23$ lượt/h, thấp hơn Mùa thu $124.90$ lượt/h, và thấp hơn Mùa đông $87.75$ lượt/h).
+   - Mùa thu là mùa đạt đỉnh cao nhất trong năm, vượt trội hơn Mùa hè $+27.67$ lượt/h và vượt hơn Mùa đông $+37.15$ lượt/h.
+2. **Ngoại lệ Phản trực giác (Counter-intuitive Finding): Cặp Mùa hè vs Mùa đông:**
+   - Chênh lệch trung bình giữa Mùa hè ($\overline{x} = 208.34$) và Mùa đông ($\overline{x} = 198.87$) chỉ vỏn vẹn là $\Delta = +9.48 \text{ lượt/giờ}$.
+   - Khoảng tin cậy $95\%$ của Games-Howell là $[-0.79, +19.74]$ **bao trùm giá trị 0**.
+   - Giá trị $p$-value hiệu chỉnh là $p = 0.0826 > 0.05$.
+   - **Kết luận:** **Chưa đủ bằng chứng thống kê ở mức ý nghĩa $\alpha = 0.05$ để khẳng định có sự khác biệt về nhu cầu thuê xe giữa Mùa hè và Mùa đông.**
+
+##### c. Thảo luận Cơ chế Khí hậu Mùa vụ (Dẫn chiếu Hình 2.7 từ Chương 2 - TV2)
+Để lý giải về mặt khoa học tại sao Mùa hè (thời tiết ấm áp) lại có nhu cầu thuê xe tương đương Mùa đông (thời tiết lạnh giá), nghiên cứu đối chiếu với phân tích phân bố nhiệt độ mùa vụ của TV2 (**Hình 2.7**):
+
+![Hình 2.7. Phân bố nhiệt độ temp theo 4 mùa (Trích xuất từ Chương 2 - TV2)](../Distribution/assets/fig_2_7_temp_by_season.png)
+
+Cơ chế vi khí hậu tại thủ đô Washington D.C. giải thích trọn vẹn hiện tượng này:
+- **Tác động ức chế của Khí hậu Mùa hè (Extreme Heat & Humidity):** Washington D.C. vào mùa hè có đặc trưng nhiệt độ rất cao (giá trị chuẩn hóa `temp` thường xuyên $> 0.75$, tương đương $> 32^\circ\text{C} - 38^\circ\text{C}$) kết hợp độ ẩm cao (`hum` cao). Điều kiện nắng gắt và chỉ số khó chịu nhiệt độ (Heat Index) cao làm ức chế mạnh mẽ hoạt động đạp xe ngoài trời của người dân vào ban ngày.
+- **Tính Bền vững của Hành vi Di chuyển Mùa đông (Commuter Resilience):** Mặc dù nhiệt độ mùa đông tại D.C. xuống thấp (`temp` $\approx 0.20 - 0.35$, khoảng $5^\circ\text{C} - 12^\circ\text{C}$), mùa đông tại khu vực này tương đối khô ráo. Lực lượng khách hàng thường xuyên (Registered commuters) vẫn duy trì thói quen đạp xe đi làm hàng ngày để tránh ùn tắc giao thông đô thị và giữ ấm qua vận động thể chất.
+- **Sự sụt giảm của Mùa xuân:** Mùa xuân tại D.C. (tháng 1 đến tháng 3 trong dataset) thực chất là giai đoạn tuyết tan, mưa phùn dầm dề và thời tiết chuyển mùa ẩm ướt khó lường, kết hợp với các đợt rét muộn, khiến nhu cầu chạm đáy sâu nhất trong năm.
+
+##### d. Kết luận và Hàm ý Nghiệp vụ cho Seasonal Maintenance & Fleet Rebalancing
+- **Chiến lược Đại tu & Bảo dưỡng Định kỳ Đội xe (Fleet Overhaul):**
+  - Mùa xuân là "cửa sổ vàng" để thu hồi xe về xưởng bảo dưỡng lớn. Do nhu cầu trung bình chỉ đạt $111.11$ lượt/h (giảm hơn $50\%$ so với mùa thu), việc rút bớt $20\% - 30\%$ lượng xe đạp về xưởng đại tu hệ thống phanh, xích líp và thay lốp sẽ **không gây ra tình trạng thiếu hụt xe tại các trạm hay ảnh hưởng đến trải nghiệm khách hàng**.
+- **Chiến lược Tái cân bằng Trạm Đỉnh cao (Peak Rebalancing):**
+  - Mùa thu là giai đoạn bùng nổ nhu cầu lớn nhất ($236.02$ lượt/h). Doanh nghiệp cần huy động $100\%$ lượng phương tiện ra thị trường, đồng thời tăng tần suất các chuyến xe tải tái cân bằng trạm (Rebalancing vans) tại các khu vực trường đại học và cơ quan chính phủ để ngăn ngừa tình trạng trạm rỗng (empty station) hoặc trạm đầy nghẽn (full station).
+- **Chiến lược Đồng nhất Mùa hè và Mùa đông:**
+  - Nhà quản trị **không cần phải thiết lập hai định mức cung ứng xe khác nhau giữa Mùa hè và Mùa đông**. Quy mô xe đạp và nhân sự phục vụ có thể giữ nguyên ở mức cơ bản tương đương nhau ($\approx 200$ lượt/h) cho cả hai mùa này.
+
+---
+
 ## Tài liệu Tham khảo
 
 1. **Cohen, J. (1988).** *Statistical Power Analysis for the Behavioral Sciences* (2nd ed.). Lawrence Erlbaum Associates.
-2. **Fanaee-T, H., & Gama, J. (2014).** Event labeling combining ensemble detectors and background knowledge. *Progress in Artificial Intelligence*, 2(2–3), 113–127.
-3. **Games, P. A., & Howell, J. F. (1976).** Pairwise multiple comparison procedures with unequal N's and/or variances: a Monte Carlo study. *Journal of Educational Statistics*, 1(2), 113–125.
-4. **Kanji, G. K. (2006).** *100 Statistical Tests* (3rd ed.). SAGE Publications.
-5. **Neave, H. R. (1976).** *Statistical Tables for Students*. Allen & Unwin.
-6. **Welch, B. L. (1947).** The generalization of 'Student's' problem when several different population variances are involved. *Biometrika*, 34(1/2), 28–35.
+2. **Dunn, O. J. (1964).** Multiple comparisons using rank sums. *Technometrics*, 6(3), 241–252.
+3. **Fanaee-T, H., & Gama, J. (2014).** Event labeling combining ensemble detectors and background knowledge. *Progress in Artificial Intelligence*, 2(2–3), 113–127.
+4. **Games, P. A., & Howell, J. F. (1976).** Pairwise multiple comparison procedures with unequal N's and/or variances: a Monte Carlo study. *Journal of Educational Statistics*, 1(2), 113–125.
+5. **Kanji, G. K. (2006).** *100 Statistical Tests* (3rd ed.). SAGE Publications.
+6. **Kruskal, W. H., & Wallis, W. A. (1952).** Use of ranks in one-criterion variance analysis. *Journal of the American Statistical Association*, 47(260), 583–621.
+7. **Mann, H. B., & Whitney, D. R. (1947).** On a test of whether one of two random variables is stochastically larger than the other. *Annals of Mathematical Statistics*, 18(1), 50–60.
+8. **Neave, H. R. (1976).** *Statistical Tables for Students*. Allen & Unwin.
+9. **Satterthwaite, F. E. (1946).** An approximate distribution of estimates of variance components. *Biometrics Bulletin*, 2(6), 110–114.
+10. **Welch, B. L. (1947).** The generalization of 'Student's' problem when several different population variances are involved. *Biometrika*, 34(1/2), 28–35.
