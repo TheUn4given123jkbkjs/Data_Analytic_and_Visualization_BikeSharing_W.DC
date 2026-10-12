@@ -62,14 +62,21 @@
 
 ### 5. Khuyến nghị Kỹ thuật Bắt buộc cho Downstream:
 
-#### A. Đối với TV4 (Mô hình Hồi quy / GLM):
-- **Bắt buộc đưa biến tương tác bậc cao `workingday * hr` vào mô hình:** Không được đưa `workingday` như một biến độc lập đơn lẻ (main effect), vì hiệu ứng chính bị triệt tiêu ($\beta \approx 0$). Phải tạo biến tương tác theo khung giờ cao điểm để mô hình bắt đúng 2 đỉnh đi làm.
-- **Xử lý biến mùa (`season`):** Chọn Mùa xuân làm nhóm cơ sở (Reference Category). Cân nhắc gộp Mùa hè và Mùa đông thành một nhóm chung trong mô hình tinh gọn vì hệ số của chúng gần tương đương nhau ($\Delta = 9.48$, $p > 0.05$).
-- **Bắt buộc sử dụng Sai số chuẩn Vững Newey-West (HAC Standard Errors):** Do tự tương quan chuỗi ($r_1 = 0.8431$), sai số chuẩn OLS thông thường sẽ bị thu nhỏ nhân tạo $\approx 3.4$ lần, gây lạm phát sai lầm loại 1 nghiêm trọng.
+#### A. Đối với TV4 (Phần 4: Tương quan & Phần 5: Lý thuyết, Định hướng Mô hình Hồi quy):
+- **Phân tích Tương quan (Phần 4):**
+  - Nhận xét rõ giới hạn của hệ số tương quan tuyến tính Pearson khi quan hệ giữa giờ (`hr`) và lượt thuê (`cnt`) mang tính chu kỳ hai đỉnh.
+  - Ưu tiên sử dụng hệ số tương quan hạng Spearman cho các biến điều kiện thời tiết (`temp`, `hum`, `windspeed`) để phát hiện các mối quan hệ phi tuyến đơn điệu.
+- **Lý thuyết & Định hướng Bài toán Hồi quy (Phần 5):**
+  - **Biến mục tiêu:** Nêu rõ cơ sở lựa chọn biến đổi $\log(1 + \text{cnt})$ nhằm ổn định phương sai trước sự vi phạm tính chuẩn và phương sai dị biệt nặng nề được chứng minh ở Chương 3.
+  - **Lập Feature Candidate Sheet chuyển giao cho TV5:** Đề xuất đưa biến tương tác giữa `workingday` và `hr` vào danh sách ứng viên; chọn Mùa xuân làm nhóm cơ sở (`reference category`) khi mã hóa mùa vụ; lý giải cơ sở loại trừ `atemp` để chống đa cộng tuyến.
 
-#### B. Đối với TV5 (Mô hình Phân cụm / Clustering):
-- **Tái cấu trúc dữ liệu thành Ma trận Profile 24 giờ cho từng ngày ($731 \times 24$):** Không phân cụm trên dữ liệu giờ đơn lẻ. Mỗi dòng phải là vector 24 giờ của một ngày để thuật toán phân tách rõ cụm Ngày làm việc (Bimodal) và Ngày nghỉ (Unimodal).
-- **Chuẩn hóa dữ liệu theo mùa (Z-score hoặc Min-Max nội bộ từng mùa):** Tránh hiện tượng cụm bị chi phối bởi độ cao tuyệt đối của Mùa thu ($236.02$) làm lu mờ hình thái giờ của Mùa xuân ($111.11$).
+#### B. Đối với TV5 (Phần 6: Xây dựng và Đánh giá Mô hình Hồi quy Thực chiến):
+- **Kỹ thuật Tạo Đặc trưng (Feature Engineering - Mục 6.1):**
+  - **Bắt buộc đưa biến tương tác loại ngày và giờ vào mô hình:** Kết hợp các hàm điều hòa lượng giác Fourier ($sin, cos$) với `workingday` (tích các hài giờ với `workingday`: `hr_sin1×workingday` ... `hr_cos5×workingday` như TV5 đã thực hiện) để mô hình tái hiện trọn vẹn 2 đỉnh giờ đi làm và 1 đỉnh giờ nghỉ.
+  - **Mã hóa chu kỳ mùa vụ / tháng:** Sử dụng các hàm điều hòa tháng (`mnth_sin`, `mnth_cos`) hoặc biến giả mùa để nắm bắt đỉnh Mùa thu ($236.02$) và đáy Mùa xuân ($111.11$).
+- **Đánh giá và Kiểm tra Giả định Mô hình (Assumptions Check - Mục 6.4):**
+  - **Tính độc lập phần dư:** Kết quả kiểm định tự tương quan $r_1 = 0.8431$ ở Chương 3 dự báo trước hiện tượng thống kê Durbin-Watson rơi xuống mức thấp ($DW \approx 0.68 < 1.5$); TV5 cần lưu ý điểm này khi đánh giá giả định phần dư độc lập.
+  - **Chiến lược chia dữ liệu (Chronological Split):** Áp dụng điểm cắt theo thời gian (cắt ngày 31/03/2012) thay vì chia ngẫu nhiên để đánh giá năng lực ngoại suy xu hướng thực tế, tránh rò rỉ thông tin chuỗi thời gian giữa các giờ liền kề.
 
 ---
 
