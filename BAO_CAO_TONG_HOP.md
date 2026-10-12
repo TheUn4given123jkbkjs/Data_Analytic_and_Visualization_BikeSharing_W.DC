@@ -6,21 +6,21 @@
 ### THÔNG TIN CHUNG
 - **Cơ sở đào tạo:** Trường Đại học Tôn Đức Thắng (TDTU) — Khoa Công nghệ Thông tin
 - **Môn học:** Trực quan hóa và Phân tích Dữ liệu (Data Analysis and Visualization)
-- **Tập dữ liệu nghiên cứu:** hour.csv — Bike Sharing Dataset (UCI Machine Learning Repository / Kaggle)
-- **Quy mô tập dữ liệu:** ,379$ dòng quan sát theo giờ × 17 biến số (Thời gian: 2011–2012)
+- **Tập dữ liệu nghiên cứu:** `hour.csv` — Bike Sharing Dataset (UCI Machine Learning Repository / Kaggle)
+- **Quy mô tập dữ liệu:** $17,379$ dòng quan sát theo giờ × 17 biến số (Thời gian: 2011–2012)
 - **Phương pháp tiếp cận:** Tiếp cận theo quy trình khoa học dữ liệu chuẩn mực: EDA → Phân tích phân phối xác suất → Kiểm định giả thuyết thống kê → Phân tích tương quan → Hồi quy tuyến tính đa biến (MLR).
 
 ---
 
 ### BẢNG PHÂN CÔNG NHIỆM VỤ THỰC HIỆN
 
-| Thành viên | Phần phụ trách theo Đề cương (Outline) | Phạm vi và Đóng góp chính | Trạng thái hoàn thành |
-| :---: | :--- | :--- | :---: |
-| **TV1** | **Phần 1: Khám phá Dữ liệu (EDA)** | Rà soát chất lượng dữ liệu, kiểm tra độ nhạy, tiền xử lý, trực quan hóa 10 biểu đồ nhịp giờ & khí hậu, phát hiện ngoại lai, định lượng cỡ mẫu hiệu dụng {\text{eff}} \approx 1,479$. | **100% (Hoàn thành)** |
-| **TV2** | **Phần 2: Phân tích Phân phối Xác suất** | Khảo sát phân phối thực nghiệm của cnt, so sánh 4 mô hình MLE (Negative Binomial, Poisson, Log-normal, Normal), kiểm định GOF & Q-Q plots, phân tích đa chế độ Multi-regime, mô hình Beta & hiệu ứng 4 mùa của 	emp. | **100% (Hoàn thành)** |
-| **TV3** | **Phần 3: Kiểm định Giả thuyết Thống kê & Tổng hợp Báo cáo** | Thực thi quy trình 5 bước Neave-Kanji, Welch's t-test ( = 0.0651$, hiệu chỉnh {\text{eff}}$ và cấp ngày), Welch's ANOVA 4 mùa ($\eta^2 = 6.60\%$), hậu nghiệm Games-Howell & Dunn-Bonferroni, phát hiện phản trực giác Hè $\approx$ Đông, tổng hợp báo cáo. | **100% (Hoàn thành)** |
-| **TV4** | **Phần 4 & 5: Tương quan & Lý thuyết Bài toán Hồi quy** | Phân tích tương quan Pearson vs Spearman, lý thuyết hồi quy đa biến MLR, lập bài toán hồi quy và Feature Candidate Sheet chuyển giao cho TV5. | *Đang rà soát & hoàn thiện* |
-| **TV5** | **Phần 6: Xây dựng và Đánh giá Mô hình Hồi quy Thực chiến** | Feature Engineering (hài Fourier của giờ × workingday), Chronological Split (cắt 31/03/2012), huấn luyện OLS, kiểm tra các giả định OLS & Durbin-Watson, đánh giá MAE/RMSE trên thang gốc. | *Đang rà soát & hoàn thiện* |
+| Thành viên | Phần phụ trách theo Đề cương (Outline) | Phạm vi và Đóng góp chính | Tỷ lệ đóng góp (%) | Mức độ hoàn thành |
+| :---: | :--- | :--- | :---: | :---: |
+| **TV1** | **Phần 1: Khám phá Dữ liệu (EDA)** | Rà soát chất lượng dữ liệu, kiểm tra độ nhạy, tiền xử lý, trực quan hóa 10 biểu đồ nhịp giờ & khí hậu, phát hiện ngoại lai, định lượng cỡ mẫu hiệu dụng $N_{\text{eff}} \approx 1,479$. | 20% | **100% (Hoàn thành)** |
+| **TV2** | **Phần 2: Phân tích Phân phối Xác suất** | Khảo sát phân phối thực nghiệm của `cnt`, so sánh 4 mô hình MLE (Negative Binomial, Poisson, Log-normal, Normal), kiểm định GOF & Q-Q plots, phân tích đa chế độ Multi-regime, mô hình Beta & hiệu ứng 4 mùa của `temp`. | 20% | **100% (Hoàn thành)** |
+| **TV3** | **Phần 3: Kiểm định Giả thuyết Thống kê & Tổng hợp Báo cáo** | Thực thi quy trình 5 bước Neave-Kanji, Welch's t-test ($d = 0.0651$, hiệu chỉnh $N_{\text{eff}}$ và cấp ngày), Welch's ANOVA 4 mùa ($\eta^2 = 6.60\%$), hậu nghiệm Games-Howell & Dunn-Bonferroni, phát hiện phản trực giác Hè $\approx$ Đông, tổng hợp báo cáo. | 20% | **100% (Hoàn thành)** |
+| **TV4** | **Phần 4 & 5: Tương quan & Lý thuyết Bài toán Hồi quy** | Phân tích tương quan Pearson vs Spearman, lý thuyết hồi quy đa biến MLR, lập bài toán hồi quy và Feature Candidate Sheet chuyển giao cho TV5. | 20% | *Đang rà soát & hoàn thiện* |
+| **TV5** | **Phần 6: Xây dựng và Đánh giá Mô hình Hồi quy Thực chiến** | Feature Engineering (hài Fourier của giờ × workingday), Chronological Split (cắt 31/03/2012), huấn luyện OLS, kiểm tra các giả định OLS & Durbin-Watson, đánh giá MAE/RMSE trên thang gốc. | 20% | *Đang rà soát & hoàn thiện* |
 
 ---
 
