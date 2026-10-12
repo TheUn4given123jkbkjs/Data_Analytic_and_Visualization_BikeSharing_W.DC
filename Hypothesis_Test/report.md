@@ -360,7 +360,7 @@ Theo phân loại của Cohen (1988), $\eta^2 \ge 0.06$ đại diện cho một 
 #### 4. Bước 5: Kiểm định Hậu nghiệm (Post-hoc Tests) Từng Cặp Mùa — Games-Howell (*Kanji Test 28*) và Dunn-Bonferroni
 
 ##### a. Kết quả Kiểm định Hậu nghiệm Song hành (Games-Howell & Dunn-Bonferroni)
-Do các kiểm định tổng thể đa nhóm (Welch's ANOVA và Kruskal-Wallis) đều bác bỏ $H_0$ ($p < 0.001$), bước tiếp theo mang tính quyết định là tiến hành **kiểm định hậu nghiệm (Post-hoc multiple comparisons)** để xác định chính xác những cặp mùa nào có sự sai biệt thực chất, đồng thời kiểm soát nghiêm ngặt nguy cơ lạm phát sai lầm loại 1 toàn họ (Family-wise Error Rate - FWER ở mức $lpha = 0.05$).
+Do các kiểm định tổng thể đa nhóm (Welch's ANOVA và Kruskal-Wallis) đều bác bỏ $H_0$ ($p < 0.001$), bước tiếp theo mang tính quyết định là tiến hành **kiểm định hậu nghiệm (Post-hoc multiple comparisons)** để xác định chính xác những cặp mùa nào có sự sai biệt thực chất, đồng thời kiểm soát nghiêm ngặt nguy cơ lạm phát sai lầm loại 1 toàn họ (Family-wise Error Rate - FWER ở mức $\alpha = 0.05$).
 
 Nghiên cứu áp dụng đồng thời hai phương pháp kiểm định hậu nghiệm tương ứng với hai họ thống kê:
 1. **Kiểm định Hậu nghiệm Tham số: Games-Howell Post-hoc (*Kanji Test 28*, tr. 65):**
