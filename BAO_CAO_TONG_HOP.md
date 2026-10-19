@@ -12,15 +12,26 @@
 
 ---
 
-### TÓM TẮT ĐIỀU HÀNH (EXECUTIVE SUMMARY)
+### TÓM TẮT KHÁM PHÁ NGHIÊN CỨU
 
-Nghiên cứu phân tích toàn diện bộ dữ liệu lịch sử vận hành hệ thống Capital Bikeshare tại Washington D.C. ($N = 17,379$ quan sát theo giờ, giai đoạn 2011–2012) qua 5 giai đoạn khoa học dữ liệu nối tiếp: **EDA → Phân tích phân phối → Kiểm định giả thuyết → Phân tích tương quan → Mô hình hóa hồi quy**. Các câu hỏi nghiên cứu cốt lõi và kết luận chính:
+Nghiên cứu phân tích hành vi nhu cầu và mô hình hóa dự báo cho hệ thống chia sẻ xe đạp **Capital Bikeshare** (Washington D.C.) qua quy trình khoa học dữ liệu 5 giai đoạn: **EDA $\rightarrow$ Phân phối xác suất $\rightarrow$ Kiểm định giả thuyết $\rightarrow$ Tương quan $\rightarrow$ Hồi quy tuyến tính đa biến (MLR)**. Báo cáo tập trung giải đáp 3 câu hỏi nghiên cứu cốt lõi với các phát hiện then chốt:
 
-| Câu hỏi Nghiên cứu | Phương pháp chính | Kết luận Chính |
-|:---|:---|:---|
-| **RQ1:** Nhu cầu thuê xe ngày làm việc có khác ngày nghỉ không? (Ch. 3) | Welch's $t$-test, Mann-Whitney $U$, hiệu chỉnh $N_{\text{eff}}$ | Chênh lệch tổng lượng **không có ý nghĩa thực tiễn** (Cohen's $d = 0.0651$; $p_{\text{adj}} = 0.2323$ sau hiệu chỉnh $N_{\text{eff}}$). Sự khác biệt thực chất nằm ở **cấu trúc nhịp giờ**: bimodal 8h/17h (ngày làm việc) vs unimodal 13h (ngày nghỉ). |
-| **RQ2:** Nhu cầu thuê xe có khác biệt giữa 4 mùa không? (Ch. 3) | Welch's ANOVA, Games-Howell Post-hoc, Kruskal-Wallis | **Có — rất mạnh và bền vững** ($F_{\text{Welch}} = 606.73$, $\eta^2 = 6.60\%$, Medium effect size). Thứ tự: Thu $(236)$ > Hè $(208) \approx$ Đông $(199)$ > Xuân $(111)$ lượt/giờ. Phát hiện phản trực giác: Hè ≈ Đông do nắng gắt ức chế và thói quen đi làm mùa đông. |
-| **RQ3:** Mô hình MLR có dự báo nhu cầu hiệu quả không? (Ch. 5–6) | OLS MLR với $\ln(1+\text{cnt})$, hài Fourier $K=5$, tương tác `workingday` | $R^2 = 0.7532$ trên tập kiểm tra tương lai; giảm **61.46% MAE** so với Baseline. Tác động biên định lượng: nhiệt độ $+21.97\%$/0.1 đơn vị; mưa bão $-45.24\%$; tăng trưởng 2012 $+52.35\%$. |
+* **RQ1 (Nhịp sinh hoạt xã hội — Ngày làm việc vs Ngày nghỉ):**  
+  *Insight:* **Tổng lượng không đổi, chỉ đổi nhịp giờ**. Tổng nhu cầu 24 giờ giữa ngày làm việc và ngày nghỉ là tương đương nhau (không có khác biệt thực tiễn sau khi kiểm soát tự tương quan chuỗi và đối chứng cấp ngày). Điểm khác biệt bản chất nằm ở nhịp sinh hoạt: ngày làm việc định hình **hai đỉnh cao điểm đi làm** vào đầu giờ sáng và tan tầm chiều; trong khi ngày nghỉ là **đỉnh vòm thư giãn duy nhất** vào giữa trưa.
+* **RQ2 (Yếu tố mùa vụ & Vi khí hậu đô thị):**  
+  *Insight:* **Thu cao nhất, Hè tương đương Đông (phát hiện phản trực giác)**. Nhu cầu phụ thuộc chặt chẽ vào mùa vụ (Mùa thu đạt đỉnh, Mùa xuân chạm đáy do mưa phùn chuyển mùa). Đặc biệt, nghiên cứu phát hiện nhu cầu **Mùa hè và Mùa đông tương đương nhau trên phương diện thống kê**: nắng nóng gay gắt và độ ẩm cao vào mùa hè gây ức chế đạp xe ngoài trời; ngược lại, thời tiết khô ráo mùa đông giúp lực lượng khách hội viên duy trì thói quen đi làm ổn định.
+* **RQ3 (Mô hình hóa MLR & Tác động biên):**  
+  *Insight:* **Hài Fourier xấp xỉ nhịp giờ, nhiệt độ kích cầu mạnh nhất**. Mô hình OLS Bán Logarit kết hợp chuỗi điều hòa Fourier bậc cao và biến tương tác ngày làm việc tái hiện xuất sắc đường cong nhịp ngày và dự báo chuẩn xác trên dữ liệu tương lai. Phân tích tác động biên chỉ ra **nhiệt độ ấm áp là động lực thúc đẩy nhu cầu mạnh mẽ nhất**, thời tiết cực đoan (mưa bão/tuyết) làm tê liệt gần một nửa nhu cầu, còn độ ẩm riêng lẻ không còn tác động đáng kể khi đã kiểm soát mưa tuyết.
+
+#### Hạn chế Tổng quan
+1. **Tự tương quan chuỗi thời gian:** Sự phụ thuộc giữa các giờ liền kề làm thu hẹp sai số chuẩn OLS, khiến kiểm định thống kê lạc quan hơn thực tế.
+2. **Cắt cụt phía cung:** Dữ liệu chỉ đo lường lượt thuê thành công, chưa ghi nhận nhu cầu bị từ chối khi trạm hết xe hoặc hết chỗ trả.
+3. **Xu hướng tăng trưởng bậc thang:** Mô hình hóa biến năm bằng biến nhị phân chưa phản ánh được quá trình mở rộng mạng lưới trạm liên tục theo từng tháng.
+
+#### Hướng Phát triển Đề tài (Future Directions)
+1. **Chuỗi thời gian động:** Nâng cấp sang mô hình đa mùa vụ **SARIMAX** hoặc **GAM** tích hợp sai số chuẩn vững HAC (Newey–West).
+2. **Hồi quy biến đếm chuyên biệt:** Ứng dụng mô hình **Negative Binomial GLM** để hấp thụ triệt để hiện tượng phân tán vượt mức và nén điểm không ban đêm.
+3. **Ứng dụng vận hành:** Tích hợp dự báo vào bài toán tối ưu hóa điều phối xe tải **tái cân bằng trạm (Fleet Rebalancing)** theo thời gian thực.
 
 ---
 
@@ -38,7 +49,7 @@ Nghiên cứu phân tích toàn diện bộ dữ liệu lịch sử vận hành 
 
 ## MỤC LỤC
 
-- [PHẦN 1. KHÁM PHÁ DỮ LIỆU (EDA)](#phần-1-khám-phá-dữ-liệu-eda)
+- [CHƯƠNG 1. KHÁM PHÁ DỮ LIỆU (EDA)](#chương-1-khám-phá-dữ-liệu-eda)
   - [1.1. Giới thiệu](#11-giới-thiệu)
     - [1.1.1. Bối cảnh và mục tiêu](#111-bối-cảnh-và-mục-tiêu)
     - [1.1.2. Nguồn dữ liệu](#112-nguồn-dữ-liệu)
@@ -60,10 +71,10 @@ Nghiên cứu phân tích toàn diện bộ dữ liệu lịch sử vận hành 
   - [1.5. Phân tích tự tương quan và Đánh giá giá trị ngoại lai](#15-phân-tích-tự-tương-quan-và-đánh-giá-giá-trị-ngoại-lai)
     - [1.5.1. Phân tích Tự tương quan (Autocorrelation) và Cỡ mẫu hiệu dụng](#151-phân-tích-tự-tương-quan-autocorrelation-và-cỡ-mẫu-hiệu-dụng)
     - [1.5.2. Phát hiện và phân loại giá trị ngoại lai (Outliers)](#152-phát-hiện-và-phân-loại-giá-trị-ngoại-lai-outliers)
-  - [1.6. Kết luận và Hạn chế của Phần 1](#16-kết-luận-và-hạn-chế-của-phần-1)
+  - [1.6. Kết luận và Hạn chế của Chương 1](#16-kết-luận-và-hạn-chế-của-chương-1)
     - [1.6.1. Tóm tắt các phát hiện và Thông điệp cốt lõi (Key Insights)](#161-tóm-tắt-các-phát-hiện-và-thông-điệp-cốt-lõi-key-insights)
     - [1.6.2. Hạn chế của phương pháp và dữ liệu trong Chương 1](#162-hạn-chế-của-phương-pháp-và-dữ-liệu-trong-chương-1)
-- [PHẦN 2. PHÂN TÍCH PHÂN PHỐI XÁC SUẤT](#phần-2-phân-tích-phân-phối-xác-suất)
+- [CHƯƠNG 2. PHÂN TÍCH PHÂN PHỐI XÁC SUẤT](#chương-2-phân-tích-phân-phối-xác-suất)
   - [2.1. Giới thiệu và Kiểm tra Dữ liệu Đầu vào](#21-giới-thiệu-và-kiểm-tra-dữ-liệu-đầu-vào)
     - [2.1.1. Bối cảnh và Mục tiêu Nghiên cứu](#211-bối-cảnh-và-mục-tiêu-nghiên-cứu)
     - [2.1.2. Dữ liệu và Biến Phân tích](#212-dữ-liệu-và-biến-phân-tích)
@@ -85,10 +96,10 @@ Nghiên cứu phân tích toàn diện bộ dữ liệu lịch sử vận hành 
   - [2.7. Phân tích Biến Giải thích: Nhiệt độ (temp) và Hiệu ứng Mùa vụ](#27-phân-tích-biến-giải-thích-nhiệt-độ-temp-và-hiệu-ứng-mùa-vụ)
     - [2.7.1. Mô hình Phân phối Normal so với Beta cho temp](#271-mô-hình-phân-phối-normal-so-với-beta-cho-temp)
     - [2.7.2. Hiệu ứng Chu kỳ 4 Mùa Giải mã Dạng Đa Đỉnh (Multimodal) của temp](#272-hiệu-ứng-chu-kỳ-4-mùa-giải-mã-dạng-đa-đỉnh-multimodal-của-temp)
-  - [2.8. Kết luận và Hạn chế của Phần 2](#28-kết-luận-và-hạn-chế-của-phần-2)
+  - [2.8. Kết luận và Hạn chế của Chương 2](#28-kết-luận-và-hạn-chế-của-chương-2)
     - [2.8.1. Tóm tắt Kết luận Khoa học](#281-tóm-tắt-kết-luận-khoa-học)
     - [2.8.2. Hạn chế Phương pháp luận](#282-hạn-chế-phương-pháp-luận)
-- [PHẦN 3. KIỂM ĐỊNH GIẢ THUYẾT (HYPOTHESIS TESTING)](#phần-3-kiểm-định-giả-thuyết-hypothesis-testing)
+- [CHƯƠNG 3. KIỂM ĐỊNH GIẢ THUYẾT (HYPOTHESIS TESTING)](#chương-3-kiểm-định-giả-thuyết-hypothesis-testing)
   - [3.1. Đặt vấn đề Nghiệp vụ & Cơ sở Lý thuyết các Phương pháp Kiểm định](#31-đặt-vấn-đề-nghiệp-vụ--cơ-sở-lý-thuyết-các-phương-pháp-kiểm-định)
     - [3.1.1. Động cơ Thực tiễn và Xác lập 2 Câu hỏi Nghiên cứu (RQ1 & RQ2)](#311-động-cơ-thực-tiễn-và-xác-lập-2-câu-hỏi-nghiên-cứu-rq1--rq2)
     - [3.1.2. Bản chất của Kiểm định Thống kê & Quy trình 5 bước Neave-Kanji](#312-bản-chất-của-kiểm-định-thống-kê--quy-trình-5-bước-chuẩn-tắc-neave-kanji-framework)
@@ -102,10 +113,10 @@ Nghiên cứu phân tích toàn diện bộ dữ liệu lịch sử vận hành 
   - [3.3. Đánh giá Độ bền vững & Kiểm soát Rủi ro Sai lầm Loại 1](#33-đánh-giá-độ-bền-vững--kiểm-soát-rủi-ro-sai-lầm-loại-1)
     - [3.3.1. Đánh giá Độ bền vững theo Cỡ mẫu Hiệu dụng ($N_{\text{eff}}$ Correction)](#331-đánh-giá-độ-bền-vững-theo-cỡ-mẫu-hiệu-dụng-neff-correction)
     - [3.3.2. Đối chứng Kiểm định trên Chuỗi Dữ liệu Tổng hợp Cấp độ Ngày ($N = 731$ ngày)](#332-đối-chứng-kiểm-định-trên-chuỗi-dữ-liệu-tổng-hợp-cấp-độ-ngày-n--731-ngày)
-  - [3.4. Kết luận và Hạn chế của Phần 3](#34-kết-luận-và-hạn-chế-của-phần-3)
+  - [3.4. Kết luận và Hạn chế của Chương 3](#34-kết-luận-và-hạn-chế-của-chương-3)
     - [3.4.1. Tóm tắt các Kết luận Kiểm định Chính](#341-tóm-tắt-các-kết-luận-kiểm-định-chính)
     - [3.4.2. Hạn chế về Phương pháp luận và Dữ liệu](#342-hạn-chế-về-phương-pháp-luận-và-dữ-liệu)
-- [PHẦN 4. PHÂN TÍCH TƯƠNG QUAN GIỮA CÁC BIẾN](#phần-4-phân-tích-tương-quan-giữa-các-biến)
+- [CHƯƠNG 4. PHÂN TÍCH TƯƠNG QUAN GIỮA CÁC BIẾN](#chương-4-phân-tích-tương-quan-giữa-các-biến)
   - [4.1. Cơ sở lý thuyết hệ số tương quan](#41-cơ-sở-lý-thuyết-hệ-số-tương-quan)
     - [4.1.1. Hệ số tương quan Pearson](#411-hệ-số-tương-quan-pearson)
     - [4.1.2. Hệ số tương quan hạng Spearman](#412-hệ-số-tương-quan-hạng-spearman)
@@ -124,7 +135,7 @@ Nghiên cứu phân tích toàn diện bộ dữ liệu lịch sử vận hành 
   - [4.4. Ý nghĩa thực tiễn và hạn chế](#44-ý-nghĩa-thực-tiễn-và-hạn-chế)
     - [4.4.1. Diễn giải ý nghĩa thực tiễn của các mối tương quan](#441-diễn-giải-ý-nghĩa-thực-tiễn-của-các-mối-tương-quan)
     - [4.4.2. Hạn chế và lưu ý phương pháp luận](#442-hạn-chế-và-lưu-ý-phương-pháp-luận)
-- [PHẦN 5. HỒI QUY TUYẾN TÍNH ĐA BIẾN (MLR) — CƠ SỞ LÝ THUYẾT VÀ BÀI TOÁN](#phần-5-hồi-quy-tuyến-tính-đa-biến-mlr--cơ-sở-lý-thuyết-và-bài-toán)
+- [CHƯƠNG 5. HỒI QUY TUYẾN TÍNH ĐA BIẾN (MLR) — CƠ SỞ LÝ THUYẾT VÀ BÀI TOÁN](#chương-5-hồi-quy-tuyến-tính-đa-biến-mlr--cơ-sở-lý-thuyết-và-bài-toán)
   - [5.1. Khung lý thuyết Hồi quy tuyến tính Đa biến (MLR)](#51-khung-lý-thuyết-hồi-quy-tuyến-tính-đa-biến-mlr)
     - [5.1.1. Khái niệm bài toán hồi quy tuyến tính đa biến](#511-khái-niệm-bài-toán-hồi-quy-tuyến-tính-đa-biến)
     - [5.1.2. Các thành phần của mô hình hồi quy tuyến tính đa biến](#512-các-thành-phần-của-mô-hình-hồi-quy-tuyến-tính-đa-biến)
@@ -140,10 +151,10 @@ Nghiên cứu phân tích toàn diện bộ dữ liệu lịch sử vận hành 
     - [5.2.3. Cơ sở lý luận lựa chọn và xử lý biến giải thích (Feature Candidates Specification)](#523-cơ-sở-lý-luận-lựa-chọn-và-xử-lý-biến-giải-thích-feature-candidates-specification)
     - [5.2.4. Cơ sở phương pháp luận phân chia dữ liệu (Chronological & Day-level Split Protocol)](#524-cơ-sở-phương-pháp-luận-phân-chia-dữ-liệu-chronological--day-level-split-protocol)
     - [5.2.5. Khung phương pháp luận kiểm định giả định mô hình (Assumptions Verification Roadmap)](#525-khung-phương-pháp-luận-kiểm-định-giả-định-mô-hình-assumptions-verification-roadmap)
-  - [5.3. Kết luận và hạn chế lý thuyết của Phần 5](#53-kết-luận-và-hạn-chế-lý-thuyết-của-phần-5)
+  - [5.3. Kết luận và Hạn chế lý thuyết của Chương 5](#53-kết-luận-và-hạn-chế-lý-thuyết-của-chương-5)
     - [5.3.1. Kết luận chương 5](#531-kết-luận-chương-5)
     - [5.3.2. Hạn chế lý thuyết](#532-hạn-chế-lý-thuyết)
-- [PHẦN 6. XÂY DỰNG VÀ ĐÁNH GIÁ MÔ HÌNH HỒI QUY TUYẾN TÍNH ĐA BIẾN (MLR)](#phần-6-xây-dựng-và-đánh-giá-mô-hình-hồi-quy-tuyến-tính-đa-biến-mlr)
+- [CHƯƠNG 6. XÂY DỰNG VÀ ĐÁNH GIÁ MÔ HÌNH HỒI QUY TUYẾN TÍNH ĐA BIẾN (MLR)](#chương-6-xây-dựng-và-đánh-giá-mô-hình-hồi-quy-tuyến-tính-đa-biến-mlr)
   - [6.1. Feature Engineering (Kỹ thuật tạo đặc trưng)](#61-feature-engineering-kỹ-thuật-tạo-đặc-trưng)
   - [6.2. Chiến lược chia dữ liệu](#62-chiến-lược-chia-dữ-liệu)
   - [6.3. Huấn luyện mô hình](#63-huấn-luyện-mô-hình)
@@ -152,7 +163,7 @@ Nghiên cứu phân tích toàn diện bộ dữ liệu lịch sử vận hành 
     - [6.4.2. Thực thi kiểm định chẩn đoán các giả định phần dư](#642-thực-thi-kiểm-định-chẩn-đoán-các-giả-định-phần-dư)
     - [6.4.3. Đánh giá tổng quan về mức độ thỏa hiệp các giả định Gauss-Markov](#643-đánh-giá-tổng-quan-về-mức-độ-thỏa-hiệp-các-giả-định-gauss-markov)
   - [6.5. Nhận xét kết quả và Tác động biên](#65-nhận-xét-kết-quả-và-tác-động-biên)
-  - [6.6. Kết luận và hạn chế của Phần 6](#66-kết-luận-và-hạn-chế-của-phần-6)
+  - [6.6. Kết luận và Hạn chế của Chương 6](#66-kết-luận-và-hạn-chế-của-chương-6)
     - [6.6.1. Kết luận chính](#661-kết-luận-chính)
     - [6.6.2. Hạn chế](#662-hạn-chế)
 - [TÀI LIỆU THAM KHẢO CHUNG](#tài-liệu-tham-khảo-chung)
@@ -169,16 +180,16 @@ Nghiên cứu phân tích toàn diện bộ dữ liệu lịch sử vận hành 
 | **Bảng 1.4** | Bảng thống kê mô tả toàn diện các biến số lượng ($N = 17,379$) |
 | **Bảng 1.5** | Thống kê số lượng thuê xe cnt phân rã theo các nhóm yếu tố chính |
 | **Bảng 1.6** | Đối chiếu đặc trưng nhu cầu theo giờ giữa hai loại ngày |
-| **Bảng 1.8** | Kết quả phát hiện giá trị ngoại lai theo các tiêu chí thống kê |
-| **Bảng 1.9** | Tổng kết đánh giá và quyết định xử lý ngoại lai |
+| **Bảng 1.7** | Kết quả phát hiện giá trị ngoại lai theo các tiêu chí thống kê |
+| **Bảng 1.8** | Tổng kết đánh giá và quyết định xử lý ngoại lai |
 | **Bảng 2.1** | Kết quả kiểm tra dữ liệu đầu vào đối chiếu với baseline EDA |
 | **Bảng 2.2** | Thống kê mô tả của các biến nghiên cứu chính ($N = 17,379$) |
 | **Bảng 2.3** | Kết quả ước lượng tham số MLE và tiêu chí thông tin các mô hình phân phối cho cnt ($N = 17,379$) |
-| **Bảng 2.5** | Đánh giá độ phù hợp Goodness-of-Fit cho phân phối cnt ($N = 17,379$) |
-| **Bảng 2.6** | Thống kê mô tả các chế độ nhu cầu thuê xe theo khung giờ và loại ngày |
-| **Bảng 2.7** | So sánh kết quả ước lượng phân phối cho biến nhiệt độ (temp) ($N = 17,379$) |
-| **Bảng 2.7b**| Phân tích độ nhạy biên (Boundary Clipping Sensitivity) của mô hình Beta |
-| **Bảng 2.8** | Thống kê mô tả nhiệt độ chuẩn hóa (temp) phân tầng theo 4 mùa |
+| **Bảng 2.4** | Đánh giá độ phù hợp Goodness-of-Fit cho phân phối cnt ($N = 17,379$) |
+| **Bảng 2.5** | Thống kê mô tả các chế độ nhu cầu thuê xe theo khung giờ và loại ngày |
+| **Bảng 2.6** | So sánh kết quả ước lượng phân phối cho biến nhiệt độ (temp) ($N = 17,379$) |
+| **Bảng 2.6b**| Phân tích độ nhạy biên (Boundary Clipping Sensitivity) của mô hình Beta |
+| **Bảng 2.7** | Thống kê mô tả nhiệt độ chuẩn hóa (temp) phân tầng theo 4 mùa |
 | **Bảng 3.1** | Tổng hợp các phép kiểm định thống kê sử dụng trong Chương 3 theo quy chiếu Gopal K. Kanji |
 | **Bảng 3.2** | Thống kê mô tả số lượng thuê xe mỗi giờ (cnt) theo loại ngày |
 | **Bảng 3.3** | Bảng tổng hợp kết quả các phép kiểm định thống kê cho RQ1 |
@@ -189,6 +200,7 @@ Nghiên cứu phân tích toàn diện bộ dữ liệu lịch sử vận hành 
 | **Bảng 4.1** | Ma trận hệ số tương quan Pearson giữa các biến số trong tập dữ liệu |
 | **Bảng 4.2** | Ma trận hệ số tương quan hạng Spearman giữa các biến số trong tập dữ liệu |
 | **Bảng 4.3** | Bảng đối chiếu chênh lệch giữa hệ số tương quan Pearson và Spearman (r - ρ) |
+| *Chương 5* | *(Cơ sở lý thuyết và đặc tả bài toán OLS MLR — không phát sinh bảng thực nghiệm riêng)* |
 | **Bảng 6.1** | Danh sách biến độc lập và phương pháp mã hóa đặc trưng |
 | **Bảng 6.2** | Phân chia dữ liệu theo trình tự thời gian (Điểm cắt 2012-03-31) |
 | **Bảng 6.3** | So sánh hiệu năng giữa các chiến lược phân chia dữ liệu |
@@ -217,9 +229,9 @@ Nghiên cứu phân tích toàn diện bộ dữ liệu lịch sử vận hành 
 | **Hình 2.1** | Phân phối thực nghiệm, tỷ lệ tích lũy ECDF và độ phân tán của tổng lượt thuê theo giờ (cnt) |
 | **Hình 2.2** | So sánh đường cong phân phối lý thuyết với histogram thực nghiệm của cnt |
 | **Hình 2.3** | Biểu đồ Quantile-Quantile (Q-Q Plot) đối chiếu 4 mô hình phân phối với dữ liệu thực nghiệm cnt |
-| **Hình 2.4** | Phân phối thực nghiệm, Q-Q Plot và hàm phân phối tích lũy ECDF của temp và hum |
-| **Hình 2.6** | Số lượt thuê xe trung bình theo giờ trong ngày phân tách theo loại ngày (workingday) |
-| **Hình 2.7** | Phân bố nhiệt độ chuẩn hóa (temp) bóc tách theo 4 mùa trong năm |
+| **Hình 2.4** | Số lượt thuê xe trung bình theo giờ trong ngày phân tách theo loại ngày (workingday) |
+| **Hình 2.5** | Phân phối thực nghiệm, Q-Q Plot và hàm phân phối tích lũy ECDF của temp và hum |
+| **Hình 2.6** | Phân bố nhiệt độ chuẩn hóa (temp) bóc tách theo 4 mùa trong năm |
 | **Hình 3.1** | Kiểm tra các giả định phân phối cho RQ1 (KDE, Q-Q Plots, Boxplot-Violin) |
 | **Hình 3.2** | Biểu đồ Forest plot thể hiện kết quả kiểm định hậu nghiệm Games-Howell cho 6 cặp mùa |
 | **Hình 4.1** | Ma trận nhiệt kép (Dual Heatmap) đối chiếu hệ số tương quan Pearson và Spearman |
@@ -227,6 +239,7 @@ Nghiên cứu phân tích toàn diện bộ dữ liệu lịch sử vận hành 
 | **Hình 4.3** | Mối quan hệ giữa độ ẩm chuẩn hóa (hum) và số lượt thuê xe (cnt) |
 | **Hình 4.4** | Mối quan hệ giữa tốc độ gió chuẩn hóa (windspeed) và số lượt thuê xe (cnt) |
 | **Hình 4.5** | Nhịp sinh hoạt thuê xe theo giờ phân nhóm theo ngày làm việc (hr × workingday) |
+| *Chương 5* | *(Phương pháp luận và khung kiểm định OLS — các sơ đồ/biểu đồ thực nghiệm nằm tại Chương 6)* |
 | **Hình 6.1** | Mã hóa giờ trên vòng tròn lượng giác và biến động nhu cầu theo giờ |
 | **Hình 6.2** | Chuỗi cnt trung bình theo ngày và điểm cắt huấn luyện / kiểm định / kiểm tra |
 | **Hình 6.3** | Thực tế và dự đoán theo ngày (tập huấn luyện, kiểm định, kiểm tra) |
@@ -241,6 +254,7 @@ Nghiên cứu phân tích toàn diện bộ dữ liệu lịch sử vận hành 
 
 
 
+<a id="chương-1-khám-phá-dữ-liệu-eda"></a>
 <a id="phần-1-khám-phá-dữ-liệu-eda"></a>
 # CHƯƠNG 1. KHÁM PHÁ DỮ LIỆU (EDA)
 
@@ -309,9 +323,11 @@ Biến mục tiêu chính của bài toán là **`cnt`** (Count of total rental 
 
 ---
 
-## 1.2. Chất lượng dữ liệu và tiền xử lý
+<a id="12-kiểm-định-chất-lượng-dữ-liệu-và-tiền-xử-lý"></a>
+## 1.2. Kiểm định chất lượng dữ liệu và tiền xử lý
 
-### 1.2.1. Kiểm tra chất lượng dữ liệu
+<a id="121-rà-soát-chất-lượng-dữ-liệu"></a>
+### 1.2.1. Rà soát chất lượng dữ liệu
 
 Quy trình kiểm soát chất lượng dữ liệu (Data Quality Assessment) được phân tách thành 4 nhóm độc lập nhằm tránh nhầm lẫn giữa các lỗi vật lý, cấu trúc và đặc trưng thống kê:
 
@@ -329,7 +345,8 @@ Quy trình kiểm soát chất lượng dữ liệu (Data Quality Assessment) đ
 
 ---
 
-### 1.2.2. Phân tích chuyên sâu các bất thường dữ liệu và Kiểm tra độ nhạy
+<a id="122-kiểm-tra-độ-nhạy-và-quyết-định-tiền-xử-lý"></a>
+### 1.2.2. Kiểm tra độ nhạy và quyết định tiền xử lý
 
 #### 1. Sự cố 22 dòng `hum = 0` (Ngày 2011-03-10)
 Độ ẩm không khí bằng 0% liên tục trong 22 giờ là hiện tượng bất khả thi về mặt khí tượng tại vùng khí hậu cận nhiệt đới ẩm của Washington D.C. Kiểm tra chéo các biến khí tượng khác của ngày 2011-03-10 cho thấy: nhiệt độ trung bình ở mức $temp = 0.389$ ($\approx 10.3 \text{ °C}$), tốc độ gió trung bình $windspeed = 0.262$ ($\approx 28.2 \text{ km/h}$) và đặc biệt biến `weathersit` ghi nhận 20/22 giờ ở mức 3 (Mưa nhỏ/Tuyết nhẹ). 
@@ -558,6 +575,7 @@ Tuy nhiên, việc so sánh đơn biến này chứa đựng yếu tố gây nhi
 
 ---
 
+<a id="147-phân-tích-tương-tác-giữa-thứ-trong-tuần-và-khung-giờ-weekday--hr"></a>
 ### 1.4.7. Phân tích tương tác giữa Thứ trong tuần và Khung giờ (`weekday` × `hr`)
 
 Để làm rõ sự khác biệt về nhịp sinh hoạt giữa các ngày trong tuần mà các biến đơn lẻ không thể hiện hết, Hình 1.9 trực quan hóa phân bố số lượng thuê xe trung bình trên toàn bộ ma trận 7 ngày trong tuần × 24 khung giờ trong ngày ($7 \times 24 = 168 \text{ ô}$).
@@ -569,7 +587,7 @@ Tuy nhiên, việc so sánh đơn biến này chứa đựng yếu tố gây nhi
 **Nhận xét:**
 * **Từ Thứ Hai đến Thứ Sáu (Ngày làm việc):** Xuất hiện rõ rệt 2 dải màu đỏ đậm tập trung vào 2 khung giờ cao điểm: 8h sáng ($477.01 \text{ lượt/h}$) và 17h–18h chiều ($525.29 \text{ và } 492.23 \text{ lượt/h}$). Trong đó, chiều Thứ Ba lúc 17h đạt mức cao nhất tuần ($544.28 \text{ lượt/h}$).
 * **Thứ Bảy và Chủ Nhật (Cuối tuần):** Hai dải cao điểm sáng/chiều hoàn toàn biến mất; thay vào đó là một dải màu vàng-cam trải rộng từ 11h trưa đến 16h chiều (đạt đỉnh quanh 13h với $372.73 \text{ lượt/h}$).
-* **Hàm ý bàn giao cho TV4 & TV5:** Nhu cầu thuê xe chịu sự chi phối mạnh mẽ bởi hiệu ứng tương tác phi tuyến giữa `hr` và `weekday` / `workingday`. Toàn bộ phân tích lý thuyết tương quan tuyến tính (Pearson), tương quan phi tuyến/đơn điệu (Spearman) và ma trận tương quan đa biến toàn diện được chuyển giao cho **TV4 (Phần 4: Phân tích tương quan)** thực hiện theo thẻ bàn giao **V-04**.
+* **Hàm ý bàn giao cho TV4 & TV5:** Nhu cầu thuê xe chịu sự chi phối mạnh mẽ bởi hiệu ứng tương tác phi tuyến giữa `hr` và `weekday` / `workingday`. Toàn bộ phân tích lý thuyết tương quan tuyến tính (Pearson), tương quan phi tuyến/đơn điệu (Spearman) và ma trận tương quan đa biến toàn diện được chuyển giao cho **TV4 (Chương 4: Phân tích tương quan)** thực hiện theo thẻ bàn giao **V-04**.
 
 ---
 
@@ -593,7 +611,7 @@ Dữ liệu chuỗi thời gian theo giờ vi phạm nghiêm trọng giả đị
 
 ### 1.5.2. Phát hiện và phân loại giá trị ngoại lai (Outliers)
 
-**Bảng 1.8. Kết quả phát hiện giá trị ngoại lai theo các tiêu chí thống kê**
+**Bảng 1.7. Kết quả phát hiện giá trị ngoại lai theo các tiêu chí thống kê**
 
 | Biến số | Hàng rào dưới IQR | Hàng rào trên IQR | Số ngoại lai IQR | Tỷ lệ (%) | Số ngoại lai $\vert z\vert > 3$ | Tỷ lệ (%) |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: |
@@ -617,7 +635,7 @@ Dữ liệu chuỗi thời gian theo giờ vi phạm nghiêm trọng giả đị
    - Các điểm ngoại lai ban đêm (0h–5h sáng) dồn vào các dịp đặc biệt: đêm giao thừa Tết Dương lịch, các đêm cuối tuần mùa hè diễn ra lễ hội hoặc sự kiện thể thao tại Washington D.C.
    - Toàn bộ 130 dòng đều thỏa mãn chính xác $cnt = casual + registered$.
 
-**Bảng 1.9. Tổng kết đánh giá và quyết định xử lý ngoại lai**
+**Bảng 1.8. Tổng kết đánh giá và quyết định xử lý ngoại lai**
 
 | Phân loại ngoại lai | Số lượng | Đánh giá bản chất | Quyết định xử lý |
 | :--- | ---: | :--- | :--- |
@@ -629,7 +647,7 @@ Dữ liệu chuỗi thời gian theo giờ vi phạm nghiêm trọng giả đị
 
 ---
 
-## 1.6. Kết luận và Hạn chế của Phần 1
+## 1.6. Kết luận và Hạn chế của Chương 1
 
 ### 1.6.1. Tóm tắt các phát hiện và Thông điệp cốt lõi (Key Insights)
 
@@ -662,6 +680,7 @@ Quá trình khám phá dữ liệu (EDA) đã làm sáng tỏ các đặc trưng
 
 ---
 
+<a id="chương-2-phân-tích-phân-phối-xác-suất"></a>
 <a id="phần-2-phân-tích-phân-phối-xác-suất"></a>
 # CHƯƠNG 2. PHÂN TÍCH PHÂN PHỐI XÁC SUẤT
 
@@ -743,6 +762,7 @@ Thống kê mô tả được thiết lập nhằm tóm tắt mức độ tập 
 
 ---
 
+<a id="23-phân-phối-thực-nghiệm-của-biến-mục-tiêu-cnt"></a>
 ## 2.3. Phân phối Thực nghiệm của Biến Mục tiêu (`cnt`)
 
 ### 2.3.1. Trực quan hóa Đa góc nhìn
@@ -758,6 +778,7 @@ Thống kê mô tả được thiết lập nhằm tóm tắt mức độ tập 
 - **Vùng tập trung mật độ cao:** Dữ liệu tập trung dày đặc nhất ở vùng số đếm thấp: $50\%$ số quan sát ($P_{50}$) có nhu cầu không vượt quá 142 lượt/giờ; $75\%$ số quan sát ($P_{75}$) có nhu cầu dưới 281 lượt/giờ. Đặc biệt, có tới $6.22\%$ tổng số dòng dữ liệu (1,081 giờ) ghi nhận mức nhu cầu cực thấp ($cnt \le 5$ lượt/giờ), phần lớn rơi vào các khung giờ đêm muộn (01:00 – 04:00).
 - **Phần đuôi dài và giá trị cao điểm hợp lệ:** Đuôi phải kéo dài liên tục từ mốc 281 đến giá trị cực đại 977 lượt/giờ. Có $2.91\%$ số quan sát (505 giờ) nằm vượt ngưỡng rào trên của boxplot ($cnt > Q3 + 1.5 \times \text{IQR} = 642.5$). Theo kết quả kiểm tra độ nhạy ở EDA, các giá trị này phản ánh đúng nhu cầu đỉnh giờ tan tầm vào những ngày thời tiết lý tưởng, hoàn toàn là các quan sát thực tế hợp lệ chứ không phải sai số đo đạc.
 
+<a id="233-đánh-giá-phép-biến-đổi-target-log1p-và-sqrt"></a>
 ### 2.3.3. Đánh giá Phép Biến đổi Target (`log1p` và `sqrt`)
 
 Trong nỗ lực khắc phục tính lệch phải của `cnt` phục vụ các mô hình hồi quy tuyến tính cổ điển, hai phép biến đổi phổ biến đã được kiểm tra:
@@ -768,6 +789,7 @@ Trong nỗ lực khắc phục tính lệch phải của `cnt` phục vụ các 
 
 ---
 
+<a id="24-khớp-và-so-sánh-các-mô-hình-phân-phối-lý-thuyết-cho-cnt"></a>
 ## 2.4. Khớp và So sánh các Mô hình Phân phối Lý thuyết cho `cnt`
 
 ### 2.4.1. Cơ sở Lý thuyết Lựa chọn Mô hình
@@ -826,7 +848,7 @@ Hình 2.3 trình bày biểu đồ Quantile-Quantile (Q-Q plot) 4 panel so sánh
 
 ### 2.5.2. Kết quả Kiểm định Định lượng (KS-test và Chi-square GOF)
 
-**Bảng 2.5. Đánh giá độ phù hợp Goodness-of-Fit cho phân phối `cnt` ($N = 17,379$)**
+**Bảng 2.4. Đánh giá độ phù hợp Goodness-of-Fit cho phân phối `cnt` ($N = 17,379$)**
 
 | Mô hình lý thuyết | Khoảng cách KS ($D$) | Thống kê Chi-square ($\chi^2$) | Bậc tự do ($df$) | $p$-value Chi-square | Đánh giá sai lệch trực quan trên Q-Q Plot |
 | :--- | :---: | :---: | :---: | :---: | :--- |
@@ -861,14 +883,14 @@ Mỗi chế độ mang một cơ chế tạo sinh dữ liệu riêng biệt:
 
 ### 2.6.2. Phân tách Định lượng theo Khung giờ và Loại ngày
 
-Hình 2.6 và Bảng 2.6 thể hiện sự phân hóa sâu sắc của các chế độ nhu cầu trên toàn bộ 24 khung giờ giữa ngày làm việc và ngày nghỉ.
+Hình 2.4 và Bảng 2.5 thể hiện sự phân hóa sâu sắc của các chế độ nhu cầu trên toàn bộ 24 khung giờ giữa ngày làm việc và ngày nghỉ.
 
-![Hình 2.6. Số lượt thuê xe trung bình theo giờ trong ngày phân tách theo loại ngày](Distribution/assets/fig_2_6_cnt_by_hour_workingday.png)
+![Hình 2.4. Số lượt thuê xe trung bình theo giờ trong ngày phân tách theo loại ngày](Distribution/assets/fig_2_6_cnt_by_hour_workingday.png)
 
-**Hình 2.6. Số lượt thuê xe trung bình theo giờ trong ngày phân tách theo loại ngày (`workingday`).**  
+**Hình 2.4. Số lượt thuê xe trung bình theo giờ trong ngày phân tách theo loại ngày (`workingday`).**  
 *(Đường màu xanh thể hiện Ngày làm việc với 2 đỉnh nhọn commuter; đường màu cam thể hiện Ngày nghỉ với 1 đỉnh vòm thư giãn; vùng bóng mờ biểu thị dải sai số chuẩn $\pm 1 \text{ SEM}$).*
 
-**Bảng 2.6. Thống kê mô tả các chế độ nhu cầu thuê xe theo khung giờ và loại ngày**
+**Bảng 2.5. Thống kê mô tả các chế độ nhu cầu thuê xe theo khung giờ và loại ngày**
 
 | Loại ngày | Khung giờ chức năng | Số giờ ($n$) | Mean | SD | Median | Q1 | Q3 | Tỷ lệ $cnt \le 5$ |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
@@ -889,6 +911,7 @@ Hình 2.6 và Bảng 2.6 thể hiện sự phân hóa sâu sắc của các ch�
 
 ---
 
+<a id="27-phân-tích-biến-giải-thích-nhiệt-độ-temp-và-hiệu-ứng-mùa-vụ"></a>
 ## 2.7. Phân tích Biến Giải thích: Nhiệt độ (`temp`) và Hiệu ứng Mùa vụ
 
 ### 2.7.1. Mô hình Phân phối Normal so với Beta cho `temp`
@@ -898,18 +921,18 @@ Biến nhiệt độ `temp` được chuẩn hóa trên đoạn $[0, 1]$. Hai m�
 2. **Phân phối Beta:** Hàm mật độ trên đoạn $[0, 1]$ xác định bởi hai tham số hình dạng $(\alpha, \beta)$:
    $$f(x; \alpha, \beta) = \frac{1}{B(\alpha, \beta)} x^{\alpha - 1} (1 - x)^{\beta - 1}, \quad x \in [0, 1]$$
 
-![Hình 2.4. Phân phối và mức độ phù hợp của các mô hình cho nhiệt độ và độ ẩm](Distribution/assets/fig_2_4_weather_fits.png)
+![Hình 2.5. Phân phối và mức độ phù hợp của các mô hình cho nhiệt độ và độ ẩm](Distribution/assets/fig_2_4_weather_fits.png)
 
-**Hình 2.4. Phân phối thực nghiệm, Q-Q Plot và hàm phân phối tích lũy ECDF của `temp` và `hum`.**
+**Hình 2.5. Phân phối thực nghiệm, Q-Q Plot và hàm phân phối tích lũy ECDF của `temp` và `hum`.**
 
-**Bảng 2.7. So sánh kết quả ước lượng phân phối cho biến nhiệt độ (`temp`) ($N = 17,379$)**
+**Bảng 2.6. So sánh kết quả ước lượng phân phối cho biến nhiệt độ (`temp`) ($N = 17,379$)**
 
 | Mô hình phân phối | Miền hỗ trợ lý thuyết | Tham số ước lượng MLE | $k$ | Log-Likelihood | AIC | BIC | Đánh giá tính hợp lệ miền giá trị |
 | :--- | :---: | :--- | :---: | :---: | :---: | :---: | :--- |
 | **Normal** | $(-\infty, +\infty)$ | $\mu = 0.4970$; $\sigma = 0.1926$ | 2 | 3,970.37 | -7,936.74 | -7,921.21 | Vi phạm: Gán xác suất $0.94\%$ ra ngoài đoạn $[0, 1]$. |
 | **Beta** (cơ sở) | $[0, 1]$ | $\alpha = 2.9362$; $\beta = 2.9728$ | 2 | 4,553.10 | **-9,102.19** | **-9,086.66** | **Tôn trọng hoàn toàn miền giá trị bị chặn $[0, 1]$.** |
 
-**Bảng 2.7b. Phân tích độ nhạy biên (Boundary Clipping Sensitivity) của mô hình Beta**
+**Bảng 2.6b. Phân tích độ nhạy biên (Boundary Clipping Sensitivity) của mô hình Beta**
 
 | Kịch bản xử lý biên | Ngưỡng clip ($\epsilon$) | Số điểm bị clip | $\alpha$ | $\beta$ | Log-Likelihood | AIC |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
@@ -925,14 +948,14 @@ Biến nhiệt độ `temp` được chuẩn hóa trên đoạn $[0, 1]$. Hai m�
 
 ### 2.7.2. Hiệu ứng Chu kỳ 4 Mùa Giải mã Dạng Đa Đỉnh (Multimodal) của `temp`
 
-Trên đồ thị Histogram của `temp` (Hình 2.4), mật độ không có một đỉnh trơn nhẵn mà xuất hiện các gợn sóng đa đỉnh. Hình 2.7 và Bảng 2.8 chứng minh đây là hệ quả của sự phân tầng nhiệt độ theo 4 mùa trong năm tại Washington D.C.
+Trên đồ thị Histogram của `temp` (Hình 2.5), mật độ không có một đỉnh trơn nhẵn mà xuất hiện các gợn sóng đa đỉnh. Hình 2.6 và Bảng 2.7 chứng minh đây là hệ quả của sự phân tầng nhiệt độ theo 4 mùa trong năm tại Washington D.C.
 
-![Hình 2.7. Phân bố nhiệt độ theo 4 mùa](Distribution/assets/fig_2_7_temp_by_season.png)
+![Hình 2.6. Phân bố nhiệt độ theo 4 mùa](Distribution/assets/fig_2_7_temp_by_season.png)
 
-**Hình 2.7. Phân bố nhiệt độ chuẩn hóa (`temp`) bóc tách theo 4 mùa trong năm.**  
+**Hình 2.6. Phân bố nhiệt độ chuẩn hóa (`temp`) bóc tách theo 4 mùa trong năm.**  
 *(Đường màu xanh: Mùa xuân; màu cam: Mùa hè; màu xanh lá: Mùa thu; màu đỏ: Mùa đông).*
 
-**Bảng 2.8. Thống kê mô tả nhiệt độ chuẩn hóa (`temp`) phân tầng theo 4 mùa**
+**Bảng 2.7. Thống kê mô tả nhiệt độ chuẩn hóa (`temp`) phân tầng theo 4 mùa**
 
 | Mùa vụ (Theo từ điển UCI) | Số giờ ($n$) | Mean | SD | Median | Min | Max | Skewness | Excess Kurtosis |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
@@ -947,7 +970,7 @@ Trên đồ thị Histogram của `temp` (Hình 2.4), mật độ không có m�
 
 ---
 
-## 2.8. Kết luận và Hạn chế của Phần 2
+## 2.8. Kết luận và Hạn chế của Chương 2
 
 ### 2.8.1. Tóm tắt Kết luận Khoa học
 1. **Phân phối của `cnt`:** Bị lệch phải nghiêm trọng (Skewness 1.28), có độ nhọn Leptokurtic (Kurtosis 1.42) và phân tán vượt mức cực đoan ($\text{Variance}/\text{Mean} = 173.66$).
@@ -968,6 +991,7 @@ Trên đồ thị Histogram của `temp` (Hình 2.4), mật độ không có m�
 
 ---
 
+<a id="chương-3-kiểm-định-giả-thuyết-hypothesis-testing"></a>
 <a id="phần-3-kiểm-định-giả-thuyết-hypothesis-testing"></a>
 # CHƯƠNG 3. KIỂM ĐỊNH GIẢ THUYẾT (HYPOTHESIS TESTING)
 
@@ -977,8 +1001,10 @@ Trên đồ thị Histogram của `temp` (Hình 2.4), mật độ không có m�
 
 ---
 
+<a id="31-đặt-vấn-đề-nghiệp-vụ--cơ-sở-lý-thuyết-các-phương-pháp-kiểm-định"></a>
 ## 3.1. Đặt vấn đề Nghiệp vụ & Cơ sở Lý thuyết các Phương pháp Kiểm định
 
+<a id="311-động-cơ-thực-tiễn-và-xác-lập-2-câu-hỏi-nghiên-cứu-rq1--rq2"></a>
 ### 3.1.1. Động cơ Thực tiễn và Xác lập 2 Câu hỏi Nghiên cứu (RQ1 & RQ2)
 
 Trong quản lý và khai thác hệ thống xe đạp chia sẻ công cộng Capital Bikeshare tại thủ đô Washington D.C., mọi quyết định phân bổ nguồn lực và điều phối phương tiện đều tác động trực tiếp đến chi phí vận hành và chất lượng dịch vụ hành khách. Người quản lý hệ thống không thể đưa ra các chính sách can thiệp chỉ dựa trên trực giác hoặc những con số chênh lệch trung bình mẫu thô, bởi lẽ biến động mẫu có thể chỉ là sự ngẫu nhiên thuần túy.
@@ -1002,6 +1028,8 @@ Từ hai bài toán thực tiễn nêu trên, nghiên cứu chính thức xác l
 
 ---
 
+<a id="312-bản-chất-của-kiểm-định-thống-kê--quy-trình-5-bước-chuẩn-tắc-neave-kanji-framework"></a>
+<a id="312-bản-chất-của-kiểm-định-thống-kê--quy-trình-5-bước-neave-kanji"></a>
 ### 3.1.2. Bản chất của Kiểm định Thống kê & Quy trình 5 bước Chuẩn tắc (Neave-Kanji Framework)
 
 #### 1. Vì sao phải thực hiện kiểm định giả thuyết thống kê?
@@ -1065,6 +1093,8 @@ Theo hệ thống phân loại của Gopal K. Kanji (2006, *Classification of Te
 
 ---
 
+<a id="314-bản-chất-của-các-họ-phép-thử-theo-4-đặc-trưng-định-danh--nguyên-lý-họ-phi-tham-số"></a>
+<a id="314-bản-chất-của-các-họ-phép-thử-theo-4-đặc-trưng-định-danh--nguyên-lý-phi-tham-số"></a>
 ### 3.1.4. Bản chất của các Họ Phép thử theo 4 Đặc trưng Định danh & Nguyên lý Họ Phi tham số
 
 Dựa trên 4 đặc trưng định danh ở Mục 3.1.3, bản chất lý thuyết của **3 họ kiểm định tham số kinh điển** và **nguyên lý nền tảng của họ Phi tham số** được hệ thống hóa chi tiết theo chuyên khảo Gopal K. Kanji (2006):
@@ -1145,6 +1175,8 @@ Dựa trên sự đối chiếu chặt chẽ giữa giới hạn phương pháp 
 
 ---
 
+<a id="316-căn-cứ-thực-nghiệm-từ-eda--phân-phối-thách-thức-cỡ-mẫu-lớn-và-tự-tương-quan-chuỗi-neff"></a>
+<a id="316-căn-cứ-thực-nghiệm-từ-eda--phân-phối-thách-thức-cỡ-mẫu-lớn-và-tự-tương-quan"></a>
 ### 3.1.6. Căn cứ Thực nghiệm từ EDA & Phân phối: Thách thức Cỡ mẫu lớn và Tự tương quan chuỗi ($N_{\text{eff}}$)
 
 Toàn bộ hệ thống kiểm định ở Bảng 3.1 được thiết kế trực tiếp dựa trên các phát hiện định lượng chuyển giao từ TV1 (EDA) và TV2 (Phân tích phân phối xác suất):
@@ -1174,6 +1206,8 @@ Sau khi xác lập cơ sở phương pháp luận và bảng phân loại kiểm
 
 ---
 
+<a id="321-nghiên-cứu-rq1-so-sánh-2-nhóm-độc-lập--ngày-làm-việc-workingday--1-và-ngày-nghỉ-workingday--0"></a>
+<a id="321-nghiên-cứu-rq1-ngày-làm-việc-vs-ngày-nghỉ"></a>
 ### 3.2.1. Nghiên cứu RQ1: So sánh 2 Nhóm Độc lập — Ngày làm việc (`workingday = 1`) và Ngày nghỉ (`workingday = 0`)
 
 #### 1. Bước 1: Phát biểu Cặp Giả thuyết Thống kê
@@ -1202,6 +1236,8 @@ Nhằm trả lời bài toán điều phối đội xe hàng ngày (Daily Fleet 
 Việc kiểm tra hai giả định nền tảng (Tính chuẩn và Đồng nhất phương sai) được trực quan hóa toàn diện trên **Hình 3.1**:
 
 ![Hình 3.1. Kiểm tra giả định phân phối chuẩn và phương sai nội nhóm của cnt theo loại ngày](Hypothesis_Test/assets/fig_3_1_workingday_assumptions.png)
+
+*Hình 3.1. Kiểm tra các giả định phân phối chuẩn và phương sai nội nhóm của cnt theo loại ngày (KDE, Q-Q Plots, Boxplot-Violin)*
 
 Từ kết quả trực quan hóa trên Hình 3.1 và kiểm định thống kê:
 - **Kiểm tra tính chuẩn (Normality Check — Panel B & C):** Đồ thị Q-Q plot của cả hai phân nhóm đều bị uốn cong chữ S gãy khúc dữ dội khỏi đường thẳng tham chiếu màu đỏ ($y = x$), đặc biệt kéo dài ở vùng phân vị cao. Hệ số Skewness đều $> 1.0$ ($\text{Skew}_1 = 1.35$, $\text{Skew}_0 = 1.06$), khẳng định biến `cnt` **vi phạm nghiêm trọng giả định phân phối chuẩn trong từng phân nhóm**.
@@ -1274,6 +1310,8 @@ Phân tích Hình 1.6 làm sáng tỏ hiện tượng **Triệt tiêu lẫn nhau
 
 ---
 
+<a id="322-nghiên-cứu-rq2-so-sánh-4-nhóm-độc-lập--sự-kh"></a>
+<a id="322-nghiên-cứu-rq2-so-sánh-nhu-cầu-thuê-xe-giữa-4-mùa"></a>
 ### 3.2.2. Nghiên cứu RQ2: So sánh 4 Nhóm Độc lập — Sự Khác biệt Nhu cầu Giữa 4 Mùa trong Năm (`season`)
 
 #### 1. Bước 1: Phát biểu Cặp Giả thuyết Thống kê Đa nhóm
@@ -1358,6 +1396,8 @@ Kết quả đối chiếu song hành của hai phương pháp kiểm định h�
 
 ![Hình 3.2. Khoảng tin cậy 95% chênh lệch trung bình từng cặp mùa từ kiểm định Games-Howell (Kanji Test 28)](Hypothesis_Test/assets/fig_3_2_season_posthoc_forest.png)
 
+*Hình 3.2. Biểu đồ Forest plot thể hiện kết quả kiểm định hậu nghiệm Games-Howell (Kanji Test 28) cho 6 cặp mùa kèm khoảng tin cậy 95%*
+
 ##### b. Phát hiện Thực nghiệm Phản trực giác: Sự Tương đồng Nhu cầu Giữa Mùa hè và Mùa đông
 Quan sát Forest plot trên Hình 3.2 làm nổi bật hai quy luật cốt lõi:
 1. **5/6 cặp mùa có sự khác biệt cực kỳ ý nghĩa thống kê ($p < 0.001^{***}$):**
@@ -1369,10 +1409,10 @@ Quan sát Forest plot trên Hình 3.2 làm nổi bật hai quy luật cốt lõi
    - Giá trị $p$-value hiệu chỉnh là $p = 0.0826 > 0.05$.
    - **Kết luận:** **Chưa đủ bằng chứng thống kê ở mức ý nghĩa $\alpha = 0.05$ để khẳng định có sự khác biệt về nhu cầu thuê xe giữa Mùa hè và Mùa đông.**
 
-##### c. Thảo luận Cơ chế Khí hậu Mùa vụ (Dẫn chiếu Hình 2.7 từ Chương 2 - TV2)
-Để lý giải về mặt khoa học tại sao Mùa hè (thời tiết ấm áp) lại có nhu cầu thuê xe tương đương Mùa đông (thời tiết lạnh giá), nghiên cứu đối chiếu với phân tích phân bố nhiệt độ mùa vụ của TV2 (**Hình 2.7**):
+##### c. Thảo luận Cơ chế Khí hậu Mùa vụ (Dẫn chiếu Hình 2.6 từ Chương 2 - TV2)
+Để lý giải về mặt khoa học tại sao Mùa hè (thời tiết ấm áp) lại có nhu cầu thuê xe tương đương Mùa đông (thời tiết lạnh giá), nghiên cứu đối chiếu với phân tích phân bố nhiệt độ mùa vụ của TV2 (**Hình 2.6**):
 
-![Hình 2.7. Phân bố nhiệt độ temp theo 4 mùa (Trích xuất từ Chương 2 - TV2)](Distribution/assets/fig_2_7_temp_by_season.png)
+![Hình 2.6. Phân bố nhiệt độ temp theo 4 mùa (Trích xuất từ Chương 2 - TV2)](Distribution/assets/fig_2_7_temp_by_season.png)
 
 Cơ chế vi khí hậu tại thủ đô Washington D.C. giải thích trọn vẹn hiện tượng này:
 - **Tác động ức chế của Khí hậu Mùa hè (Extreme Heat & Humidity):** Washington D.C. vào mùa hè có đặc trưng nhiệt độ rất cao (giá trị chuẩn hóa `temp` thường xuyên $> 0.75$, tương đương $> 32^\circ\text{C} - 38^\circ\text{C}$) kết hợp độ ẩm cao (`hum` cao). Điều kiện nắng gắt và chỉ số khó chịu nhiệt độ (Heat Index) cao làm ức chế mạnh mẽ hoạt động đạp xe ngoài trời của người dân vào ban ngày.
@@ -1389,6 +1429,7 @@ Cơ chế vi khí hậu tại thủ đô Washington D.C. giải thích trọn v�
 
 ---
 
+<a id="33-đánh-giá-độ-bền-vững--kiểm-soát-rủi-ro-sai-lầm-loại-1"></a>
 ## 3.3. Đánh giá Độ bền vững & Kiểm soát Rủi ro Sai lầm Loại 1
 
 Một trong những đóng góp phương pháp luận quan trọng nhất của chuyên khảo *100 Statistical Tests* (Gopal K. Kanji, 2006, tr. 3–4 & Kanji Test 64) là nguyên tắc: **Một kết luận thống kê chỉ thực sự đáng tin cậy khi nó vượt qua các bài kiểm tra độ bền vững (Robustness Checks)** trước sự vi phạm các tiền giả định nền tảng. 
@@ -1397,6 +1438,7 @@ Trong tập dữ liệu Bike Sharing theo giờ, hai thách thức lớn nhất 
 
 ---
 
+<a id="331-đánh-giá-độ-bền-vững-theo-cỡ-mẫu-hiệu-dụng-neff-correction"></a>
 ### 3.3.1. Đánh giá Độ bền vững theo Cỡ mẫu Hiệu dụng ($N_{\text{eff}}$ Correction)
 
 #### 1. Cơ sở lý thuyết hiệu chỉnh chuỗi thời gian
@@ -1426,6 +1468,7 @@ $$\text{Statistic}_{\text{adj}} = \text{Statistic}_{\text{gốc}} \times \sqrt{\
 
 ---
 
+<a id="332-đối-chứng-kiểm-định-trên-chuỗi-dữ-liệu-tổng-hợp-cấp-độ-ngày-n--731-ngày"></a>
 ### 3.3.2. Đối chứng Kiểm định trên Chuỗi Dữ liệu Tổng hợp Cấp độ Ngày ($N = 731$ ngày)
 
 Để triệt tiêu hoàn toàn sự tự tương quan giữa 24 khung giờ trong ngày mà không cần giả định toán học về $N_{\text{eff}}$, nghiên cứu tiến hành một kiểm định đối chứng thực nghiệm độc lập: **Tổng hợp toàn bộ lượt thuê xe thành chuỗi dữ liệu cấp độ ngày (Day-level Aggregates)**:
@@ -1447,7 +1490,7 @@ Cả phép thử tham số (Welch's $t$, $p = 0.1101$) và phi tham số (Mann-W
 
 ---
 
-## 3.4. Kết luận và Hạn chế của Phần 3
+## 3.4. Kết luận và Hạn chế của Chương 3
 
 ### 3.4.1. Tóm tắt các Kết luận Kiểm định Chính
 
@@ -1483,11 +1526,14 @@ Nghiên cứu ghi nhận 3 giới hạn khách quan cần được lưu ý khi d
 
 ---
 
+<a id="chương-4-phân-tích-tương-quan-giữa-các-biến"></a>
 <a id="phần-4-phân-tích-tương-quan-giữa-các-biến"></a>
 # CHƯƠNG 4. PHÂN TÍCH TƯƠNG QUAN GIỮA CÁC BIẾN
-## 4.1. Lý thuyết 
+<a id="41-cơ-sở-lý-thuyết-hệ-số-tương-quan"></a>
+## 4.1. Cơ sở lý thuyết hệ số tương quan
 
-### 4.1.1. Phân tích tương quan Pearson ($r$) - Quan hệ tuyến tính
+<a id="411-hệ-số-tương-quan-pearson"></a>
+### 4.1.1. Hệ số tương quan Pearson
 
 **Định nghĩa:**
 
@@ -1520,7 +1566,8 @@ Với:
 - Không có outlier nghiêm trọng: Pearson khá nhạy cảm với các giá trị ngoại lệ (outliers), vì vậy outlier có thể làm thay đổi đáng kể hệ số $r$.
 - Phân phối dữ liệu: Phân phối chuẩn không phải điều kiện bắt buộc để tính $r$, nhưng thường được xem xét khi thực hiện các kiểm định suy luận dựa trên Pearson.
 
-### 4.1.2. Phân tích tương quan Spearman ($\rho$ hoặc $r_s$) - Quan hệ đơn điệu & thứ bậc
+<a id="412-hệ-số-tương-quan-hạng-spearman"></a>
+### 4.1.2. Hệ số tương quan hạng Spearman
 
 **Định nghĩa:**
 Hệ số tương quan Spearman ($\rho$ hoặc $r_s$) là một phương pháp tương quan phi tham số (non-parametric), dùng để đo lường mức độ và chiều hướng của mối quan hệ đơn điệu (monotonic relationship) giữa hai biến.
@@ -1562,7 +1609,8 @@ Với:
 - Không yêu cầu phân phối chuẩn: Phù hợp với dữ liệu bị lệch (skewed) hoặc không tuân theo phân phối chuẩn.
 - Ít bị ảnh hưởng bởi ngoại lai (Outliers): Nhờ cơ chế chuyển sang thứ hạng (rank), Spearman thường ít nhạy cảm với ngoại lai hơn Pearson.
 
-### 4.1.3. So sánh Pearson và Spearman
+<a id="413-bảng-so-sánh-toàn-diện-giữa-pearson-và-spearman"></a>
+### 4.1.3. Bảng so sánh toàn diện giữa Pearson và Spearman
 
 | Đặc điểm | Pearson | Spearman |
 | --- | --- | --- |
@@ -1572,7 +1620,8 @@ Với:
 | Bắt quan hệ phi tuyến đơn điệu | Không tốt | Tốt hơn |
 | Phù hợp khi | Quan hệ gần tuyến tính | Quan hệ đơn điệu nhưng có thể phi tuyến |
 
-### 4.1.4. Trường hợp mà kết quả Pearson và Spearman khác nhau:
+<a id="414-ba-trường-hợp-sai-khác-điển-hình-giữa-pearson-và-spearman"></a>
+### 4.1.4. Ba trường hợp sai khác điển hình giữa Pearson và Spearman
 1. **Ngoại lai:** Một vài điểm cực đoan có thể kéo Pearson lên/xuống mạnh hơn Spearman.
 
 2. **Quan hệ phi tuyến nhưng đơn điệu:** Spearman vẫn có thể cao trong khi Pearson không nhất thiết cao tương ứng. VD: 
@@ -1583,9 +1632,11 @@ $$Y=X^2,\quad X\in[-1,1]$$
 
 ---
 
-## 4.2. Áp dụng tính toán trên bộ dữ liệu Bike Sharing
+<a id="42-kết-quả-tính-toán-tương-quan-thực-nghiệm"></a>
+## 4.2. Kết quả tính toán tương quan thực nghiệm
 
-### 4.2.1. Lựa chọn tập biến phân tích
+<a id="421-ma-trận-hệ-số-tương-quan-pearson"></a>
+### 4.2.1. Lựa chọn tập biến và Ma trận hệ số tương quan Pearson
 
 Dựa trên kết quả khám phá dữ liệu (EDA), phân tích tương quan chính được thực hiện trên 4 biến định lượng cốt lõi:
 - `temp`: Nhiệt độ môi trường (đã chuẩn hóa về đoạn $[0, 1]$).
@@ -1600,9 +1651,7 @@ Dựa trên kết quả khám phá dữ liệu (EDA), phân tích tương quan c
 
 ---
 
-### 4.2.2. Kết quả tính toán hệ số tương quan
-
-#### Bảng 4.1. Ma trận tương quan Pearson ($r$ - Tuyến tính)
+**Bảng 4.1. Ma trận tương quan Pearson ($r$ - Tuyến tính)**
 | Biến | temp | hum | windspeed | cnt |
 |---|---|---|---|---|
 | **temp** | 1.0000 | -0.0730 | -0.0231 | 0.4048 |
@@ -1616,7 +1665,10 @@ Dựa trên kết quả khám phá dữ liệu (EDA), phân tích tương quan c
 - `windspeed – cnt` có tương quan tuyến tính rất yếu ($r = 0.0932$).
 - Giữa các biến độc lập thời tiết, `hum – windspeed` có tương quan âm nhẹ ($r = -0.2893$), các cặp còn lại có hệ số gần bằng 0 ($|r| < 0.08$), cho thấy nguy cơ cộng tuyến giữa các biến thời tiết là rất thấp.
 
-#### Bảng 4.2. Ma trận tương quan Spearman ($\rho$ - Thứ hạng đơn điệu)
+<a id="422-ma-trận-hệ-số-tương-quan-hạng-spearman"></a>
+### 4.2.2. Ma trận hệ số tương quan hạng Spearman
+
+**Bảng 4.2. Ma trận tương quan Spearman ($\rho$ - Thứ hạng đơn điệu)**
 | Biến | temp | hum | windspeed | cnt |
 |---|---|---|---|---|
 | **temp** | 1.0000 | -0.0571 | -0.0097 | 0.4233 |
@@ -1624,7 +1676,10 @@ Dựa trên kết quả khám phá dữ liệu (EDA), phân tích tương quan c
 | **windspeed** | -0.0097 | -0.2926 | 1.0000 | 0.1266 |
 | **cnt** | 0.4233 | -0.3634 | 0.1266 | 1.0000 |
 
-#### Bảng 4.3. So sánh chênh lệch giữa hệ số Pearson và Spearman
+<a id="423-so-sánh-chênh-lệch-giữa-pearson-và-spearman"></a>
+### 4.2.3. So sánh chênh lệch giữa Pearson và Spearman
+
+**Bảng 4.3. So sánh chênh lệch giữa hệ số Pearson và Spearman**
 | Cặp biến | Pearson ($r$) | Spearman ($\rho$) | Chênh lệch ($\rho - r$) | $\vert\text{Chênh lệch}\vert$ | Đánh giá tính chất quan hệ |
 |---|---|---|---|---|---|
 | **hum – cnt** | -0.3292 | -0.3634 | -0.0341 | 0.0341 | Tương quan âm mức yếu đến trung bình; $\vert\rho\vert > \vert r\vert$ do phân phối $cnt$ lệch phải |
@@ -1639,7 +1694,8 @@ Mức chênh lệch tuyệt đối giữa Pearson và Spearman trên toàn bộ 
 
 ---
 
-## 4.3. Trực quan hóa mối quan hệ giữa các biến
+<a id="43-trực-quan-hóa-mối-quan-hệ-giữa-các-biến-số"></a>
+## 4.3. Trực quan hóa mối quan hệ giữa các biến số
 
 Nhằm đáp ứng yêu cầu trực quan hóa trực diện mối quan hệ giữa biến mục tiêu (`cnt`) và các biến độc lập, nghiên cứu sử dụng hệ thống biểu đồ chuẩn mực gồm: **Ma trận nhiệt kép (Dual Heatmap)** để quan sát tổng thể mạng lưới tương quan đa biến, **Biểu đồ phân tán kết hợp đường xu hướng hồi quy (Scatter Plot with OLS Trendline & Binned Mean Trend)** cho từng cặp biến thời tiết liên tục (`temp`, `hum`, `windspeed`), và **Biểu đồ đường chuỗi thời gian phân nhóm** cho biến chu kỳ (`hr` × `workingday`). 
 
@@ -1647,7 +1703,8 @@ Phương pháp này thay thế hoàn toàn dạng biểu đồ Hexbin (vốn có
 
 ---
 
-### 4.3.1. Ma trận nhiệt tương quan kép (Dual Heatmap: Pearson vs Spearman)
+<a id="431-ma-trận-nhiệt-kép-dual-heatmap-pearson-vs-spearman"></a>
+### 4.3.1. Ma trận nhiệt kép (Dual Heatmap: Pearson vs Spearman)
 
 ![Hình 4.1. So sánh ma trận nhiệt tương quan Pearson và Spearman](04_Correlation_Analysis/assets/Hinh4.1.png)
 
@@ -1661,7 +1718,8 @@ Phương pháp này thay thế hoàn toàn dạng biểu đồ Hexbin (vốn có
 
 ---
 
-### 4.3.2. Mối quan hệ giữa Nhiệt độ (`temp`) và Nhu cầu thuê xe (`cnt`)
+<a id="432-mối-quan-hệ-giữa-nhiệt-độ-và-nhu-cầu-thuê-xe-temp-vs-cnt"></a>
+### 4.3.2. Mối quan hệ giữa Nhiệt độ và Nhu cầu thuê xe (temp vs cnt)
 
 ![Hình 4.2. Mối quan hệ giữa Nhiệt độ và Lượt thuê xe](04_Correlation_Analysis/assets/Hinh4.2.png)
 
@@ -1677,7 +1735,8 @@ Phương pháp này thay thế hoàn toàn dạng biểu đồ Hexbin (vốn có
 
 ---
 
-### 4.3.3. Mối quan hệ giữa Độ ẩm (`hum`) và Nhu cầu thuê xe (`cnt`)
+<a id="433-mối-quan-hệ-giữa-độ-ẩm-và-nhu-cầu-thuê-xe-hum-vs-cnt"></a>
+### 4.3.3. Mối quan hệ giữa Độ ẩm và Nhu cầu thuê xe (hum vs cnt)
 
 ![Hình 4.3. Mối quan hệ giữa Độ ẩm và Lượt thuê xe](04_Correlation_Analysis/assets/Hinh4.3.png)
 
@@ -1692,7 +1751,8 @@ Phương pháp này thay thế hoàn toàn dạng biểu đồ Hexbin (vốn có
 
 ---
 
-### 4.3.4. Mối quan hệ giữa Tốc độ gió (`windspeed`) và Nhu cầu thuê xe (`cnt`)
+<a id="434-mối-quan-hệ-giữa-tốc-độ-gió-và-nhu-cầu-thuê-xe-windspeed-vs-cnt"></a>
+### 4.3.4. Mối quan hệ giữa Tốc độ gió và Nhu cầu thuê xe (windspeed vs cnt)
 
 ![Hình 4.4. Mối quan hệ giữa Tốc độ gió và Lượt thuê xe](04_Correlation_Analysis/assets/Hinh4.4.png)
 
@@ -1707,7 +1767,8 @@ Phương pháp này thay thế hoàn toàn dạng biểu đồ Hexbin (vốn có
 
 ---
 
-### 4.3.5. Nhịp sinh hoạt thuê xe theo giờ phân nhóm ngày làm việc (`hr` × `workingday`)
+<a id="435-nhịp-sinh-hoạt-thuê-xe-theo-giờ-phân-nhóm-ngày-làm-việc-hr--workingday"></a>
+### 4.3.5. Nhịp sinh hoạt thuê xe theo giờ phân nhóm ngày làm việc (hr × workingday)
 
 ![Hình 4.5. Nhịp sinh hoạt thuê xe theo giờ phân nhóm ngày làm việc](04_Correlation_Analysis/assets/Hinh4.5.png)
 
@@ -1718,7 +1779,7 @@ Phương pháp này thay thế hoàn toàn dạng biểu đồ Hexbin (vốn có
 > 2. **Vạch trần hiệu ứng tương tác đa đỉnh (Interaction Effect):** Việc vẽ 2 đường phân tách theo `workingday` (0: Ngày nghỉ/cuối tuần, 1: Ngày làm việc) bộc lộ sự đối lập hoàn toàn về hình thái nhu cầu:  
 >    - Ngày làm việc (`workingday = 1`): Xuất hiện **hai đỉnh nhọn** rất sắc nét vào giờ cao điểm đi làm và tan tầm: **8:00 sáng** ($cnt \approx 478$) và **17:00 chiều** ($cnt \approx 524$), trong khi giảm sâu vào giữa trưa.  
 >    - Ngày nghỉ (`workingday = 0`): Đường biểu diễn chỉ có **một đỉnh vòm đơn** trải rộng vào đầu giờ chiều (**12:00 – 14:00**, $cnt \approx 372$), phục vụ mục đích giải trí và dạo chơi.  
-> 3. **Ý nghĩa phương pháp luận:** Mối quan hệ giữa `hr` và `cnt` rõ ràng là phi tuyến tính nghiêm trọng và phụ thuộc chặt chẽ vào loại ngày. Nếu chỉ tính hệ số Pearson đơn biến giữa `hr` và `cnt`, giá trị thu được sẽ bị triệt tiêu do hai đỉnh đối xứng. Biểu đồ đường này là bằng chứng thực nghiệm quan trọng giải thích tại sao cần đưa chuỗi điều hòa Fourier và biến tương tác `hr * workingday` vào mô hình hồi quy ở Phần 5 và Phần 6.
+> 3. **Ý nghĩa phương pháp luận:** Mối quan hệ giữa `hr` và `cnt` rõ ràng là phi tuyến tính nghiêm trọng và phụ thuộc chặt chẽ vào loại ngày. Nếu chỉ tính hệ số Pearson đơn biến giữa `hr` và `cnt`, giá trị thu được sẽ bị triệt tiêu do hai đỉnh đối xứng. Biểu đồ đường này là bằng chứng thực nghiệm quan trọng giải thích tại sao cần đưa chuỗi điều hòa Fourier và biến tương tác `hr * workingday` vào mô hình hồi quy ở Chương 5 và Chương 6.
 
 
 ---
@@ -1745,6 +1806,7 @@ Phương pháp này thay thế hoàn toàn dạng biểu đồ Hexbin (vốn có
 
 ---
 
+<a id="chương-5-hồi-quy-tuyến-tính-đa-biến-mlr--cơ-sở-lý-thuyết-và-bài-toán"></a>
 <a id="phần-5-hồi-quy-tuyến-tính-đa-biến-mlr--cơ-sở-lý-thuyết-và-bài-toán"></a>
 # CHƯƠNG 5. HỒI QUY TUYẾN TÍNH ĐA BIẾN (MLR) — CƠ SỞ LÝ THUYẾT VÀ BÀI TOÁN
 ## 5.1. Khung lý thuyết Hồi quy tuyến tính Đa biến (MLR)
@@ -1794,6 +1856,7 @@ $$\mathbf{b} = (\mathbf{X}^T \mathbf{X})^{-1} \mathbf{X}^T \mathbf{Y}$$
 
 ---
 
+<a id="514-ý-nghĩa-của-hệ-số-hồi-quy-riêng-lẻ-βj"></a>
 ### 5.1.4. Ý nghĩa của hệ số hồi quy riêng lẻ $\beta_j$
 Trong mô hình hồi quy đa biến, hệ số $\beta_j$ được gọi là **hệ số hồi quy riêng phần (Partial Regression Coefficient)**. 
 
@@ -1804,6 +1867,7 @@ Khác với hồi quy đơn biến (chỉ đo tương quan thô giữa một bi�
 
 ---
 
+<a id="515-hệ-số-xác-định-r²"></a>
 ### 5.1.5. Hệ số xác định $R^2$
 Hệ số xác định $R^2$ (Coefficient of Determination) đo lường tỷ lệ biến thiên của biến phụ thuộc $Y$ được giải thích bởi tập hợp các biến độc lập trong mô hình:
 $$R^2 = 1 - \frac{SS_{\text{res}}}{SS_{\text{tot}}} = \frac{SS_{\text{reg}}}{SS_{\text{tot}}}$$
@@ -1818,6 +1882,7 @@ Khoảng giá trị của $R^2$ nằm trong đoạn $[0, 1]$. $R^2$ càng gần 
 
 ---
 
+<a id="516-hệ-số-xác-định-hiệu-chỉnh-adjusted-r²"></a>
 ### 5.1.6. Hệ số xác định hiệu chỉnh (Adjusted $R^2$)
 Để khắc phục nhược điểm của $R^2$, hệ số xác định hiệu chỉnh (Adjusted $R^2$, ký hiệu là $\bar{R}^2$) đưa vào một hình phạt (penalty) đối với số lượng biến giải thích được đưa vào mô hình dựa trên số bậc tự do:
 $$\bar{R}^2 = 1 - (1 - R^2) \frac{n - 1}{n - k - 1} = 1 - \frac{SS_{\text{res}} / (n - k - 1)}{SS_{\text{tot}} / (n - 1)}$$
@@ -1860,6 +1925,10 @@ Phần này đóng vai trò là **Bản thiết kế phương pháp luận** (Fe
 - **Lý do lựa chọn MLR:**
   1. *Tính minh bạch và khả năng diễn giải cao (Interpretability):* Khác với các thuật toán hộp đen (Black-box models), MLR cho phép bóc tách và định lượng chính xác tác động biên của từng yếu tố môi trường (nhiệt độ, độ ẩm, sức gió) lên nhu cầu đi lại trong điều kiện các yếu tố khác không đổi.
   2. *Đóng vai trò mô hình mốc đối chứng (Baseline Benchmark):* Trong khoa học dữ liệu, MLR là chuẩn mực bắt buộc phải được thiết lập trước tiên để đo lường mức độ cải thiện hiệu năng trước khi cân nhắc các mô hình phi tuyến phức tạp hơn.
+  3. *Biện giải lựa chọn OLS Bán Logarit so với Mô hình Đếm Phi tuyến (Negative Binomial / Poisson GLM):* Mặc dù ở Chương 2, kiểm định MLE đã chứng minh phân phối Negative Binomial có độ khớp lý thuyết cao nhất cho phân phối biên của `cnt`, nghiên cứu quyết định lựa chọn mô hình OLS Bán Logarit $\ln(1+\text{cnt})$ vì:
+     - Phù hợp với trọng tâm phương pháp luận của môn học: khảo sát và kiểm định tường minh 5 giả định cổ điển Gauss-Markov của mô hình tuyến tính.
+     - Mô hình Bán Logarit cho phép ước lượng trực tiếp tác động biên theo tỷ lệ phần trăm ($\% \Delta \text{cnt} \approx (\exp(\beta_j) - 1) \times 100\%$), mang lại ý nghĩa quản trị thực tiễn trực quan (Wooldridge, 2015).
+     - Đảm bảo tính ổn định hội tụ và nghiệm giải tích đóng toàn cục $(\mathbf{X}^T\mathbf{X})^{-1}\mathbf{X}^T\mathbf{Y}$ khi kết hợp cùng lúc 10 số hạng chuỗi điều hòa Fourier và các biến tương tác phức tạp. Việc mở rộng sang Generalized Additive Models (GAM) hoặc GLM Negative Binomial được định vị là hướng nghiên cứu nâng cao tiếp theo.
 
 ---
 
@@ -1926,6 +1995,7 @@ Dựa trên kết quả khám phá tại Chương 4, nghiên cứu đặc tả q
 
 ---
 
+<a id="524-cơ-sở-phương-pháp-luận-phân-chia-dữ-liệu-chronological--day-level-split-protocol"></a>
 ### 5.2.4. Cơ sở phương pháp luận phân chia dữ liệu (Chronological & Day-level Split Protocol)
 
 #### 1. Nhược điểm chí tử của phân chia ngẫu nhiên thuần túy (Random Split)
@@ -1972,7 +2042,7 @@ Trong các bài toán dữ liệu bảng thông thường, việc chia ngẫu nh
 
 ---
 
-## 5.3. Kết luận và hạn chế lý thuyết của Phần 5
+## 5.3. Kết luận và Hạn chế lý thuyết của Chương 5
 
 ### 5.3.1. Kết luận chương 5
 1. Chương 5 đã thiết lập hoàn chỉnh khung lý thuyết Hồi quy tuyến tính Đa biến (MLR) chuẩn mực, làm rõ ý nghĩa các hệ số OLS, các thước đo độ phù hợp ($R^2, \bar{R}^2, \text{MAE}, \text{RMSE}$) và 5 giả định cổ điển Gauss-Markov.
@@ -1984,6 +2054,7 @@ Trong các bài toán dữ liệu bảng thông thường, việc chia ngẫu nh
 
 ---
 
+<a id="chương-6-xây-dựng-và-đánh-giá-mô-hình-hồi-quy-tuyến-tính-đa-biến-mlr"></a>
 <a id="phần-6-xây-dựng-và-đánh-giá-mô-hình-hồi-quy-tuyến-tính-đa-biến-mlr"></a>
 # CHƯƠNG 6. XÂY DỰNG VÀ ĐÁNH GIÁ MÔ HÌNH HỒI QUY TUYẾN TÍNH ĐA BIẾN (MLR)
 
@@ -2000,7 +2071,7 @@ Phép biến đổi này triệt tiêu hoàn toàn nguy cơ dự báo ra số â
 
 Để mô hình hóa tính chu kỳ khép kín của thời gian mà vẫn bảo toàn giả định tuyến tính trong không gian đặc trưng mới (khung giờ 23:00 liền kề 00:00), biến `hr` được phân tích thành chuỗi điều hòa Fourier bậc $K=5$ gồm 5 cặp hàm lượng giác $\sin/\cos$. Đồng thời, toàn bộ 5 cặp hài này được nhân tương tác với biến nhị phân `workingday` để mô phỏng sự khác biệt đường cong hai đỉnh ngày làm việc so với một đỉnh ngày nghỉ.
 
-### Bảng 6.1. Danh sách biến độc lập và phương pháp mã hóa đặc trưng
+**Bảng 6.1. Danh sách biến độc lập và phương pháp mã hóa đặc trưng**
 | Nhóm | Cột trong mô hình | Cách mã hóa | Lý do lựa chọn |
 |---|---|---|---|
 | **Giờ (chu kỳ 24h)** | `hr_sin1`, `hr_cos1` ... `hr_sin5`, `hr_cos5` | $\sin, \cos$ của $\frac{2\pi k \cdot \text{hr}}{24}, k = 1..5$ | Giờ 23 và giờ 0 liền kề nhau trên vòng tròn; chọn $K=5$ hài để biểu diễn 2 đỉnh nhu cầu sáng/chiều. |
@@ -2030,7 +2101,7 @@ Tuân thủ nghiêm ngặt nguyên tắc chống rò rỉ dữ liệu thời gia
    - **Tập kiểm định (Validation):** Dùng để lựa chọn cấu hình mô hình tối ưu (chọn $K=5$, biến đổi $\ln(1+\text{cnt})$, tương tác `workingday`).
    - **Tập kiểm tra (Test):** Giữ kín để đánh giá năng lực dự báo thực chiến cuối cùng.
 
-### Bảng 6.2. Phân chia dữ liệu theo trình tự thời gian (Điểm cắt 2012-03-31)
+**Bảng 6.2. Phân chia dữ liệu theo trình tự thời gian (Điểm cắt 2012-03-31)**
 | Tập | Từ ngày | Đến ngày | Số dòng | Tỷ lệ (%) | cnt trung bình (lượt/giờ) |
 |---|---|---|---|---|---|
 | **Huấn luyện (Train)** | 2011-01-01 | 2012-03-31 | 10,821 | 62.26% | 148.59 |
@@ -2044,7 +2115,7 @@ Tuân thủ nghiêm ngặt nguyên tắc chống rò rỉ dữ liệu thời gia
 > *Lý do lựa chọn loại biểu đồ:* Biểu đồ chuỗi thời gian liên tục giúp quan sát rõ bước nhảy tăng trưởng giữa năm 2011 và 2012.  
 > *Nhận xét:* Tập huấn luyện có mức `cnt` trung bình $148.59$ lượt/giờ, trong khi tập kiểm định và kiểm tra (bắt đầu từ tháng 04/2012) có `cnt` trung bình lên tới trên $256$ lượt/giờ (tăng hơn $73\%$). Sự phân hóa rõ rệt này buộc mô hình hồi quy phải thực hiện nhiệm vụ ngoại suy xu hướng dài hạn chứ không đơn thuần là nội suy dữ liệu lân cận.
 
-### Bảng 6.3. So sánh hiệu năng giữa các chiến lược phân chia dữ liệu
+**Bảng 6.3. So sánh hiệu năng giữa các chiến lược phân chia dữ liệu**
 | Chiến lược | Số dòng huấn luyện | Số dòng kiểm tra | RMSE (lượt/giờ) | MAE (lượt/giờ) | $R^2$ | Sai số TB (Thực tế − Dự đoán) |
 |---|---|---|---|---|---|---|
 | **Chia ngẫu nhiên 80/20** | 13,903 | 3,476 | 82.78 | 49.55 | 0.7987 | +5.70 |
@@ -2061,7 +2132,7 @@ Tuân thủ nghiêm ngặt nguyên tắc chống rò rỉ dữ liệu thời gia
 
 Mô hình Hồi quy tuyến tính đa biến (OLS MLR) được ước lượng trên 10,821 bản ghi của tập huấn luyện. Phương trình ước lượng đạt hệ số xác định trên tập huấn luyện là $R^2 = 0.8103$ (Adjusted $R^2 = 0.8098$).
 
-### Bảng 6.4. Bảng ước lượng hệ số hồi quy OLS trên tập huấn luyện ($n = 10,821$)
+**Bảng 6.4. Bảng ước lượng hệ số hồi quy OLS trên tập huấn luyện ($n = 10,821$)**
 | STT | Tên biến | Hệ số $\beta$ | Sai số chuẩn | Giá trị $t$ | $p$-value | Khoảng tin cậy 95% |
 |:---:|---|:---:|:---:|:---:|:---:|:---:|
 | 1 | **const** | 3.5086 | 0.0226 | 155.31 | $p < 0.001^{***}$ | [3.4643, 3.5529] |
@@ -2095,10 +2166,13 @@ Mô hình Hồi quy tuyến tính đa biến (OLS MLR) được ước lượng 
 | 29 | **yr** | 0.4210 | 0.0108 | 39.12 | $p < 0.001^{***}$ | [0.3999, 0.4421] |
 
 *Nhận xét:*
-1. **Nhiệt độ (`temp`):** Là biến có tác động dương mạnh nhất với thống kê $t = 86.50$ ($p < 0.001$). Hệ số $\beta = 1.9857$ chỉ ra rằng khi nhiệt độ chuẩn hóa tăng thêm $0.1$ đơn vị, nhu cầu thuê xe kỳ vọng tăng khoảng $+21.97\%$.
-2. **Xu hướng năm (`yr`):** Hệ số $\beta = 0.4210$ ($t = 39.12, p < 0.001$) cho thấy năm 2012 có lượng thuê xe tăng trung bình $+52.35\%$ ($\exp(0.4210) - 1$) so với năm 2011 khi kiểm soát các yếu tố thời tiết và lịch trình.
+1. **Nhiệt độ (`temp`):** Là biến có tác động dương mạnh nhất với thống kê $t = 86.50$ ($p < 0.001$). Hệ số $\beta = 1.9857$ chỉ ra rằng khi nhiệt độ chuẩn hóa tăng thêm $0.1$ đơn vị, nhu cầu thuê xe kỳ vọng tăng khoảng $+21.97\%$ ($(\exp(1.9857 \times 0.1) - 1) \times 100\%$).
+2. **Xu hướng năm (`yr`):** Hệ số $\beta = 0.4210$ ($t = 39.12, p < 0.001$) cho thấy năm 2012 có lượng thuê xe tăng trung bình $+52.35\%$ ($\exp(0.4210) - 1$) so với năm 2011 khi kiểm soát các yếu tố thời tiết và lịch trình, phản ánh bước nhảy vọt mở rộng quy mô hệ thống trạm xe.
 3. **Điều kiện thời tiết xấu (`weathersit_3_4`):** Hệ số âm rất mạnh $\beta = -0.6022$ ($t = -36.44, p < 0.001$), tương ứng mức sụt giảm nhu cầu tới $-45.24\%$ so với thời tiết quang đãng.
-4. **Độ ẩm (`hum`):** Có hệ số nhỏ $\beta = 0.0282$ với $p = 0.2994 > 0.05$. Điều này cho thấy khi đã kiểm soát biến thời tiết mưa tuyết (`weathersit`) và nhiệt độ (`temp`), độ ẩm riêng lẻ không còn đóng góp tác động tuyến tính đáng kể.
+4. **Độ ẩm (`hum`) và hiệu ứng triệt tiêu / tương quan giả (Confounding / Suppressor Effect):** Trong phân tích tương quan đơn biến (Chương 4), độ ẩm tương quan âm rõ rệt với lượt thuê xe ($r = -0.3292$). Tuy nhiên trong mô hình MLR, hệ số của `hum` co về xấp xỉ 0 ($\beta = 0.0282$) và mất hẳn ý nghĩa thống kê ($p = 0.2994 > 0.05$). Điều này làm sáng tỏ một hiểu biết sâu sắc: độ ẩm cao thường đồng xuất hiện với thời tiết mây mù hoặc mưa tuyết (`weathersit_2`, `weathersit_3_4`). Khi mô hình đa biến đã kiểm soát trực tiếp các chỉ báo thời tiết xấu và nhiệt độ, bản thân độ ẩm đơn thuần không còn tạo ra lực cản đáng kể đối với hành vi người dùng; tương quan âm ban đầu thực chất là hiệu ứng nhiễu đồng biến (confounding effect) bị hấp thụ hoàn toàn bởi biến thời tiết.
+5. **Hiệu ứng ngày làm việc (`workingday`) và mối liên hệ nhất quán với RQ1 (Chương 3):** Hệ số chính (main effect) của `workingday` là $\beta = -0.0379$ ($t = -4.15, p < 0.001$), tương ứng mức sụt giảm nhu cầu nền rất nhỏ $-3.72\%$ ($\exp(-0.0379) - 1$). Thoạt nhìn, điều này có vẻ mâu thuẫn nhưng thực chất hoàn toàn nhất quán và làm sáng tỏ phát hiện ở RQ1 (Chương 3):
+   - Ở cấp độ tổng hợp 24 giờ (Chương 3), kích thước hiệu ứng Cohen's $d = 0.0651$ cho thấy tổng nhu cầu giữa hai ngày là bất biến (negligible effect).
+   - Trong mô hình MLR (Chương 6), hệ số chính $\beta_{\text{workingday}}$ chỉ đóng vai trò dịch chuyển giao điểm (intercept shift) tại điểm mốc lượng giác $hr = 0$ (nửa đêm). Toàn bộ sự khác biệt bản chất giữa hai loại ngày đã được hấp thụ vào 10 số hạng tương tác điều hòa Fourier ($\text{hr\_harmonics} \times \text{workingday}$) với các trọng số cực lớn (chẳng hạn $\beta_{\text{cos2}\times\text{wd}} = -0.9952, \beta_{\text{sin2}\times\text{wd}} = -0.6924$). Điều này xác nhận cơ chế thực tế: ngày làm việc không làm thay đổi tổng lượng người đi xe cả ngày, mà tái cấu trúc triệt để thời gian sử dụng từ dáng vòm giải trí buổi trưa (ngày nghỉ) sang cấu trúc hai đỉnh xung lực giờ cao điểm 8h sáng và 17h chiều (ngày làm việc).
 
 ---
 
@@ -2106,7 +2180,7 @@ Mô hình Hồi quy tuyến tính đa biến (OLS MLR) được ước lượng 
 
 ### 6.4.1. Đánh giá hiệu năng dự báo trên thang đo gốc
 
-### Bảng 6.5. Các chỉ số đánh giá mô hình trên thang gốc (lượt thuê/giờ)
+**Bảng 6.5. Các chỉ số đánh giá mô hình trên thang gốc (lượt thuê/giờ)**
 | Tập dữ liệu | Số dòng | $R^2$ | Adjusted $R^2$ | MAE (lượt/giờ) | RMSE (lượt/giờ) |
 |---|---|---|---|---|---|
 | **Huấn luyện (Train)** | 10,821 | 0.8103 | 0.8098 | 38.01 | 60.74 |
@@ -2114,7 +2188,12 @@ Mô hình Hồi quy tuyến tính đa biến (OLS MLR) được ước lượng 
 | **Kiểm tra (Test)** | 3,272 | 0.7532 | 0.7511 | 70.61 | 108.19 |
 | **Mô hình cơ sở (Baseline)** | 3,272 | -0.2495 | — | 183.23 | 243.43 |
 
-*Ghi chú về dòng Baseline:* Giá trị $R^2 = -0.2495$ là hoàn toàn bình thường và có thể xảy ra. Baseline dự báo bằng **trung bình tập huấn luyện** (`cnt` trung bình = $148.59$ lượt/giờ) cho mọi quan sát trong tập kiểm tra, trong khi tập kiểm tra có `cnt` trung bình cao hơn rất nhiều ($257.36$ lượt/giờ). $R^2 < 0$ có nghĩa là mô hình Baseline tệ hơn ngay cả đường nằm ngang ước lượng bằng trung bình của chính tập kiểm tra — đây là hệ quả trực tiếp của việc ngoại suy xu hướng tăng trưởng mà Baseline không nắm bắt được.
+*Ghi chú về dòng Baseline và công thức $R^2$ trên tập kiểm tra độc lập:*  
+Trên tập kiểm tra ngoại suy (out-of-sample test set), hệ số xác định $R^2_{\text{test}}$ được định nghĩa toán học chuẩn tắc theo công thức:
+$$R^2_{\text{test}} = 1 - \frac{\text{SS}_{\text{res}}}{\text{SS}_{\text{tot}}} = 1 - \frac{\sum_{i \in \text{test}} (y_i - \hat{y}_i)^2}{\sum_{i \in \text{test}} (y_i - \bar{y}_{\text{test}})^2}$$
+Khi mô hình cơ sở (Baseline) sử dụng giá trị trung bình cố định của tập huấn luyện ($\hat{y}_i = \bar{y}_{\text{train}} = 148.59 \text{ lượt/giờ}$) để dự báo cho mọi quan sát trong tập kiểm tra (vốn có trung bình thực tế tăng vọt lên $\bar{y}_{\text{test}} = 257.36 \text{ lượt/giờ}$ do sự mở rộng mạng lưới), tổng bình phương sai số của Baseline trở thành:
+$$\text{SS}_{\text{res}} = \sum_{i \in \text{test}} (y_i - \bar{y}_{\text{train}})^2 = \sum_{i \in \text{test}} (y_i - \bar{y}_{\text{test}})^2 + n_{\text{test}} (\bar{y}_{\text{test}} - \bar{y}_{\text{train}})^2 = \text{SS}_{\text{tot}} + n_{\text{test}} (108.77)^2 > \text{SS}_{\text{tot}}$$
+Do $\text{SS}_{\text{res}} > \text{SS}_{\text{tot}}$, tỷ số $\frac{\text{SS}_{\text{res}}}{\text{SS}_{\text{tot}}} = 1.2495 > 1$, dẫn đến $R^2_{\text{baseline}} = 1 - 1.2495 = -0.2495 < 0$. Giá trị âm này hoàn toàn hợp lệ về mặt toán học và là minh chứng định lượng cho thấy mô hình Baseline thất bại hoàn toàn trước bài toán ngoại suy xu hướng tăng trưởng theo thời gian.
 
 *Nhận xét:* Trên tập kiểm tra độc lập (hoàn toàn thuộc tương lai), mô hình đạt $R^2 = 0.7532$ trên thang gốc, giải thích được hơn $75\%$ biến thiên của nhu cầu thuê xe. Sai số tuyệt đối trung bình MAE là $70.61$ lượt/giờ và RMSE là $108.19$ lượt/giờ. So với mô hình Baseline (dự báo bằng trung bình tập huấn luyện có MAE = $183.23$, RMSE = $243.43$), mô hình MLR giúp giảm tới **$61.46\%$ MAE** và **$55.56\%$ RMSE**.
 
@@ -2130,7 +2209,9 @@ Mô hình Hồi quy tuyến tính đa biến (OLS MLR) được ước lượng 
 > **Hình 6.4. Biểu đồ phân tán so sánh giá trị dự đoán so với thực tế (tập kiểm tra)**  
 > *Mục đích:* Khảo sát mức độ phân tán của từng quan sát so với đường phân giác hoàn hảo (Dự đoán = Thực tế).  
 > *Lý do lựa chọn loại biểu đồ:* Biểu đồ mật độ phân tán hexbin/scatter giúp tránh hiện tượng dính điểm với hơn 3,000 quan sát.  
-> *Nhận xét:* Có hơn $70\%$ quan sát có sai số tuyệt đối không quá 50 lượt thuê/giờ. Tuy nhiên, ở nhóm 10% giờ cao điểm có `cnt` cao nhất (trên 500 lượt/giờ), mô hình có xu hướng dự báo hơi thấp hơn thực tế, phản ánh giới hạn của cấu trúc cộng tính khi nắm bắt các cú sốc nhu cầu cực đại.
+> *Nhận xét:* Có hơn $70\%$ quan sát có sai số tuyệt đối không quá 50 lượt thuê/giờ. Tuy nhiên, ở nhóm 10% giờ cao điểm có `cnt` cao nhất (trên 500 lượt/giờ), mô hình có xu hướng dự báo hơi thấp hơn thực tế. Hiện tượng này xuất phát từ hai nguyên nhân lý thuyết cốt lõi:  
+> 1. **Bất đẳng thức Jensen (Jensen's Inequality):** Với mô hình Bán Logarit $\ln(1+Y) = \hat{Y} + \varepsilon$, khi nghịch đảo thô về thang đo gốc bằng phép biến đổi $\widehat{\text{cnt}} = \exp(\hat{Y}) - 1$, tính chất lồi của hàm mũ $\exp(\cdot)$ dẫn đến $\mathbb{E}[\exp(\varepsilon)] > \exp(\mathbb{E}[\varepsilon]) = 1$. Khi sai số tuân theo phân phối chuẩn $\varepsilon \sim \mathcal{N}(0, \sigma^2)$, kỳ vọng toán học đúng là $\mathbb{E}[Y+1 \mid X] = \exp(\hat{Y}) \cdot \exp(\sigma^2 / 2)$. Việc nghịch đảo thô không nhân thêm thừa số hiệu chỉnh $\exp(\sigma^2 / 2)$ thực chất chỉ dự báo trung vị (hoặc trung bình nhân), dẫn đến sai lệch chệch dưới (under-prediction) có hệ thống tại các giá trị kỳ vọng lớn.  
+> 2. **Hiệu ứng nén logarit:** Hàm logarit làm phẳng mạnh mẽ các đỉnh ngoại lai, khiến mô hình OLS tối thiểu hóa bình phương sai số logarit thay vì bình phương sai số gốc, ưu tiên độ chính xác tương đối (% error) hơn là bắt trọn các cú sốc đột biến tuyệt đối.
 
 ![Hình 6.5. cnt trung bình theo giờ: thực tế và dự đoán trên tập kiểm tra](06_Model/figures/fig_6_5_hour_pred.png)
 
@@ -2150,7 +2231,7 @@ Mô hình Hồi quy tuyến tính đa biến (OLS MLR) được ước lượng 
 
 ### 6.4.2. Thực thi kiểm định chẩn đoán các giả định phần dư
 
-### Bảng 6.6. Kết quả kiểm định các giả định mô hình OLS
+**Bảng 6.6. Kết quả kiểm định các giả định mô hình OLS**
 | Giả định | Thống kê kiểm định | Giá trị | Cách đọc & Kết luận |
 |---|---|---|---|
 | **Độc lập** | Durbin–Watson ($DW$) | 0.7614 | Gần 2: không tự tương quan bậc 1; $DW = 0.7614 < 1.5$: Phần dư có tự tương quan dương bậc 1 mạnh do tính chất chuỗi thời gian. |
@@ -2180,7 +2261,7 @@ Mô hình Hồi quy tuyến tính đa biến (OLS MLR) được ước lượng 
 > *Lý do lựa chọn loại biểu đồ:* Histogram kèm đường khớp chuẩn đối chiếu với biểu đồ Quantile-Quantile (Q-Q plot).  
 > *Nhận xét:* Đường Q-Q bám khá sát đường thẳng lý thuyết ở vùng trung tâm (từ phân vị $-2$ đến $+2$). Tuy nhiên, hai đầu mút phân vị uốn cong nhẹ, phản ánh hiện tượng đuôi nặng (Fat tails). Nhờ cỡ mẫu lớn ($n > 10,000$), Định lý Giới hạn Trung tâm (CLT) bảo đảm các ước lượng hệ số $\hat{\beta}$ vẫn tiệm cận phân phối chuẩn.
 
-### Bảng 6.7. Hệ số phóng đại phương sai (VIF) đánh giá hiện tượng đa cộng tuyến
+**Bảng 6.7. Hệ số phóng đại phương sai (VIF) đánh giá hiện tượng đa cộng tuyến**
 | Tên biến | VIF (Toàn bộ biến) | VIF (Không tính hài giờ) |
 |---|:---:|:---:|
 | **hr_sin1 ... hr_cos5** | 3.15 – 3.37 | — |
@@ -2194,7 +2275,9 @@ Mô hình Hồi quy tuyến tính đa biến (OLS MLR) được ước lượng 
 | **weathersit_3_4** | 1.32 | 1.25 |
 | **yr** | 1.11 | 1.11 |
 
-*Nhận xét:* Toàn bộ các biến khí tượng và lịch trình đều có hệ số $\text{VIF} < 1.75$ (thấp hơn rất nhiều so với ngưỡng cảnh báo 5 hoặc 10). Các biến hài giờ và tương tác có VIF dao động quanh mức $3.15 - 3.37$, hoàn toàn an toàn. Kết quả này khẳng định quyết định loại bỏ biến `atemp` tại Chương 5 đã triệt tiêu hoàn toàn rủi ro đa cộng tuyến nghiêm trọng.
+*Nhận xét:*  
+1. **Các biến khí tượng và lịch trình:** Toàn bộ đều có $\text{VIF} < 1.75$ (thấp hơn rất nhiều so với ngưỡng cảnh báo 5 hoặc 10). Kết quả này khẳng định quyết định tiên quyết loại bỏ biến nhiệt độ cảm nhận `atemp` tại Chương 5 đã triệt tiêu hoàn toàn rủi ro đa cộng tuyến nghiêm trọng.  
+2. **Cơ chế VIF của các sóng hài Fourier ($3.15 - 3.37$):** Về mặt giải tích lý thuyết, hệ cơ sở Fourier trên đoạn liên tục $[0, 24]$ là trực giao hoàn hảo ($\int_0^{24} \sin(k\omega t)\cos(m\omega t)dt = 0$, tương ứng $\text{VIF} = 1.0$). Tuy nhiên trên bộ dữ liệu thực tế: (1) miền thời gian bị rời rạc hóa theo 24 mốc giờ nguyên ($hr \in \{0, 1, \dots, 23\}$); (2) chuỗi thời gian có 165 giờ bị thiếu ngắt quãng (như đã phát hiện ở Hình 1.2 tại Chương 1, kích thước thực tế là 17,379 giờ thay vì 17,544 giờ) làm suy giảm nhẹ tính đối xứng lưới; và (3) sự kết hợp đồng thời của 10 số hạng tương tác với `workingday` tạo ra một mức độ phụ thuộc tuyến tính cục bộ giữa các tần số. Dẫu vậy, mức $\text{VIF} \approx 3.15 - 3.37$ vẫn nằm hoàn toàn an toàn dưới ngưỡng cảnh báo nghiêm ngặt ($5.0$), chứng minh phương pháp điều hòa Fourier kiểm soát đa cộng tuyến tốt hơn vượt bậc so với việc dùng 23 biến giả chỉ báo giờ (One-hot encoding) vốn rất dễ gây bất ổn định ma trận hiệp phương sai.
 
 ---
 
@@ -2224,7 +2307,7 @@ Trong lý thuyết kinh tế lượng cổ điển, Định lý Gauss-Markov kh�
 4. **Giả định 4: Phân phối chuẩn của phần dư (Normality of Residuals) — [VI PHẠM NHẸ Ở ĐUÔI / TIỆM CẬN CHUẨN]**
    - *Hiện trạng:* Độ lệch $\text{Skewness} = -0.5882$ (hơi lệch trái), độ nhọn dư $\text{Excess Kurtosis} = 2.1460 > 0$ (đuôi nặng hơn chuẩn - Leptokurtic). Biểu đồ Q-Q (Hình 6.9) uốn cong nhẹ ở hai đầu mút phân vị.
    - *Nguyên nhân bản chất:* Các sự kiện ngoại cảnh đột biến (cơn dông bất ngờ, các đợt rét đột xuất) tạo ra một số ít quan sát có sai số dự báo lệch xa mức kỳ vọng.
-   - *Hệ quả đối với OLS:* Theo **Định lý Giới hạn Trung tâm (CLT)**, khi kích thước mẫu đủ lớn ($n = 10,821 \gg 30$), phân phối mẫu của các ước lượng hệ số OLS $\hat{\beta}$ sẽ tiệm cận phân phối chuẩn bất kể phân phối của sai số ngẫu nhiên $\varepsilon$. Do đó, các kiểm định suy luận và việc ngoại suy trung bình vẫn giữ nguyên giá trị khoa học, mặc dù khoảng dự báo riêng lẻ cho từng giờ cá biệt (Prediction Interval) sẽ có độ tin cậy thấp hơn ở các giá trị cực trị.
+   - *Hệ quả đối với OLS:* Dưới điều kiện chuỗi thời gian dừng và phụ thuộc yếu (Weakly Dependent / Mixing Time Series), theo **Định lý Giới hạn Trung tâm mở rộng cho chuỗi phụ thuộc** (Wooldridge, 2015), phân phối mẫu của các ước lượng hệ số OLS $\hat{\beta}$ vẫn tiệm cận phân phối chuẩn bất kể phân phối sai số $\varepsilon$ có đuôi nặng. Tuy nhiên, do hiện tượng tự tương quan chuỗi ($DW = 0.7614$), ma trận hiệp phương sai cổ điển bị chệch dưới, khiến các giá trị thống kê $t$ bị phóng đại nhân tạo. Do đó, trong khi các ước lượng điểm $\hat{\beta}$ vẫn giữ nguyên giá trị khoa học (không chệch và nhất quán), các suy diễn khoảng tin cậy và kiểm định ý nghĩa thống kê cần được diễn giải với dung sai thận trọng hơn, hoặc cần được hiệu chỉnh bằng sai số chuẩn vững HAC (Newey–West) trong các nghiên cứu chuyên sâu tiếp theo.
 
 5. **Giả định 5: Không có hiện tượng đa cộng tuyến nghiêm trọng (No Multicollinearity) — [THỎA MÃN XUẤT SẮC]**
    - *Hiện trạng:* Toàn bộ các biến giải thích thời tiết (`temp`, `hum`, `windspeed`) và lịch trình (`workingday`, `holiday`, `yr`) đều có $\text{VIF} < 1.75$ (thấp hơn nhiều so với ngưỡng cảnh báo 5 hoặc 10). Các cặp hài giờ và tương tác có $\text{VIF} \approx 3.15 - 3.37$, hoàn toàn an toàn.
@@ -2244,7 +2327,7 @@ Trong lý thuyết kinh tế lượng cổ điển, Định lý Gauss-Markov kh�
 
 Dựa trên mô hình Bán Logarit, phần trăm thay đổi của số lượt thuê xe khi một biến giải thích thay đổi 1 đơn vị (hoặc chuyển từ 0 sang 1) được tính theo công thức: $\% \Delta \text{cnt} = (\exp(\beta) - 1) \times 100\%$.
 
-### Bảng 6.8. Thay đổi ước tính của cnt khi biến độc lập thay đổi (Marginal Effects)
+**Bảng 6.8. Thay đổi ước tính của cnt khi biến độc lập thay đổi (Marginal Effects)**
 | Biến độc lập | Thay đổi ước lượng của `cnt` | $p$-value | Ý nghĩa kinh tế - xã hội |
 |---|:---:|:---:|---|
 | **temp (tăng 0.1 chuẩn hóa)** | $+21.97\%$ ($+21.42\%$ đến $+22.52\%$) | $p < 0.001^{***}$ | Nhiệt độ tăng là động lực kích thích thuê xe mạnh nhất trong các yếu tố khí tượng. |
@@ -2257,7 +2340,7 @@ Dựa trên mô hình Bán Logarit, phần trăm thay đổi của số lượt 
 
 ---
 
-## 6.6. Kết luận và hạn chế của Phần 6
+## 6.6. Kết luận và Hạn chế của Chương 6
 
 ### 6.6.1. Kết luận chính
 1. **Hiệu năng dự báo vượt trội:** Mô hình OLS MLR với kỹ thuật Bán Logarit $\ln(1+\text{cnt})$ kết hợp chuỗi điều hòa Fourier bậc 5 và biến tương tác `workingday` đạt hiệu năng dự báo rất cao trên tập kiểm tra độc lập ($R^2 = 0.7532$, MAE = $70.61$ lượt/giờ, RMSE = $108.19$ lượt/giờ), vượt trội hoàn toàn so với mô hình cơ sở Baseline (giảm $61.46\%$ MAE).
@@ -2266,8 +2349,8 @@ Dựa trên mô hình Bán Logarit, phần trăm thay đổi của số lượt 
 
 ### 6.6.2. Hạn chế
 1. **Vi phạm giả định tính độc lập của phần dư:** Do dữ liệu được ghi nhận theo từng giờ liên tiếp, phần dư có hiện tượng tự tương quan dương chuỗi thời gian ($DW = 0.7614 < 1.5, r_1 = 0.6190$). Dù không làm chệch hệ số ước lượng OLS, hiện tượng này làm thu hẹp sai số chuẩn, khiến các khoảng tin cậy và $p$-value lạc quan hơn thực tế.
-2. **Xu hướng ước lượng thấp ở các đỉnh cao điểm cực đại:** Mô hình hồi quy cộng tính có xu hướng làm phẳng các đỉnh nhu cầu quá cao (trên 600 lượt/giờ) do hàm logarit co hẹp mạnh các giá trị cực trị.
-3. **Mô hình xu hướng bậc thang nhị phân:** Việc mô hình hóa biến năm bằng biến giả `yr` cố định giả định mức tăng trưởng nhảy vọt một lần giữa 2 năm, chưa phản ánh được sự gia tăng trơn tru liên tục của số lượng trạm xe mở mới theo từng tháng.
+2. **Xu hướng ước lượng thấp ở các đỉnh cao điểm cực đại (Bất đẳng thức Jensen):** Mô hình hồi quy Bán Logarit có xu hướng dự báo chệch dưới ở nhóm 10% giờ cao điểm cực đại (trên 500 lượt/giờ). Về mặt toán học, theo **Bất đẳng thức Jensen**, phép chuyển đổi ngược tự nhiên $\widehat{\text{cnt}} = \exp(\hat{Y}) - 1$ chỉ ước lượng trung vị có điều kiện chứ không phải kỳ vọng số học $\mathbb{E}[\text{cnt} \mid X]$ (do $\mathbb{E}[\exp(\varepsilon)] = \exp(\sigma^2/2) > 1$). Trong thực tế triển khai nghiệp vụ logistics chống quá tải trạm xe, mô hình cần được bổ sung hệ số hiệu chỉnh không chệch Duan's Smearing Estimator $\hat{\alpha} = \frac{1}{n}\sum_{i=1}^n \exp(e_i)$ để nâng mức dự báo tại các đỉnh cao điểm.
+3. **Thách thức ngoại suy xu hướng dài hạn (`yr`) trong phân chia thời gian:** Việc cắt dữ liệu tại ngày 31/03/2012 khiến tập huấn luyện chỉ có Quý 1/2012 mang nhãn `yr = 1` (khoảng 2,160 giờ mùa đông/xuân lạnh) để học bước nhảy quy mô hệ thống. Việc mô hình hóa biến năm bằng biến nhị phân cố định $\beta_{yr} = 0.4210$ (tăng trưởng $+52.35\%$) giả định mức tăng nhảy bậc thang duy nhất và chưa xét đến tương tác giữa `yr` với mùa vụ (`season`). Trong thực tế vận hành dài hạn, số lượng trạm xe mở mới tăng trưởng liên tục theo từng tháng; các nghiên cứu tiếp theo có thể thay thế biến nhị phân `yr` bằng chuỗi số lượng trạm xe tích lũy (Cumulative Station Count) hoặc mô hình hóa xu hướng phi tuyến dạng Spline/Trend liên tục.
 
 ---
 
